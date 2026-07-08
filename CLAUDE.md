@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Ordnerstruktur (seit 2026-07-08)
 
-Die eigentliche Webapp (`index.html`, `sw.js`, `manifest.json`, `icon-*.png`) bleibt bewusst im Repo-Root — GitHub Pages liefert nur aus dem Root oder einem Ordner namens exakt `docs` aus, ein frei benannter Ordner wie `Webapp` würde das Deployment ohne zusätzlichen Build-Workflow brechen. Alles andere ist in nummerierte Ordner sortiert:
+Die eigentliche Webapp (`index.html`, `howto.html`, `sw.js`, `manifest.json`, `icon-*.png`) bleibt bewusst im Repo-Root — GitHub Pages liefert nur aus dem Root oder einem Ordner namens exakt `docs` aus, ein frei benannter Ordner wie `Webapp` würde das Deployment ohne zusätzlichen Build-Workflow brechen. Alles andere ist in nummerierte Ordner sortiert:
 
 - `00_Projektsteuerung/` — `MEMORY.md` (Fakten/Entscheidungen) und `PROJEKTLOG.md` (chronologischer Verlauf, siehe Versionierung unten).
 - `01_Recherchen/` — Ergebnisse der Gemini-Deep-Research-Prompts (Trainingspläne, Übungserklärungen, Aufwärmen, Stretching), je ein Unterordner.
@@ -25,6 +25,10 @@ Every change gets a version bump and a `00_Projektsteuerung/PROJEKTLOG.md` entry
 - Bump `CACHE_NAME` in `sw.js` to match (e.g. `fretze-pumpt-v1.2.0`) — this is not just bookkeeping, it's what makes the PWA actually update on installed devices (see the auto-update note below). The two must move together.
 - Add a dated, versioned entry to `00_Projektsteuerung/PROJEKTLOG.md` describing what changed, before/alongside deploying.
 
+## User-facing documentation (`howto.html`, process rule, active since v1.5.1)
+
+`00_Projektsteuerung/PROJEKTLOG.md` is a developer-facing changelog (for future Claude sessions, not end users). `howto.html` is the separate, plain-German **user-facing** how-to page, linked from the app header ("❓ Anleitung") — explicit user request: **every change relevant to what the user sees or does must also update `howto.html`**, not just `PROJEKTLOG.md`. Examples of "relevant": a new/changed feature, a UI element that moves or behaves differently, a new settings/toggle. Not relevant: internal refactors, data-model changes with no visible effect, doc/versioning-only commits. `howto.html` reads the same `localStorage` theme key as `index.html` to match dark/sepia automatically, and is listed in `sw.js`'s `APP_SHELL` for offline use — keep both in sync if it's ever renamed.
+
 ## Commands
 
 There is no build, lint, or test tooling — no `package.json`, no dependencies. The app is plain HTML/CSS/JS.
@@ -36,7 +40,7 @@ There is no build, lint, or test tooling — no `package.json`, no dependencies.
 
 ## Architecture
 
-Everything lives in one file, `index.html`: inline `<style>` block plus a single inline `<script>` at the bottom (~680 lines total). No framework, no bundler. Supporting files are `manifest.json` (PWA metadata), `sw.js` (cache-first service worker caching the app shell), `icon-*.png`, and `logo-mark-dark.png`/`logo-mark-sepia.png` (header logo, transparent PNGs; see Ordnerstruktur above for the source file). All must stay in the app shell list in `sw.js` (`APP_SHELL`) — a new asset referenced from `index.html` but missing there won't be available offline.
+Everything lives in one file, `index.html`: inline `<style>` block plus a single inline `<script>` at the bottom (~680 lines total). No framework, no bundler. Supporting files are `manifest.json` (PWA metadata), `sw.js` (cache-first service worker caching the app shell), `icon-*.png`, `logo-mark-dark.png`/`logo-mark-sepia.png` (header logo, transparent PNGs; see Ordnerstruktur above for the source file), and `howto.html` (standalone user-facing how-to page, see the User-facing documentation section below). All must stay in the app shell list in `sw.js` (`APP_SHELL`) — a new asset referenced from `index.html` but missing there won't be available offline.
 
 **Header logo is theme-aware, unlike the app icons**: `render()` picks `logo-mark-dark.png` or `logo-mark-sepia.png` based on `state.theme`, mirroring the existing `theme-color`-meta swap. Two separate PNGs exist (rather than one raster recolored to the shared `--rust`) because a single color didn't read well in both contexts: dark theme needed a brighter/more saturated orange (`#F97316`) for the fine linework to stay legible against the near-black `--bg`, while sepia keeps the theme's own `--rust` (`#A8461E`), which already contrasts fine on the light background. The app-icon PNGs (`icon-192.png`/`icon-512*.png`) are NOT theme-aware — OS home screens don't know about in-app theme state, so they stay on the single dark-mode-style asset regardless of `state.theme`.
 

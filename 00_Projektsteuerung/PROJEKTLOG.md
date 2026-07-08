@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.5.1 — 2026-07-08 (Teil 20): Neue Nutzer-Anleitung (`howto.html`)
+
+- Nutzerwunsch: eine howto-Seite, die die App für Endnutzer erklärt (keine Entwickler-Doku), aufrufbar direkt aus der App.
+- Neue eigenständige `howto.html` im Root (Teil der Webapp, nicht in `01_Recherchen` o.ä.) — deckt alle aktuellen Features ab: Plan-Auswahl, Tag-Auswahl, Aufwärmen, Sätze eintragen, Übungserklärung, Übung tauschen (inkl. KI-Vorschläge), Satzpause-Timer, Stretching, Training abschließen, Hell/Dunkel-Umschalter, Backup (Export/Import), Installation als PWA.
+- Optisch an die App angeglichen (gleiche Google-Fonts, gleiche `--rust`/`--bg`-Variablen für Dark/Sepia); liest per kleinem Inline-Script denselben `localStorage`-Theme-Wert wie `index.html`, damit sie automatisch zum in der App gewählten Theme passt.
+- Verlinkt aus dem App-Header ("❓ Anleitung"-Button neben Export/Import); in `sw.js`s `APP_SHELL` aufgenommen, damit sie auch offline verfügbar ist.
+- **Neue Prozessregel** (explizite Nutzeranforderung, in `CLAUDE.md` verankert): jede Änderung, die für Endnutzer sichtbar/relevant ist, muss ab jetzt auch `howto.html` aktualisieren — zusätzlich zum bisherigen `PROJEKTLOG.md`-Eintrag (der ist Entwickler-/Session-Doku, kein Nutzer-Text). Rein interne Änderungen (Refactoring, Doku-only) sind davon ausgenommen.
+
 ## v1.5.0 — 2026-07-08 (Teil 19): Phase 2 — Mehrere Trainingspläne + Plan-Wechsel ohne Datenverlust
 
 - Umgesetzt nach in Plan-Mode abgestimmtem Ansatz: 3 zusätzliche, wissenschaftlich fundierte Trainingspläne aus `01_Recherchen/01_Trainingsplaene/Trainingsplaene.md` eingebaut — **Upper/Lower** (4 Tage), **Ganzkörper** (3 Tage), **Bro-Split** (5 Tage) — neben dem bisherigen PPL-Plan. Neue Plan-Auswahl (Dropdown) zwischen Header und "Heute dran"-Banner.

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Anleitung – Fretze pumpt</title>
+<link rel="icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1c1b1a;
+    --surface: #242220;
+    --surface2: #2d2a27;
+    --border: #3d3934;
+    --chalk: #ede7db;
+    --chalk-dim: #a29a8c;
+    --rust: #c1440e;
+    --rust-dim: #7a2c09;
+    --olive: #7c8f5a;
+    --olive-dim: #4d5738;
+  }
+  :root[data-theme="sepia"] {
+    --bg: #f2e8d5;
+    --surface: #e9dcc0;
+    --surface2: #e0d0ac;
+    --border: #c9b68e;
+    --chalk: #3a2f1f;
+    --chalk-dim: #7d6b4e;
+    --rust: #a8461e;
+    --rust-dim: #d9a679;
+    --olive: #5f7a3d;
+    --olive-dim: #a8c48a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--chalk);
+    padding-bottom: 48px;
+  }
+  h1, h2, .display { font-family: 'Oswald', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .header { padding: 22px 16px 14px; border-bottom: 1px solid var(--border); }
+  .header-title { display: flex; align-items: center; gap: 8px; }
+  .header-title img { height: 32px; width: auto; }
+  .header-title h1 {
+    font-weight: 600; font-size: 20px; letter-spacing: 1px;
+    text-transform: uppercase; margin: 0;
+  }
+  .back-link {
+    display: inline-block; margin-top: 12px; font-size: 13px; color: var(--rust);
+    text-decoration: none; font-family: 'JetBrains Mono', monospace;
+  }
+
+  .content { padding: 16px; max-width: 640px; margin: 0 auto; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  .card h2 {
+    font-size: 16px; font-weight: 500; margin: 0 0 8px; text-transform: uppercase;
+    letter-spacing: 0.3px; color: var(--rust);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
+  .card ul { margin: 6px 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
+  .card li { margin-bottom: 4px; }
+  .card b { color: var(--chalk); }
+  .card .dim { color: var(--chalk-dim); }
+  .badge {
+    display: inline-block; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--olive); border: 1px solid var(--olive-dim); border-radius: 4px; padding: 1px 6px;
+  }
+
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .toc a {
+    font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--chalk-dim);
+    text-decoration: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <img src="logo-mark-dark.png" alt="" aria-hidden="true" />
+      <h1>Anleitung</h1>
+    </div>
+    <a class="back-link" href="index.html">← Zurück zur App</a>
+  </div>
+
+  <div class="content">
+    <div class="toc">
+      <a href="#plaene">Trainingspläne</a>
+      <a href="#tag">Trainingstag</a>
+      <a href="#aufwaermen">Aufwärmen</a>
+      <a href="#saetze">Sätze eintragen</a>
+      <a href="#erklaerung">Übungserklärung</a>
+      <a href="#tauschen">Übung tauschen</a>
+      <a href="#timer">Satzpause</a>
+      <a href="#stretching">Stretching</a>
+      <a href="#abschluss">Training abschließen</a>
+      <a href="#darstellung">Hell/Dunkel</a>
+      <a href="#backup">Backup</a>
+      <a href="#installieren">App installieren</a>
+    </div>
+
+    <div class="card">
+      <p>Fretze pumpt ist dein Trainingstracker für Krafttraining — hier trägst du ein, was du in jedem Satz geschafft hast, und die App merkt sich deine Gewichte fürs nächste Mal. Alles läuft nur auf diesem Gerät (kein Konto, kein Server) — mehr dazu bei <a href="#backup" style="color:var(--rust);">Backup</a>.</p>
+    </div>
+
+    <div class="card" id="plaene">
+      <h2>📋 Trainingsplan wählen</h2>
+      <p>Oben im Dropdown wählst du deinen Trainingsplan:</p>
+      <ul>
+        <li><b>Push/Pull/Legs</b> — 6 Tage, klassischer 3er-Split</li>
+        <li><b>Upper/Lower</b> — 4 Tage, Ober-/Unterkörper getrennt</li>
+        <li><b>Ganzkörper</b> — 3 Tage, jede Einheit trainiert alles</li>
+        <li><b>Bro-Split</b> — 5 Tage, ein Muskel pro Tag</li>
+      </ul>
+      <p class="dim">Wechselst du den Plan, bleiben deine bisherigen Daten in jedem Plan erhalten — nichts geht verloren, wenn du später zurückwechselst.</p>
+    </div>
+
+    <div class="card" id="tag">
+      <h2>📅 Trainingstag wählen</h2>
+      <p>Über die Reiter unter dem Plan wählst du den Tag (z.B. "Push A"). Die Banner-Zeile oben schlägt dir automatisch den nächsten Tag in der Rotation vor, basierend darauf, was du zuletzt trainiert hast.</p>
+    </div>
+
+    <div class="card" id="aufwaermen">
+      <h2>🔥 Aufwärmen</h2>
+      <p>Über den Übungen (sofern für den Tag hinterlegt) findest du eine aufklappbare Aufwärmen-Sektion: kurze allgemeine Erwärmung, Mobilisation, Aktivierung und ein Rampenschema für die erste schwere Übung. Wissenschaftlich fundiert, dauert insgesamt nur wenige Minuten.</p>
+    </div>
+
+    <div class="card" id="saetze">
+      <h2>💪 Sätze eintragen</h2>
+      <p>Pro Übung siehst du eine Zeile je Satz: Gewicht (kg), Wiederholungen und RIR (Reps in Reserve — wie viele Wiederholungen hättest du noch geschafft). Häkchen rechts markiert den Satz als erledigt.</p>
+      <p class="dim">"Letztes Mal: ..." unter dem Übungsnamen zeigt dein Ergebnis aus der letzten Einheit, und das Gewichtsfeld ist schon mit deinem letzten Wert vorbefüllt.</p>
+    </div>
+
+    <div class="card" id="erklaerung">
+      <h2>ℹ Übungserklärung</h2>
+      <p>Der ℹ-Button neben einer Übung zeigt Zielmuskulatur, Ausführung Schritt für Schritt, häufigste Fehler und einen Sicherheitshinweis — praktisch, wenn du eine Übung zum ersten Mal machst oder dir bei der Technik unsicher bist. (Aktuell nur für den Push/Pull/Legs-Plan hinterlegt.)</p>
+    </div>
+
+    <div class="card" id="tauschen">
+      <h2>⟲ Übung tauschen</h2>
+      <p>Passt eine Übung nicht (Gerät belegt, Verletzung, keine Lust)? Der ⟲-Button öffnet eine Liste von Alternativen. Es bleiben Zielsätze/Wiederholungen und dein Verlauf für die ursprüngliche Übung erhalten — nur der angezeigte Name ändert sich.</p>
+      <p class="dim">"✨ KI-Vorschläge holen" schlägt zusätzlich per KI passende Alternativen vor, falls die Standardliste nicht reicht.</p>
+    </div>
+
+    <div class="card" id="timer">
+      <h2>⏱ Satzpause</h2>
+      <p>Sobald du einen Satz abhakst, startet unten automatisch ein Pausen-Timer (Ton + Vibration am Ende). Mit ±15s anpassbar, mit "Überspringen" sofort beendbar.</p>
+    </div>
+
+    <div class="card" id="stretching">
+      <h2>🧘 Stretching</h2>
+      <p>Unter den Übungen (sofern hinterlegt) findest du passende Dehnübungen für nach dem Training, inklusive ehrlicher Einordnung: Dehnen danach verhindert keinen Muskelkater, hilft aber beim Runterkommen.</p>
+    </div>
+
+    <div class="card" id="abschluss">
+      <h2>✅ Training abschließen</h2>
+      <p>Der Button unten schließt die Einheit ab: deine Gewichte werden für nächstes Mal gemerkt, die Sätze werden zurückgesetzt, und die App merkt sich, dass du heute trainiert hast (für die Tagesempfehlung oben).</p>
+    </div>
+
+    <div class="card" id="darstellung">
+      <h2>☀ / 🌙 Hell oder Dunkel</h2>
+      <p>Oben rechts im Header schaltest du zwischen dunklem und hellem (Sepia-)Theme um — z.B. praktisch bei viel Umgebungslicht im Fitnessstudio.</p>
+    </div>
+
+    <div class="card" id="backup">
+      <h2>⭳ Backup (Export/Import)</h2>
+      <p>Deine Trainingsdaten liegen nur auf diesem Gerät in diesem Browser — es gibt kein Konto und keinen Server. <b>Export</b> lädt eine JSON-Datei mit deinem gesamten Verlauf herunter; <b>Import</b> spielt eine solche Datei wieder ein (überschreibt den aktuellen Stand). Das ist der einzige Weg, Daten zu sichern oder auf ein neues Gerät zu übertragen.</p>
+    </div>
+
+    <div class="card" id="installieren">
+      <h2>📱 Als App installieren</h2>
+      <p>Fretze pumpt lässt sich wie eine App installieren: im Handy-Browser-Menü "Zum Startbildschirm hinzufügen" (iOS) bzw. "App installieren" (Android/Chrome) wählen. Danach startet sie direkt vom Homescreen, auch ohne Internetverbindung.</p>
+      <p class="dim">Nach einem Update: die installierte App einmal komplett schließen (aus der App-Übersicht wischen) und neu öffnen, damit die neue Version greift.</p>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const raw = localStorage.getItem("eisernes-log-v1");
+      const theme = raw ? (JSON.parse(raw).theme || "sepia") : "sepia";
+      document.documentElement.setAttribute("data-theme", theme === "sepia" ? "sepia" : "dark");
+    } catch (e) { /* ignore, keep default */ }
+  </script>
+</body>
+</html>

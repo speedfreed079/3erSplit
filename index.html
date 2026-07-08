@@ -69,6 +69,7 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
     padding: 7px 9px; color: var(--chalk-dim); cursor: pointer; font-size: 12px;
     font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 5px;
+    text-decoration: none;
   }
   .icon-btn:active { border-color: var(--rust); color: var(--chalk); }
   .backup-note { font-size: 11px; color: var(--chalk-dim); margin: 8px 16px 0; }
@@ -1221,7 +1222,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.5.1";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1640,6 +1641,7 @@ function render() {
           <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
           <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
           <button class="icon-btn" data-role="import-trigger" title="Backup aus JSON importieren">⭱ Import</button>
+          <a class="icon-btn" href="howto.html" title="Anleitung öffnen">❓ Anleitung</a>
           <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
         </div>
       </div>
