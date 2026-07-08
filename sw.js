@@ -1,13 +1,15 @@
 // CACHE_NAME muss bei jedem Release mit APP_VERSION in index.html mitgezogen werden -
 // nur ein geänderter String hier lässt den Browser die neue sw.js erkennen, den alten
 // Cache verwerfen und die App-Shell-Dateien frisch nachladen (siehe CLAUDE.md "Versionierung").
-const CACHE_NAME = "fretze-pumpt-v1.2.3";
+const CACHE_NAME = "fretze-pumpt-v1.3.0";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
+  "./icon-512-maskable.png",
+  "./logo-mark.png",
 ];
 
 self.addEventListener("install", (event) => {

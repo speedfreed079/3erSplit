@@ -14,7 +14,7 @@ Die eigentliche Webapp (`index.html`, `sw.js`, `manifest.json`, `icon-*.png`) bl
 - `01_Recherchen/` — Ergebnisse der Gemini-Deep-Research-Prompts (Trainingspläne, Übungserklärungen, Aufwärmen, Stretching), je ein Unterordner.
 - `02_Quellen/` — Rohquellen/Belege, die die Recherchen stützen.
 - `03_Tools/worker/` — der Cloudflare-Gemini-Proxy-Worker (siehe unten), nicht Teil des GitHub-Pages-Deploys.
-- `04_Medien/` — Grafik-/Bildassets (z.B. Logo), noch nicht in der Webapp verdrahtet (kein direkter Bezug aus `index.html`/`manifest.json`).
+- `04_Medien/` — Rohgrafiken (z.B. `logo_fretze_pumpt.png`, das Ausgangslogo mit Schriftzug). Die daraus abgeleiteten, auf `--rust` (`#c1440e`) umgefärbten Produktions-Assets (`logo-mark.png`, `icon-*.png`) liegen im Root, da sie aus der Webapp referenziert werden.
 - `99_Archiv/` — alte/nicht mehr aktiv genutzte Dateien (z.B. `files.zip`, der ursprüngliche Projekt-Upload vor dem Repo-Setup; gitignored). Bewusst mit hoher Nummer ans Ende sortiert, war ursprünglich `04_Archiv/`.
 
 ## Versioning (process rule, active since v1.1.0)
@@ -36,7 +36,7 @@ There is no build, lint, or test tooling — no `package.json`, no dependencies.
 
 ## Architecture
 
-Everything lives in one file, `index.html`: inline `<style>` block plus a single inline `<script>` at the bottom (~680 lines total). No framework, no bundler. Supporting files are `manifest.json` (PWA metadata), `sw.js` (cache-first service worker caching the app shell), and `icon-*.png`.
+Everything lives in one file, `index.html`: inline `<style>` block plus a single inline `<script>` at the bottom (~680 lines total). No framework, no bundler. Supporting files are `manifest.json` (PWA metadata), `sw.js` (cache-first service worker caching the app shell), `icon-*.png`, and `logo-mark.png` (header logo, transparent PNG recolored to match `--rust`; see Ordnerstruktur above for the source file). All must stay in the app shell list in `sw.js` (`APP_SHELL`) — a new asset referenced from `index.html` but missing there won't be available offline.
 
 **PWA update mechanism**: `sw.js` uses a cache-first strategy, which means an installed/home-screen copy will keep serving whatever it last cached until the service worker itself gets updated — browsers only re-check `sw.js` for byte-level changes, they don't know `index.html` changed on their own. That's why `CACHE_NAME` must change every release (see Versioning below): a different string makes `sw.js`'s bytes differ, which is what triggers the browser to install the new worker (`skipWaiting()` + `clients.claim()` in the code make it take over immediately), delete the old-named cache, and re-fetch the app shell fresh. Skipping the `CACHE_NAME` bump on a release means installed devices silently keep the old version.
 

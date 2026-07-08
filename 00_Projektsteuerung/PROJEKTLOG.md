@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.3.0 — 2026-07-08 (Teil 13): Logo in Header + App-Icons eingebaut
+
+- Logo-Marke (Kopf + Hantel-Kreis-Symbol aus `04_Medien/logo_fretze_pumpt.png`, ohne den Schriftzug "FRED PUMPT" — der bleibt bewusst außen vor, siehe Teil 12) freigestellt, auf die App-Akzentfarbe `--rust` (`#c1440e`) umgefärbt und als eigenständige Assets erzeugt:
+  - `logo-mark.png` (Root, transparenter Hintergrund) — ersetzt im Header das 🏋-Emoji neben dem (weiterhin echten Text-)Schriftzug "Fretze pumpt".
+  - `icon-192.png` / `icon-512.png` (dunkler abgerundeter Hintergrund, ~72% Füllgrad) und `icon-512-maskable.png` (randloser dunkler Hintergrund, ~56% Füllgrad, sicher innerhalb der Maskable-Safe-Zone) — ersetzen das bisherige abstrakte Hantel-Icon.
+- Farbentscheidung: die Original-Logofarbe war ein Kirschrot (`#B51437`), spürbar anders als das App-Rost-Orange (`#C1440E`). Statt die ganze App-Palette (Dark- + Sepia-Theme, Buttons, Tabs, Timer-Leiste) ans Logo anzupassen, wurde das Logo selbst umgefärbt — deutlich kleinerer, risikoärmerer Eingriff.
+- `sw.js`-`APP_SHELL` um `logo-mark.png` und `icon-512-maskable.png` ergänzt (Letzteres fehlte bisher im Cache, obwohl im Manifest referenziert — sonst wären beide offline nicht verfügbar gewesen).
+- `04_Medien/logo_fretze_pumpt.png` (Original mit Schriftzug) bleibt unverändert als Rohquelle liegen; nur die abgeleiteten, umgefärbten/freigestellten Produktions-Assets liegen im Root.
+
 ## 2026-07-08 (Teil 12): Nutzer-Änderungen an der Ordnerstruktur übernommen + dokumentiert
 
 - Nutzer hat direkt im Dateisystem (außerhalb der Session) zwei Änderungen an der in Teil 11 angelegten Struktur vorgenommen:
