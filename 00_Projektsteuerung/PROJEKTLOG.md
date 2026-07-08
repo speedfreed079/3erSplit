@@ -2,6 +2,17 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.3.1 — 2026-07-08 (Teil 14): Header-Logo größer + Darkmode-Lesbarkeit
+
+- Nutzer-Feedback zum Live-Ergebnis von v1.3.0: Logo im Header darf größer sein, im Darkmode schlecht erkennbar.
+- Größe: `logo-mark`-`<img>` im Header von 26px auf 36px Höhe erhöht.
+- Darkmode-Lesbarkeit: das feine Linienwerk (Haarsträhnen etc.) verliert bei kleiner Anzeigegröße auf dunklem Hintergrund überproportional an Kontrast (dunkel-auf-dunkel wirkt "matschiger" als derselbe Farbwert auf hellem Grund — menschliche Kontrastwahrnehmung ist bei niedriger Hintergrundhelligkeit schwächer). Lösung: zwei separate, themenabhängige Logo-Assets statt einer fixen Recolor-Farbe:
+  - `logo-mark-dark.png` — helleres, saturierteres Orange (`#F97316`) nur fürs Dark-Theme-Header-Logo, extra für Lesbarkeit auf nahezu-schwarzem `--bg`.
+  - `logo-mark-sepia.png` — nutzt die Sepia-eigene `--rust`-Farbe (`#A8461E`), die auf dem hellen Hintergrund schon gut kontrastiert.
+  - `render()` wählt das passende Bild anhand `state.theme`, analog zum bestehenden `theme-color`-Meta-Swap.
+  - Die App-Icons (`icon-192.png`/`icon-512*.png`) bleiben bewusst unverändert/nicht themenabhängig — OS-Homescreens kennen den In-App-Theme-Zustand nicht.
+- `sw.js`-`APP_SHELL`: `logo-mark.png` durch die zwei neuen Dateien ersetzt; altes `logo-mark.png` gelöscht (nur noch die zwei Varianten existieren).
+
 ## v1.3.0 — 2026-07-08 (Teil 13): Logo in Header + App-Icons eingebaut
 
 - Logo-Marke (Kopf + Hantel-Kreis-Symbol aus `04_Medien/logo_fretze_pumpt.png`, ohne den Schriftzug "FRED PUMPT" — der bleibt bewusst außen vor, siehe Teil 12) freigestellt, auf die App-Akzentfarbe `--rust` (`#c1440e`) umgefärbt und als eigenständige Assets erzeugt:
