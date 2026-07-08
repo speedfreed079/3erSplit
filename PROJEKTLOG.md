@@ -2,6 +2,13 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.2.3 — 2026-07-08 (Teil 9): Header bricht auf schmalen Screens sauber um
+
+- Nutzer meldete: auf dem Handy erschien unter dem Titel nur noch "Push · Pull · ", der Rest der Subzeile war abgeschnitten (v1.2.1-Ellipsis-Fix hat den Titel-Container nicht ausreichend Platz gelassen, weil `flex: 1` mit Flex-Basis 0 der Actions-Leiste (Theme-Toggle + Export + Import) fast die ganze Zeile überlässt, bevor überhaupt "gewrapped" würde).
+- Ursache: `.header-row` ist ein Flex-Container mit `justify-content: space-between`; der Titel-Block hatte `flex:1` (Basis 0), wodurch er theoretisch immer "passt" und der Browser nie auf eine zweite Zeile umbricht — er schrumpft stattdessen bis fast auf 0, egal wie eng es wird.
+- Fix: neue Media Query `@media (max-width: 480px)` stellt `.header-row` auf `flex-direction: column` um, sodass Titel/Subzeile und die Actions-Leiste auf schmalen Screens sauber übereinander statt nebeneinander stehen. Auf breiteren Screens (Tablet/Desktop) bleibt das bisherige Nebeneinander-Layout.
+- Zusätzlich: dem Nutzer erklärt, dass die installierte PWA auf dem Handy einmal komplett geschlossen (aus der App-Übersicht wischen) und neu geöffnet werden muss, damit der neue Service Worker greift — reines "Aktualisieren" innerhalb der offenen App reicht nicht, weil die bereits geladene Seite von der alten `sw.js`-Instanz kontrolliert bleibt, bis eine echte Neuladung/Neustart passiert.
+
 ## v1.2.2 — 2026-07-08 (Teil 8): Sepia als Standard-Theme
 
 - Nutzer gefällt Sepia besser als das ursprüngliche dunkle Theme; Default für neue/leere `localStorage`-Stände (erster Start, neues Gerät, Inkognito) von `"dark"` auf `"sepia"` geändert (beide Stellen in `loadState()`).

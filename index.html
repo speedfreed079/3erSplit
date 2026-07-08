@@ -50,7 +50,7 @@
   input[type=number] { -moz-appearance: textfield; }
 
   .header { padding: 22px 16px 14px; border-bottom: 1px solid var(--border); }
-  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .header-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px; }
   .header-title { display: flex; align-items: center; gap: 8px; }
   .header-title h1 {
     font-weight: 600; font-size: 22px; letter-spacing: 1px;
@@ -61,6 +61,10 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  @media (max-width: 480px) {
+    .header-row { flex-direction: column; align-items: stretch; }
+    .header-actions { width: 100%; }
+  }
   .icon-btn {
     background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
     padding: 7px 9px; color: var(--chalk-dim); cursor: pointer; font-size: 12px;
@@ -314,7 +318,7 @@ const EXERCISES = {
   ],
 };
 
-const APP_VERSION = "1.2.2";
+const APP_VERSION = "1.2.3";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
