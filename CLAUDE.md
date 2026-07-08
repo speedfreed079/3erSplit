@@ -4,15 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Fretze pumpt" (`index.html`, title "Fretze pumpt – PPL Trainingstracker"; named "Eisernes Log" before the 2026-07-08 rebrand — see `PROJEKTLOG.md` for history) is a single-user Push/Pull/Legs workout tracker, built as an installable PWA. It is entirely client-side, in German.
+"Fretze pumpt" (`index.html`, title "Fretze pumpt – PPL Trainingstracker"; named "Eisernes Log" before the 2026-07-08 rebrand — see `00_Projektsteuerung/PROJEKTLOG.md` for history) is a single-user Push/Pull/Legs workout tracker, built as an installable PWA. It is entirely client-side, in German.
+
+## Ordnerstruktur (seit 2026-07-08)
+
+Die eigentliche Webapp (`index.html`, `sw.js`, `manifest.json`, `icon-*.png`) bleibt bewusst im Repo-Root — GitHub Pages liefert nur aus dem Root oder einem Ordner namens exakt `docs` aus, ein frei benannter Ordner wie `Webapp` würde das Deployment ohne zusätzlichen Build-Workflow brechen. Alles andere ist in nummerierte Ordner sortiert:
+
+- `00_Projektsteuerung/` — `MEMORY.md` (Fakten/Entscheidungen) und `PROJEKTLOG.md` (chronologischer Verlauf, siehe Versionierung unten).
+- `01_Recherchen/` — Ergebnisse der Gemini-Deep-Research-Prompts (Trainingspläne, Übungserklärungen, Aufwärmen, Stretching), je ein Unterordner.
+- `02_Quellen/` — Rohquellen/Belege, die die Recherchen stützen.
+- `03_Tools/worker/` — der Cloudflare-Gemini-Proxy-Worker (siehe unten), nicht Teil des GitHub-Pages-Deploys.
+- `04_Archiv/` — alte/nicht mehr aktiv genutzte Dateien (z.B. `files.zip`, der ursprüngliche Projekt-Upload vor dem Repo-Setup; gitignored).
 
 ## Versioning (process rule, active since v1.1.0)
 
-Every change gets a version bump and a `PROJEKTLOG.md` entry — no exceptions, this was an explicit user request.
+Every change gets a version bump and a `00_Projektsteuerung/PROJEKTLOG.md` entry — no exceptions, this was an explicit user request.
 
 - Bump `APP_VERSION` in `index.html` (semantic-ish: PATCH for small fixes, MINOR for features, MAJOR for breaking/rewrite-level changes).
 - Bump `CACHE_NAME` in `sw.js` to match (e.g. `fretze-pumpt-v1.2.0`) — this is not just bookkeeping, it's what makes the PWA actually update on installed devices (see the auto-update note below). The two must move together.
-- Add a dated, versioned entry to `PROJEKTLOG.md` describing what changed, before/alongside deploying.
+- Add a dated, versioned entry to `00_Projektsteuerung/PROJEKTLOG.md` describing what changed, before/alongside deploying.
 
 ## Commands
 
@@ -21,7 +31,7 @@ There is no build, lint, or test tooling — no `package.json`, no dependencies.
 - **Develop**: edit `index.html` directly and reload in a browser.
 - **Test PWA/offline behavior**: the service worker (`sw.js`) only registers on a real HTTP origin, not `file://`. Serve the folder locally, e.g. `npx serve` or `python -m http.server`, then open it.
 - **Deploy**: pushing to `main` on GitHub is the deploy — GitHub Pages serves this repo directly (no `gh-pages` branch, no build step). Live at the repo's Pages URL. Only push to `main` when explicitly asked to deploy.
-- **Deploy the Gemini proxy worker**: `cd worker && wrangler deploy` (requires `wrangler secret put GEMINI_API_KEY` once beforehand). This is separate from the GitHub Pages deploy — the worker lives on Cloudflare, not in this repo's Pages site.
+- **Deploy the Gemini proxy worker**: `cd 03_Tools/worker && wrangler deploy` (requires `wrangler secret put GEMINI_API_KEY` once beforehand). This is separate from the GitHub Pages deploy — the worker lives on Cloudflare, not in this repo's Pages site.
 
 ## Architecture
 
@@ -47,8 +57,8 @@ Everything lives in one file, `index.html`: inline `<style>` block plus a single
 
 **Rest timer**: `restTimer` (endsAt/duration/intervalId) is module-level, in-memory only — deliberately not part of `state`/`localStorage`. Starts via `startRestTimer()` when a set is marked done (in the `set-done` click handler). Its bar (`#rest-timer-bar`) lives outside `#app` in the static HTML and is updated directly via `renderRestTimer()`, not through the main `render()` pipeline, so it survives full re-renders without extra bookkeeping.
 
-**KI-gestützter Übungstausch**: `worker/` contains a standalone Cloudflare Worker (deployed at https://eisernes-log-proxy.speedfreed.workers.dev via `wrangler deploy` from that directory, not part of the GitHub Pages deploy) that proxies to the Gemini API — it holds `GEMINI_API_KEY` server-side so the key never reaches the client. The client's `PROXY_URL` constant (top of the script) points at this deployed worker URL; empty string disables the feature gracefully. `fetchAiSuggestions()` calls the worker (25s client-side timeout — real Gemini latency for this model runs ~10s) and stores results in the in-memory (non-persisted) `aiSuggestions` map, keyed like `state.swaps`; results render via `aiSuggestHTML()` inside the existing swap panel and, on selection, flow through the same `swap-select` mechanism as the static `alts`. The worker's CORS `ALLOWED_ORIGIN` is locked to `https://speedfreed079.github.io` — testing locally against it requires temporarily pointing that constant at your local origin and redeploying, then reverting before any real deploy.
+**KI-gestützter Übungstausch**: `03_Tools/worker/` contains a standalone Cloudflare Worker (deployed at https://eisernes-log-proxy.speedfreed.workers.dev via `wrangler deploy` from that directory, not part of the GitHub Pages deploy) that proxies to the Gemini API — it holds `GEMINI_API_KEY` server-side so the key never reaches the client. The client's `PROXY_URL` constant (top of the script) points at this deployed worker URL; empty string disables the feature gracefully. `fetchAiSuggestions()` calls the worker (25s client-side timeout — real Gemini latency for this model runs ~10s) and stores results in the in-memory (non-persisted) `aiSuggestions` map, keyed like `state.swaps`; results render via `aiSuggestHTML()` inside the existing swap panel and, on selection, flow through the same `swap-select` mechanism as the static `alts`. The worker's CORS `ALLOWED_ORIGIN` is locked to `https://speedfreed079.github.io` — testing locally against it requires temporarily pointing that constant at your local origin and redeploying, then reverting before any real deploy.
 
-**Gemini model choice**: `GEMINI_MODEL` in `worker/src/index.js` is `gemini-2.5-flash-lite`. `gemini-2.0-flash` was deprecated/shut down 2026-06-01 (returns a `429`/`limit: 0` quota error, not an auth error, if you see this it means the model id is stale — check https://ai.google.dev/gemini-api/docs/models for the current free-tier-eligible model before assuming the API key is broken).
+**Gemini model choice**: `GEMINI_MODEL` in `03_Tools/worker/src/index.js` is `gemini-2.5-flash-lite`. `gemini-2.0-flash` was deprecated/shut down 2026-06-01 (returns a `429`/`limit: 0` quota error, not an auth error, if you see this it means the model id is stale — check https://ai.google.dev/gemini-api/docs/models for the current free-tier-eligible model before assuming the API key is broken).
 
 **Secrets hygiene**: `wrangler secret put GEMINI_API_KEY` takes the secret **name** as the CLI argument and prompts separately for the **value** — never pass the key itself as the argument (secret names are plaintext-visible via `wrangler secret list`, unlike values). Always run secret-setting commands in the user's own terminal, never through an agent-relayed shell, so the key value never appears in any transcript/log.
