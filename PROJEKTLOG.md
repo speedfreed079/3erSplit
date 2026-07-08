@@ -2,7 +2,11 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
-## v1.1.0 — 2026-07-08 (Teil 5): Rebrand + Versionierung + Auto-Update-Fix
+## v1.2.0 — 2026-07-08 (Teil 6): Zweites Theme (Sepia/hell)
+
+- Zweiter Anzeigemodus neben dem bisherigen dunklen Theme: helles Sepia-Theme (warme Papier-/Beige-Töne statt Schwarz) für Nutzung bei hellem Umgebungslicht/Sonne.
+- Umsetzung: alle Farben liegen bereits als CSS-Custom-Properties auf `:root` — neuer Block `:root[data-theme="sepia"]` überschreibt sie. `render()` setzt `data-theme` auf `<html>` sowie die `theme-color`-Meta passend zum aktuellen Theme.
+- Toggle-Button (☀ Sepia / 🌙 Dunkel) in der Kopfzeile neben Export/Import. Wahl wird in `state.theme` gespeichert (neues Feld, Default `"dark"`) und damit wie der Rest des States in `localStorage` persistiert — kein automatischer Wechsel nach Tageslicht/Sensor, bewusst einfach gehalten.
 
 - App umbenannt von "Eisernes Log" zu **"Fretze pumpt"**: Titel, `<h1>`, `manifest.json` (`name`/`short_name`), Export-Dateiname (`fretze-pumpt-backup-*.json`) und Export-Metadatenfeld (`app: "fretze-pumpt"`) angepasst.
 - Bewusst NICHT umbenannt (Datenverlust- bzw. Aufwandsrisiko ohne Nutzen): `STORAGE_KEY` (`eisernes-log-v1`, würde bestehende `localStorage`-Daten verwerfen), Cloudflare-Worker-Name `eisernes-log-proxy`, GitHub-Repo-Name `3erSplit`.

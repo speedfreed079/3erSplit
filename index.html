@@ -23,6 +23,18 @@
     --olive: #7c8f5a;
     --olive-dim: #4d5738;
   }
+  :root[data-theme="sepia"] {
+    --bg: #f2e8d5;
+    --surface: #e9dcc0;
+    --surface2: #e0d0ac;
+    --border: #c9b68e;
+    --chalk: #3a2f1f;
+    --chalk-dim: #7d6b4e;
+    --rust: #a8461e;
+    --rust-dim: #d9a679;
+    --olive: #5f7a3d;
+    --olive-dim: #a8c48a;
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
   body {
@@ -299,7 +311,7 @@ const EXERCISES = {
   ],
 };
 
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -332,10 +344,11 @@ function loadState() {
         lastWeights: parsed.lastWeights || {},
         lastCompletedDay: parsed.lastCompletedDay || null,
         lastCompletedDate: parsed.lastCompletedDate || null,
+        theme: parsed.theme || "dark",
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "dark" };
 }
 
 let state = loadState();
@@ -555,6 +568,10 @@ function renderTodayBanner() {
 }
 
 function render() {
+  document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
+
   const day = state.currentDay;
   const dayMeta = DAYS.find(d => d.id === day);
   const exercises = EXERCISES[day];
@@ -641,6 +658,7 @@ function render() {
           <div class="header-sub">Push · Pull · Legs — Fortschritt eintragen · v${APP_VERSION}</div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
           <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
           <button class="icon-btn" data-role="import-trigger" title="Backup aus JSON importieren">⭱ Import</button>
           <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
@@ -745,6 +763,14 @@ function showToast(msg) {
 
 // ---------- EVENT DELEGATION ----------
 document.addEventListener("click", (e) => {
+  const themeToggle = e.target.closest('[data-role="theme-toggle"]');
+  if (themeToggle) {
+    state.theme = state.theme === "sepia" ? "dark" : "sepia";
+    persist();
+    render();
+    return;
+  }
+
   const exportBtn = e.target.closest('[data-role="export"]');
   if (exportBtn) {
     exportData();
