@@ -1,6 +1,14 @@
 # Projektlog
 
-Chronologischer Log der Entwicklungs- und Setup-Schritte an "Eisernes Log". Neue Einträge oben anfügen.
+Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
+
+## v1.1.0 — 2026-07-08 (Teil 5): Rebrand + Versionierung + Auto-Update-Fix
+
+- App umbenannt von "Eisernes Log" zu **"Fretze pumpt"**: Titel, `<h1>`, `manifest.json` (`name`/`short_name`), Export-Dateiname (`fretze-pumpt-backup-*.json`) und Export-Metadatenfeld (`app: "fretze-pumpt"`) angepasst.
+- Bewusst NICHT umbenannt (Datenverlust- bzw. Aufwandsrisiko ohne Nutzen): `STORAGE_KEY` (`eisernes-log-v1`, würde bestehende `localStorage`-Daten verwerfen), Cloudflare-Worker-Name `eisernes-log-proxy`, GitHub-Repo-Name `3erSplit`.
+- Versionsnummer eingeführt: `APP_VERSION` (`index.html`) sichtbar im Header (`... · v1.1.0`). Ab jetzt: jede Änderung bekommt einen Versions-Bump + Projektlog-Eintrag.
+- PWA-Auto-Update-Fix: `CACHE_NAME` in `sw.js` enthält jetzt die Versionsnummer (`fretze-pumpt-v1.1.0`). Vorher hätte eine bereits installierte App (Cache-first-Strategie, `sw.js` selbst änderte sich nie) neue Releases nie automatisch bekommen — jetzt erzwingt der geänderte `CACHE_NAME`-String bei jedem Release, dass der Browser die neue `sw.js` erkennt, den alten Cache verwirft und die App-Shell-Dateien frisch lädt.
+- Rebrand + Versionsanzeige per Playwright im Browser verifiziert (Titel, `<h1>`, Header-Text, Timer weiterhin funktionsfähig) — fehlerfrei.
 
 ## 2026-07-08 (Teil 4): Live-Deploy
 

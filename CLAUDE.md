@@ -4,7 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Eisernes Log" (`index.html`, title "Eisernes Log – PPL Trainingstracker") is a single-user Push/Pull/Legs workout tracker, built as an installable PWA. It is entirely client-side, in German.
+"Fretze pumpt" (`index.html`, title "Fretze pumpt – PPL Trainingstracker"; named "Eisernes Log" before the 2026-07-08 rebrand — see `PROJEKTLOG.md` for history) is a single-user Push/Pull/Legs workout tracker, built as an installable PWA. It is entirely client-side, in German.
+
+## Versioning (process rule, active since v1.1.0)
+
+Every change gets a version bump and a `PROJEKTLOG.md` entry — no exceptions, this was an explicit user request.
+
+- Bump `APP_VERSION` in `index.html` (semantic-ish: PATCH for small fixes, MINOR for features, MAJOR for breaking/rewrite-level changes).
+- Bump `CACHE_NAME` in `sw.js` to match (e.g. `fretze-pumpt-v1.2.0`) — this is not just bookkeeping, it's what makes the PWA actually update on installed devices (see the auto-update note below). The two must move together.
+- Add a dated, versioned entry to `PROJEKTLOG.md` describing what changed, before/alongside deploying.
 
 ## Commands
 
@@ -18,6 +26,10 @@ There is no build, lint, or test tooling — no `package.json`, no dependencies.
 ## Architecture
 
 Everything lives in one file, `index.html`: inline `<style>` block plus a single inline `<script>` at the bottom (~680 lines total). No framework, no bundler. Supporting files are `manifest.json` (PWA metadata), `sw.js` (cache-first service worker caching the app shell), and `icon-*.png`.
+
+**PWA update mechanism**: `sw.js` uses a cache-first strategy, which means an installed/home-screen copy will keep serving whatever it last cached until the service worker itself gets updated — browsers only re-check `sw.js` for byte-level changes, they don't know `index.html` changed on their own. That's why `CACHE_NAME` must change every release (see Versioning below): a different string makes `sw.js`'s bytes differ, which is what triggers the browser to install the new worker (`skipWaiting()` + `clients.claim()` in the code make it take over immediately), delete the old-named cache, and re-fetch the app shell fresh. Skipping the `CACHE_NAME` bump on a release means installed devices silently keep the old version.
+
+**Naming stability**: `STORAGE_KEY` (`eisernes-log-v1`) and the Cloudflare Worker name (`eisernes-log-proxy`) were deliberately *not* renamed during the 2026-07-08 rebrand to "Fretze pumpt" — changing `STORAGE_KEY` would wipe every user's existing `localStorage` data, and renaming the deployed worker has no user-facing benefit. Don't rename these without explicitly flagging the data-loss risk to the user first.
 
 **Data model** (top of the script):
 - `DAYS`: the 6 workout days — `pushA`, `pullA`, `legsA`, `pushB`, `pullB`, `legsB`.

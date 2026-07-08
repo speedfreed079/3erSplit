@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Eisernes Log – PPL Trainingstracker</title>
+<title>Fretze pumpt – PPL Trainingstracker</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#c1440e" />
 <link rel="icon" href="icon-192.png" />
@@ -299,7 +299,8 @@ const EXERCISES = {
   ],
 };
 
-const STORAGE_KEY = "eisernes-log-v1";
+const APP_VERSION = "1.1.0";
+const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 
@@ -635,9 +636,9 @@ function render() {
         <div>
           <div class="header-title">
             <span style="color: var(--rust); font-size: 18px;">🏋</span>
-            <h1>Eisernes Log</h1>
+            <h1>Fretze pumpt</h1>
           </div>
-          <div class="header-sub">Push · Pull · Legs — Fortschritt eintragen</div>
+          <div class="header-sub">Push · Pull · Legs — Fortschritt eintragen · v${APP_VERSION}</div>
         </div>
         <div class="header-actions">
           <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
@@ -689,7 +690,7 @@ function finishSession(dayId) {
 function exportData() {
   const payload = {
     exportedAt: new Date().toISOString(),
-    app: "eisernes-log",
+    app: "fretze-pumpt",
     version: 1,
     state: state,
   };
@@ -698,7 +699,7 @@ function exportData() {
   const a = document.createElement("a");
   const dateStr = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `eisernes-log-backup-${dateStr}.json`;
+  a.download = `fretze-pumpt-backup-${dateStr}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
