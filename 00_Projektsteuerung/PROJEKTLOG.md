@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.4.0 — 2026-07-08 (Teil 18): Recherche-Integration Phase 0/1 — Übungserklärungen, Aufwärmen, Stretching
+
+- Umgesetzt nach dem in Plan-Mode abgestimmten Ansatz (siehe Plan-Datei bzw. Teil 10): additive Inhalte aus 3 der 4 Deep-Research-Dokumente eingebaut, ohne die bestehende `EXERCISES`/`state`-Struktur zu verändern. Die 4. Recherche (mehrere Trainingspläne) ist bewusst **nicht** Teil dieser Version — das ist Phase 2 (größerer Datenmodell-Umbau für Plan-Wechsel).
+- **Neue Daten-Consts** in `index.html`: `EXERCISE_INFO` (keyed by `ex.id`, 42 Einträge: Zielmuskulatur primär/sekundär, Ausführung, häufigste Fehler, Sicherheitshinweis — aus `02_Uebungserklaerungen/Uebungsdatenbank.md`), `WARMUP` und `STRETCHING` + `STRETCHING_NOTE` (jeweils keyed by neuem `DAYS[].type` push/pull/legs — aus `03_Aufwaermen/Aufwaermprogramm.md` und `04_Stretching/Stretching.md`).
+- **UI**, nach bestehendem Swap-Panel-Muster: neuer "ℹ"-Button pro Übungskarte öffnet ein Info-Panel; aufklappbare "🔥 Aufwärmen"-Sektion oberhalb und "🧘 Stretching"-Sektion unterhalb der Übungskarten (pro Tagestyp, nicht pro Einzeltag). Alle drei defaulten zugeklappt. Neuer ephemerer State `infoOpenKey`/`warmupOpen`/`stretchOpen` (wie `swapOpenKey` nicht in `state`/localStorage), resettet beim Tageswechsel.
+- **Verifikation**: `node --check` auf den Script-Inhalt; zusätzlich ein Node-`vm`-Harness gebaut, das `render()` mit gestubbtem `document`/`localStorage` für alle 6 Tage × alle Panel-Kombinationen sowie alle 42 Info-Panels ausführt (kein Browser in dieser Session verfügbar) — keine Fehler, Stichproben-Snapshot inhaltlich gegengelesen (z.B. Push-Tag zeigt korrekt Brust-Stretches und Flachbankdrücken-Zielmuskulatur).
+- Bewusst unverändert: `state`-Schema, Export/Import, Session-Flow, Swap-Mechanismus, `sw.js`-`APP_SHELL` (keine neuen Asset-Dateien, nur Code in `index.html`).
+
 ## v1.3.3 — 2026-07-08 (Teil 17): Header-Unterzeile ist jetzt ehrlich statisch
 
 - Nutzer bemerkte zurecht: `Push · Pull · Legs — Fortschritt eintragen · v${APP_VERSION}` war komplett statisch (nur die Version änderte sich), wirkte aber wie ein Status. Direkt darunter liefert die bestehende "Heute dran"/"Heute schon trainiert"-Banner bereits den echten tagesaktuellen Inhalt.

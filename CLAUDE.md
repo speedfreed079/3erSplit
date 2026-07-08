@@ -45,8 +45,10 @@ Everything lives in one file, `index.html`: inline `<style>` block plus a single
 **Naming stability**: `STORAGE_KEY` (`eisernes-log-v1`) and the Cloudflare Worker name (`eisernes-log-proxy`) were deliberately *not* renamed during the 2026-07-08 rebrand to "Fretze pumpt" — changing `STORAGE_KEY` would wipe every user's existing `localStorage` data, and renaming the deployed worker has no user-facing benefit. Don't rename these without explicitly flagging the data-loss risk to the user first.
 
 **Data model** (top of the script):
-- `DAYS`: the 6 workout days — `pushA`, `pullA`, `legsA`, `pushB`, `pullB`, `legsB`.
+- `DAYS`: the 6 workout days — `pushA`, `pullA`, `legsA`, `pushB`, `pullB`, `legsB` — each with a `type` (`"push"`/`"pull"`/`"legs"`) used to look up `WARMUP`/`STRETCHING` content per day-type rather than per individual day.
 - `EXERCISES`: keyed by day id, each an array of exercises with `id`, `name`, `sets`, `reps` (target range), optional `alts` (swappable alternative exercise names) and `core` (boolean flag for core exercises). This is the content to edit when changing the training program itself.
+- `EXERCISE_INFO`: keyed by `ex.id` (not `ex.name` — the research doc's exercise names don't always match verbatim), each `{ muscles: {primary, secondary}, steps, mistakes, safety }`. Sourced from `01_Recherchen/02_Uebungserklaerungen/Uebungsdatenbank.md`; rendered in a per-card "ℹ" toggle panel.
+- `WARMUP`/`STRETCHING`/`STRETCHING_NOTE`: keyed by day `type`. Sourced from `01_Recherchen/03_Aufwaermen/` and `01_Recherchen/04_Stretching/`; rendered as collapsible sections above/below the exercise cards (`warmupSectionHTML()`/`stretchSectionHTML()`). None of this — nor the exercise-info panel — is part of `state`/`localStorage`; open/closed state (`infoOpenKey`/`warmupOpen`/`stretchOpen`) is ephemeral like `swapOpenKey`.
 
 **State & persistence**: a single in-memory `state` object (`currentDay`, `sessions`, `history`, `swaps`, `notes`, `lastWeights`, `lastCompletedDay`, `lastCompletedDate`) is loaded from and persisted to `localStorage` under key `eisernes-log-v1` (debounced ~300ms via `persist()`). There is no backend — the Export/Import buttons in the header serialize/restore this state as a JSON file, and that's the only backup mechanism.
 

@@ -145,6 +145,48 @@
     background: transparent; color: var(--rust); cursor: pointer; display: flex; align-items: center; gap: 4px;
   }
 
+  .info-panel {
+    margin-top: 10px; padding: 10px; background: var(--surface2); border-radius: 8px;
+    border: 1px solid var(--border); font-size: 12px; color: var(--chalk);
+  }
+  .info-line { margin-bottom: 8px; }
+  .info-dim { color: var(--chalk-dim); }
+  .info-sublabel {
+    font-size: 11px; color: var(--chalk-dim); margin: 8px 0 4px;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+  }
+  .info-list { margin: 0; padding-left: 18px; }
+  .info-list li { margin-bottom: 4px; }
+  .info-safety {
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border);
+    color: var(--rust-dim);
+  }
+
+  .collapsible-section {
+    margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface); overflow: hidden;
+  }
+  .collapsible-toggle {
+    width: 100%; text-align: left; background: transparent; border: none;
+    padding: 12px 14px; font-family: 'Oswald', sans-serif; font-size: 14px;
+    letter-spacing: 0.3px; color: var(--chalk); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .collapsible-body { padding: 0 14px 14px; font-size: 12px; color: var(--chalk); }
+  .collapsible-line { margin-bottom: 6px; }
+  .collapsible-sublabel {
+    font-size: 11px; color: var(--chalk-dim); margin: 10px 0 4px;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+  }
+  .collapsible-list { margin: 0; padding-left: 18px; }
+  .collapsible-list li { margin-bottom: 6px; }
+  .collapsible-reps { color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .collapsible-cue { color: var(--chalk-dim); font-size: 11px; }
+  .collapsible-note {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+    color: var(--chalk-dim); font-size: 11px; font-style: italic;
+  }
+
   .ai-suggest-panel { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
   .ai-suggest-btn {
     font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--olive-dim);
@@ -253,12 +295,12 @@
 <script>
 // ---------- EXERCISE DATABASE ----------
 const DAYS = [
-  { id: "pushA", label: "Push A", sub: "Brust" },
-  { id: "pullA", label: "Pull A", sub: "Breite" },
-  { id: "legsA", label: "Legs A", sub: "Quads" },
-  { id: "pushB", label: "Push B", sub: "Schulter" },
-  { id: "pullB", label: "Pull B", sub: "Dicke" },
-  { id: "legsB", label: "Legs B", sub: "Hintere Kette" },
+  { id: "pushA", label: "Push A", sub: "Brust", type: "push" },
+  { id: "pullA", label: "Pull A", sub: "Breite", type: "pull" },
+  { id: "legsA", label: "Legs A", sub: "Quads", type: "legs" },
+  { id: "pushB", label: "Push B", sub: "Schulter", type: "push" },
+  { id: "pullB", label: "Pull B", sub: "Dicke", type: "pull" },
+  { id: "legsB", label: "Legs B", sub: "Hintere Kette", type: "legs" },
 ];
 
 const EXERCISES = {
@@ -318,7 +360,724 @@ const EXERCISES = {
   ],
 };
 
-const APP_VERSION = "1.3.3";
+// Quelle: 01_Recherchen/02_Uebungserklaerungen/Uebungsdatenbank.md (Gemini Deep Research). Keyed by ex.id, nicht ex.name (Namen weichen leicht ab).
+const EXERCISE_INFO = {
+  pa1: {
+    muscles: { primary: "Großer Brustmuskel (mittlerer Anteil)", secondary: "Vorderer Schultermuskel, Trizeps" },
+    steps: [
+      "Flach auf den Rücken auf die Bank legen und die Füße fest auf dem Boden platzieren.",
+      "Die Kurzhanteln mit gestreckten Armen senkrecht über der Brust halten, wobei die Handflächen nach vorne zeigen.",
+      "Die Gewichte kontrolliert absenken, bis die Ellbogen etwa im 90-Grad-Winkel stehen und leicht zum Körper geneigt sind.",
+      "Die Hanteln kraftvoll nach oben zusammenführen, ohne die Ellbogen ganz durchzustrecken."
+    ],
+    mistakes: [
+      "Die Ellbogen stehen im 90-Grad-Winkel nach außen, was die Gelenke überlastet.",
+      "Extremes Hohlkreuz mit Anheben des Gesäßes von der Flachbank.",
+      "Unkontrolliertes Herablassen der Gewichte ohne Muskelspannung."
+    ],
+    safety: "Am Ende des Satzes die Hanteln kontrolliert auf die Oberschenkel sinken lassen, statt sie seitlich auf den Boden fallen zu lassen."
+  },
+  pa2: {
+    muscles: { primary: "Oberer Teil des Brustmuskels", secondary: "Vorderer Schultermuskel, Trizeps" },
+    steps: [
+      "Eine Schrägbank auf einen Winkel von circa 30 bis 45 Grad einstellen.",
+      "Aufrecht hinsetzen und die Hanteln auf Brusthöhe halten, wobei die Ellbogen direkt unter den Handgelenken stehen.",
+      "Die Gewichte senkrecht nach oben drücken, bis die Arme fast vollständig gestreckt sind.",
+      "Die Hanteln langsam absenken, bis eine Dehnung in der oberen Brust spürbar ist."
+    ],
+    mistakes: [
+      "Ein zu steiler Bankwinkel über 45 Grad verlagert den Fokus zu stark auf die Schultern.",
+      "Die Ellbogen zeigen im rechten Winkel direkt nach außen.",
+      "Anheben des Gesäßes von der Sitzfläche während der Bewegung."
+    ],
+    safety: "Der Winkel der Bank sollte moderat gewählt werden, um ein Schultergelenks-Impingement zu verhindern."
+  },
+  pa3: {
+    muscles: { primary: "Unterer Teil des Brustmuskels", secondary: "Trizeps, vorderer Schultermuskel" },
+    steps: [
+      "Die Dip-Barren greifen und nach oben drücken, bis die Arme gestreckt sind.",
+      "Die Knie leicht beugen und den Oberkörper bewusst um etwa 30 Grad nach vorne lehnen.",
+      "Den Körper kontrolliert absenken, bis die Ellbogen einen Winkel von ungefähr 90 Grad bilden.",
+      "Aus der Brustkraft heraus kraftvoll wieder nach oben in die Ausgangsposition drücken."
+    ],
+    mistakes: [
+      "Eine zu aufrechte Körperhaltung verlagert die Last primär auf den Trizeps.",
+      "Die Schultern wandern nach vorne und nach oben in Richtung der Ohren.",
+      "Zu tiefes Absinken deutlich unter einen 90-Grad-Winkel im Ellbogengelenk."
+    ],
+    safety: "Die Schulterblätter während der gesamten Bewegung hinten-unten fixiert halten und die Übung nur bei ausreichender Grundkraft ausführen."
+  },
+  pa4: {
+    muscles: { primary: "Oberer Teil des Brustmuskels", secondary: "Vorderer Schultermuskel, Bizeps (kurzer Kopf)" },
+    steps: [
+      "Die Kabelzüge auf die niedrigste Stufe einstellen und die Griffe im stabilen Ausfallschritt greifen.",
+      "Die Ellbogen minimal beugen und die Arme leicht hinter dem Körper auf Spannung halten.",
+      "Die Hände in einem weiten Bogen nach oben und innen führen, bis sie sich auf Kinnhöhe treffen.",
+      "Die Spannung kurz halten und die Arme kontrolliert wieder in die Ausgangsposition absenken."
+    ],
+    mistakes: [
+      "Starkes Beugen der Ellbogen während der Bewegung macht die Übung zu einer Drückbewegung.",
+      "Schwungholen mit dem Oberkörper zur Überwindung des Widerstands.",
+      "Ein zu hohes Zusammenführen weit über den Kopf hinaus."
+    ],
+    safety: "Die Aufwärtsbewegung absolut gleichmäßig ausführen, um ruckartige Belastungen der Schultern und Bizepssehnen zu vermeiden."
+  },
+  pa5: {
+    muscles: { primary: "Mittlerer Schultermuskel", secondary: "Vorderer und hinterer Schultermuskel, oberer Trapezmuskel" },
+    steps: [
+      "Aufrecht stehen, die Knie leicht beugen und die Hanteln oder den Kabelgriff vor dem Körper halten.",
+      "Die Arme mit einer minimalen Ellbogenbeugung kontrolliert seitlich nach oben heben.",
+      "Die Bewegung fortführen, bis die Ellbogen auf Schulterhöhe sind, wobei die Handflächen nach unten zeigen.",
+      "Die Gewichte langsam absenken, ohne die Muskelspannung im tiefsten Punkt komplett zu verlieren."
+    ],
+    mistakes: [
+      "Schwungholen aus den Knien oder dem unteren Rücken.",
+      "Hochziehen der Schultern, was zu einer Überlastung der Nackenmuskulatur führt.",
+      "Die Ellbogen hängen tiefer als die Handgelenke, wodurch der Fokus auf die seitliche Schulter verloren geht."
+    ],
+    safety: "Die Arme nicht über Schulterhöhe heben, um ein potenzielles Impingement-Syndrom in der Schulter zu verhindern."
+  },
+  pa6: {
+    muscles: { primary: "Trizeps (alle drei Köpfe)", secondary: "Keine wesentlichen (Isolationsübung)" },
+    steps: [
+      "Stabil vor dem Kabelzug stehen, das Seil greifen und die Ellbogen auf etwa 90 Grad anwinkeln.",
+      "Die Ellbogen fest an den Rippen fixieren und den Oberkörper minimal nach vorne neigen.",
+      "Das Seil kontrolliert nach unten drücken und die Seilenden am tiefsten Punkt leicht auseinanderziehen.",
+      "Langsam in die Ausgangsposition zurückkehren, während die Ellbogen starr an den Flanken verbleiben."
+    ],
+    mistakes: [
+      "Die Ellbogen wandern während der Bewegung vor und zurück.",
+      "Schwungholen mit dem Oberkörper oder Nutzung des Körpergewichts zum Herabdrücken.",
+      "Abknicken der Handgelenke unter Last."
+    ],
+    safety: "Die Schultern tief halten und vermeiden, sich mit dem gesamten Oberkörper über das Seil zu hängen."
+  },
+  pa7: {
+    muscles: { primary: "Seitliche und tiefe Rumpfmuskulatur (Anti-Rotation)", secondary: "Schultern, Gesäß, gerade Bauchmuskeln" },
+    steps: [
+      "Seitlich zum Kabelzug aufstellen, den Griff mit beiden Händen vor der Brust halten und leicht in die Knie gehen.",
+      "Bauch und Gesäß fest anspannen, um das Becken absolut stabil zu halten.",
+      "Den Griff langsam und geradlinig nach vorne wegdrücken, bis die Arme gestreckt sind.",
+      "Diese Position für zwei Sekunden halten, während dem seitlichen Zug widerstanden wird, dann kontrolliert zurückkehren."
+    ],
+    mistakes: [
+      "Der Oberkörper oder das Becken drehen sich unbewusst zum Kabelzug hin.",
+      "Die Schultern werden nach oben zu den Ohren gezogen (führt zu Nackenverspannung).",
+      "Zu hohes Gewicht, was zu Ausweichbewegungen in der Hüfte führt."
+    ],
+    safety: "Diese Übung lebt von maximaler Rumpfstabilität, nicht von schwerem Gewicht. Mit sehr leichtem Widerstand beginnen."
+  },
+  pl1: {
+    muscles: { primary: "Breiter Rückenmuskel (Latissimus)", secondary: "Oberer Rücken (Trapezmuskel, Rautenmuskeln), Bizeps" },
+    steps: [
+      "Die Klimmzugstange deutlich breiter als schulterbreit im Obergriff greifen.",
+      "Die Schulterblätter vor Beginn der Bewegung aktiv nach hinten und unten ziehen.",
+      "Den Körper kontrolliert nach oben ziehen, bis sich das Kinn über der Stange befindet.",
+      "Den Körper langsam und kontrolliert wieder vollständig in den Hängestand absenken."
+    ],
+    mistakes: [
+      "Schwungholen oder unkontrolliertes Zappeln mit den Beinen zur Unterstützung.",
+      "Unvollständiger Bewegungsumfang (kein vollständiges Aushängen oder kein Erreichen der Stange).",
+      "Einknicken der Schultern nach vorne am obersten Punkt der Bewegung."
+    ],
+    safety: "Sollten freie Klimmzüge zu schwer sein, ist die Nutzung eines Widerstandsbandes oder einer geführten Klimmzugmaschine ratsam."
+  },
+  pl2: {
+    muscles: { primary: "Mittlerer und oberer Rücken (Trapez, Rhomboideen), Latissimus", secondary: "Hinterer Schultermuskel, Bizeps" },
+    steps: [
+      "Mit der Brust flach auf das Polster der Rudermaschine legen, die Füße stabil aufstellen.",
+      "Die Griffe fassen und die Schulterblätter bewusst nach hinten-unten ziehen.",
+      "Die Griffe kontrolliert zum Körper ziehen, bis die Ellbogen hinter den Oberkörper wandern.",
+      "Das Gewicht langsam zurückführen, bis die Arme gestreckt sind, um den Rücken leicht zu dehnen."
+    ],
+    mistakes: [
+      "Abheben der Brust vom Polster (führt zu einer Überlastung des unteren Rückens).",
+      "Schulterblätter bleiben starr und bewegen sich nicht aktiv mit.",
+      "Die Ellbogen werden unkontrolliert weit nach außen gespreizt."
+    ],
+    safety: "Die Brust muss stets fest am Polster gepresst bleiben, um die Lendenwirbelsäule vollständig zu entlasten."
+  },
+  pl3: {
+    muscles: { primary: "Breiter Rückenmuskel (Latissimus), mittlerer Rücken", secondary: "Bizeps, hinterer Schultermuskel, Unterarme" },
+    steps: [
+      "Stabil am Kabelzug sitzen, die Beine leicht gebeugt auf die Stützen stellen und den engen Parallelgriff greifen.",
+      "Den Oberkörper aufrichten (leichtes natürliches Hohlkreuz) und die Schultern nach hinten-unten ziehen.",
+      "Den Griff kontrolliert zum Bauchnabel ziehen, wobei die Ellbogen eng am Körper entlanggleiten.",
+      "Das Gewicht langsam wieder nach vorne führen, wobei sich der Oberkörper minimal mitneigt."
+    ],
+    mistakes: [
+      "Starkes Vor- und Zurückwippen des gesamten Oberkörpers (Schwungrudern).",
+      "Einrunden des Rückens (Rundrücken) beim Nach-vorne-Gehen.",
+      "Die Ellbogen spreizen sich stark nach außen ab."
+    ],
+    safety: "Die Wirbelsäule stets gerade und stabil halten, um bandscheibenschädigende Scherkräfte zu minimieren."
+  },
+  pl4: {
+    muscles: { primary: "Hinterer Schultermuskel, Rotatorenmanschette", secondary: "Mittlerer oberer Rücken (Trapez, Rhomboideen)" },
+    steps: [
+      "Ein Seil am oberen Kabelzug befestigen, die Enden so greifen, dass die Daumen nach hinten zeigen.",
+      "Einen stabilen Ausfallschritt nach hinten machen, um festen Stand zu haben.",
+      "Die Mitte des Seils kontrolliert auf Augenhöhe ziehen, während die Seilenden neben die Ohren geführt werden.",
+      "Die Kontraktion für eine Sekunde halten und die Arme kontrolliert wieder nach vorne führen."
+    ],
+    mistakes: [
+      "Die Ellbogen hängen nach unten (sie müssen stets höher als die Handgelenke sein).",
+      "Der Kopf wird dem Seil aktiv entgegengestreckt (führt zu Nackenverspannungen).",
+      "Ruckartiges Ziehen mit zu viel Gewicht unter Einsatz von Körperschwung."
+    ],
+    safety: "Ein moderates Gewicht wählen. Die Übung dient primär der Gelenkstabilisierung und Haltungsverbesserung, nicht dem maximalen Kraftaufbau."
+  },
+  pl5: {
+    muscles: { primary: "Zweiköpfiger Armbeuger (Bizeps)", secondary: "Armbeuger (Brachialis), Oberarmspeichenmuskel" },
+    steps: [
+      "Aufrecht stehen, die Füße schulterbreit platzieren und die Hantel(n) im Untergriff halten (Handflächen nach vorne).",
+      "Die Ellbogen fest an den Flanken des Körpers fixieren.",
+      "Die Unterarme kontrolliert nach oben beugen, ohne dass die Ellbogen nach vorne ausweichen.",
+      "Das Gewicht langsam und vollständig absenken, bis die Arme fast ganz gestreckt sind."
+    ],
+    mistakes: [
+      "Schwungholen aus der Hüfte oder dem Oberkörper.",
+      "Ellbogen weichen nach vorne aus, was die vordere Schulter unphysiologisch beansprucht.",
+      "Kein vollständiges Absenken des Gewichts (Verkürzung des Bewegungsumfangs)."
+    ],
+    safety: "Die Handgelenke nicht abknicken lassen, sondern während der gesamten Bewegung stabil und gerade halten."
+  },
+  pl6: {
+    muscles: { primary: "Oberarmspeichenmuskel, Armbeuger (Brachialis)", secondary: "Bizeps" },
+    steps: [
+      "Aufrecht stehen und die Kurzhanteln im neutralen Griff halten (Handflächen zeigen zueinander).",
+      "Die Ellbogen fest an den Körperseiten fixieren.",
+      "Die Hanteln kontrolliert nach oben beugen, bis die Unterarme knapp über der Waagerechten sind.",
+      "Die Gewichte langsam wieder absenken, bis die Arme vollständig gestreckt sind."
+    ],
+    mistakes: [
+      "Schwungholen durch Vor- und Zurückwippen des Oberkörpers.",
+      "Die Ellbogen driften während der Aufwärtsbewegung nach vorne ab.",
+      "Seitliches Abknicken der Handgelenke unter Belastung."
+    ],
+    safety: "Den Rumpf während der gesamten Bewegung bewusst stabil und angespannt halten, um ein Ausweichen des Rückens zu vermeiden."
+  },
+  pl7: {
+    muscles: { primary: "Hüftbeuger, untere gerade Bauchmuskulatur", secondary: "Tiefe Rumpfmuskulatur, Unterarme (Griffkraft)" },
+    steps: [
+      "Mit gestreckten Armen an eine Klimmzugstange hängen, die Schultern aktiv stabilisieren (nicht passiv hängen).",
+      "Den Rumpf fest anspannen.",
+      "Die Beine (gestreckt für Fortgeschrittene, Knie gebeugt für Einsteiger) kontrolliert bis auf Hüfthöhe anheben.",
+      "Die Beine langsam und gebremst wieder absenken, ohne ins Schwingen zu geraten."
+    ],
+    mistakes: [
+      "Starkes Hin- und Herschwingen des gesamten Körpers.",
+      "Schwungholen mit den Beinen statt bewusster Kraftnutzung aus dem Bauch.",
+      "Passives, schlaffes Hängen in den Schultergelenken."
+    ],
+    safety: "Die Schultern aktiv nach unten-hinten stabilisieren, um die Gelenkkapseln der Schultern vor Überlastung zu schonen."
+  },
+  la1: {
+    muscles: { primary: "Vorderer Oberschenkelmuskel (Quadrizeps)", secondary: "Großer Gesäßmuskel, Beinbeuger (Hamstrings), Waden" },
+    steps: [
+      "In der Maschine positionieren, die Füße schulterbreit im unteren bis mittleren Bereich der Plattform aufstellen.",
+      "Die Sicherung entriegeln und das Gewicht kontrolliert absenken, bis die Knie einen Winkel von mindestens 90 Grad bilden.",
+      "Das Gewicht kraftvoll über den Mittelfuß nach oben zurückdrücken.",
+      "Die Knie am höchsten Punkt ganz leicht gebeugt halten (nicht vollständig durchstrecken)."
+    ],
+    mistakes: [
+      "Vollständiges Durchstrecken (Einrasten) der Knie unter schwerer Last.",
+      "Die Knie fallen beim Beugen oder Drücken nach innen (X-Bein-Stellung).",
+      "Anheben der Fersen von der Plattform oder des Beckens vom Rückenpolster."
+    ],
+    safety: "Die Knie am obersten Punkt niemals ganz durchstrecken, um schwerwiegende Gelenkschäden zu vermeiden."
+  },
+  la2: {
+    muscles: { primary: "Vorderer Oberschenkelmuskel (Quadrizeps), großer Gesäßmuskel", secondary: "Rumpfmuskulatur, Beinbeuger" },
+    steps: [
+      "Etwas breiter als schulterbreit stehen, die Fußspitzen leicht nach außen zeigen lassen. Eine Kurzhantel aufrecht eng vor der Brust halten.",
+      "Die Kniebeuge einleiten, indem die Hüfte nach hinten geschoben und die Knie gebeugt werden.",
+      "So tief gehen, wie der Rücken gerade gehalten werden kann (idealerweise berühren die Ellbogen fast die Knieinnenseiten).",
+      "Aus den Beinen heraus wieder kraftvoll nach oben in den Stand drücken."
+    ],
+    mistakes: [
+      "Einrunden des unteren Rückens am tiefsten Punkt (Butt Wink).",
+      "Die Knie fallen nach innen oder schieben sich weit über die Fußspitzen hinaus.",
+      "Die Hantel wird zu weit vom Körper entfernt gehalten, was den Rücken überlastet."
+    ],
+    safety: "Die Hantel während der gesamten Bewegung fest an der Brust gepresst halten, um die Lendenwirbelsäule zu stabilisieren."
+  },
+  la3: {
+    muscles: { primary: "Vorderer Oberschenkelmuskel (Quadrizeps)", secondary: "Keine wesentlichen (Isolationsübung)" },
+    steps: [
+      "Aufrecht in der Maschine sitzen, das Polster knapp über den Fußgelenken positionieren. Die Knie befinden sich auf Höhe des Drehgelenks.",
+      "An den Haltegriffen festhalten und den Bauch anspannen.",
+      "Die Beine kontrolliert nach oben ausstrecken, bis sie gerade sind, und die Kontraktion kurz halten.",
+      "Das Gewicht langsam und gebremst wieder in die Ausgangsposition absenken."
+    ],
+    mistakes: [
+      "Schwungholen und ruckartiges Schleudern des Gewichts nach oben.",
+      "Das Gesäß hebt während der Bewegung vom Sitzpolster ab.",
+      "Falsch eingestelltes Fußpolster (zu weit oben auf dem Schienbein)."
+    ],
+    safety: "Das Kniegelenk muss exakt auf einer Linie mit dem Drehpunkt der Maschine liegen, um schädliche Scherkräfte im Knie zu minimieren."
+  },
+  la4: {
+    muscles: { primary: "Beinbeuger (Hamstrings)", secondary: "Wadenmuskulatur, Gesäßmuskel" },
+    steps: [
+      "Bäuchlings auf die Maschine legen, das Fußpolster knapp unterhalb der Wadenmuskeln positionieren.",
+      "Die Griffe fassen und das Becken fest in das Polster der Liegefläche drücken.",
+      "Die Beine kraftvoll beugen, indem das Polster kontrolliert so nah wie möglich zum Gesäß gezogen wird.",
+      "Das Gewicht langsam und gebremst wieder in die Ausgangsposition zurückführen."
+    ],
+    mistakes: [
+      "Das Becken hebt sich vom Polster ab (Ausweichen ins Hohlkreuz).",
+      "Zu schnelles Herablassen des Gewichts ohne aktive Muskelspannung.",
+      "Ruckartiges Reißen des Gewichts mit Schwung."
+    ],
+    safety: "Die Hüfte während der gesamten Übung flach auf das Polster gepresst halten, um den unteren Rücken zu entlasten."
+  },
+  la5: {
+    muscles: { primary: "Großer Gesäßmuskel", secondary: "Beinbeuger (Hamstrings), Rumpfmuskulatur" },
+    steps: [
+      "Den oberen Rücken auf einer Bank oder im Polster der Maschine platzieren, die Füße schulterbreit flach auf den Boden stellen.",
+      "Das Gewicht (z.B. eine gepolsterte Langhantel) direkt in der Hüftbeuge positionieren.",
+      "Die Hüfte kraftvoll nach oben drücken, bis der Rumpf von den Schultern bis zu den Knien eine gerade Linie bildet.",
+      "Das Gesäß am höchsten Punkt fest anspannen und kontrolliert wieder absenken."
+    ],
+    mistakes: [
+      "Überstrecken des unteren Rückens am obersten Punkt statt einer Beckenkippung.",
+      "Der Blick wandert an die Decke (der Kopf sollte stets leicht nach vorne gerichtet bleiben).",
+      "Die Füße stehen zu weit entfernt (verlagert die Last auf die Hamstrings)."
+    ],
+    safety: "Stets ein dickes Hantelpolster verwenden, um schmerzhafte Druckbelastungen auf dem Beckenknochen zu vermeiden."
+  },
+  la6: {
+    muscles: { primary: "Zwillingswadenmuskel (Gastrocnemius)", secondary: "Schollenmuskel (Soleus)" },
+    steps: [
+      "Die Fußballen stabil auf der Trittstufe platzieren, sodass die Fersen frei nach unten hängen.",
+      "Die Fersen langsam absenken, bis eine tiefe Dehnung in den Waden spürbar ist.",
+      "Aus der Wadenkraft heraus so hoch wie möglich kontrolliert auf die Zehenspitzen drücken.",
+      "Die Kontraktion am höchsten Punkt kurz halten und die Fersen langsam wieder absenken."
+    ],
+    mistakes: [
+      "Ruckartiges Wippen (Nutzung der Achillessehne statt kontrollierter Muskelarbeit).",
+      "Starkes Beugen der Knie während der Bewegung.",
+      "Unvollständiger Bewegungsumfang ohne volle Dehnung oder Streckung."
+    ],
+    safety: "Schnelles Federn am tiefsten Punkt vermeiden, um Überlastungen der Achillessehne vorzubeugen."
+  },
+  la7: {
+    muscles: { primary: "Gerade und tiefe Rumpfmuskulatur", secondary: "Hüftbeuger, schräge Bauchmuskeln" },
+    steps: [
+      "Flach auf den Rücken legen, die Arme senkrecht zur Decke strecken und die Beine im 90-Grad-Winkel anwinkeln.",
+      "Den unteren Rücken während der gesamten Übung aktiv fest in den Boden pressen (kein Hohlkreuz zulassen).",
+      "Langsam den rechten Arm nach hinten und gleichzeitig das linke Bein gestreckt nach vorne absenken, knapp über den Boden.",
+      "Kontrolliert in die Ausgangsposition zurückkehren und die Seiten wechseln."
+    ],
+    mistakes: [
+      "Der untere Rücken verliert den Kontakt zum Boden (Ausweichen ins Hohlkreuz).",
+      "Zu schnelle Bewegungsausführung unter Verlust der bewussten Rumpfspannung.",
+      "Koordinative Fehler (gleichzeitiges Bewegen der selben Seite statt der Diagonalen)."
+    ],
+    safety: "Sobald der untere Rücken abhebt, die Bewegung abbrechen oder die Beine nicht ganz so tief absenken."
+  },
+  pb1: {
+    muscles: { primary: "Vorderer Schultermuskel", secondary: "Trizeps, mittlerer Schultermuskel, oberer Brustmuskel" },
+    steps: [
+      "Aufrecht hinsetzen oder stabil stehen und die Hanteln auf Schulterhöhe bringen.",
+      "Die Handgelenke gerade direkt über den Ellbogen positionieren, die Schultern nach unten ziehen.",
+      "Die Gewichte kontrolliert gerade nach oben drücken, bis die Arme fast vollständig gestreckt sind.",
+      "Die Hanteln langsam wieder auf Schulterhöhe absenken."
+    ],
+    mistakes: [
+      "Starkes Hohlkreuz (Ausweichen im unteren Rücken bei zu hoher Last).",
+      "Ellbogen zeigen im 90-Grad-Winkel komplett nach außen (erhöht das Gelenkrisiko).",
+      "Unvollständiger Bewegungsumfang (kein ausreichendes Absenken)."
+    ],
+    safety: "Die Ellbogen leicht nach vorne geneigt führen (circa 30 Grad in der Skapularebene), um das Schultergelenk zu entlasten."
+  },
+  pb2: {
+    muscles: { primary: "Oberer Teil des Brustmuskels", secondary: "Vorderer Schultermuskel, Trizeps" },
+    steps: [
+      "Den Sitz der Maschine so einstellen, dass sich die Griffe auf Höhe der oberen Brust befinden.",
+      "Aufrecht hinsetzen, den Rücken fest an das Polster drücken und die Griffe greifen.",
+      "Die Griffe kraftvoll nach vorne-oben wegdrücken, ohne die Ellbogen ganz durchzustrecken.",
+      "Das Gewicht langsam und kontrolliert zurückführen, bis eine Dehnung in der Brust spürbar ist."
+    ],
+    mistakes: [
+      "Die Schultern schieben sich am vordersten Punkt nach vorne (Rundrücken-Haltung).",
+      "Die Ellbogen weichen unkontrolliert nach oben aus.",
+      "Das Gesäß rutscht auf der Sitzfläche nach vorne."
+    ],
+    safety: "Die Schulterblätter während der gesamten Bewegung fest an das Rückenpolster gepresst halten."
+  },
+  pb3: {
+    muscles: { primary: "Mittlerer Schultermuskel", secondary: "Nackenmuskulatur (Trapez), vorderer Schultermuskel" },
+    steps: [
+      "Seitlich zum Kabelzug aufstellen, den Griff der tiefen Rolle mit der äußeren Hand vor dem Körper greifen.",
+      "Den Arm fast gestreckt halten (minimale Ellbogenbeugung) und den Rumpf anspannen.",
+      "Den Arm in einem weiten Bogen kontrolliert seitlich nach oben heben, bis die Hand auf Schulterhöhe ist.",
+      "Das Gewicht langsam wieder absenken, wobei die Muskelspannung im tiefsten Punkt erhalten bleibt."
+    ],
+    mistakes: [
+      "Schwungholen durch Vor- oder Seitwärtsneigen des Oberkörpers.",
+      "Hochziehen der Schulterblätter (Nacken übernimmt die Hauptarbeit).",
+      "Das Handgelenk wird höher angehoben als der Ellbogen."
+    ],
+    safety: "Die Hand nicht höher als auf Schulterhöhe anheben, um Schulterengpässe zu vermeiden."
+  },
+  pb4: {
+    muscles: { primary: "Großer Brustmuskel (mittlerer und innerer Teil)", secondary: "Vorderer Schultermuskel" },
+    steps: [
+      "Den Sitz so einstellen, dass sich die Ellbogen auf Höhe der mittleren Brust befinden.",
+      "Den Rücken fest an das Polster drücken, die Griffe greifen und die Ellbogen minimal beugen.",
+      "Die Arme vor der Brust kontrolliert zusammenführen und die Brustmuskeln fest anspannen.",
+      "Langsam wieder in die Dehnungsphase zurückkehren, ohne das Gewicht ganz abzusetzen."
+    ],
+    mistakes: [
+      "Die Schultern wandern beim Zusammenführen nach vorne (Spannungsverlust in der Brust).",
+      "Vollständiges Durchstrecken der Ellbogen (überlastet das Gelenk).",
+      "Schwungvolles Zusammenreißen statt kontrollierter Bewegung."
+    ],
+    safety: "In der Dehnungsphase nur so weit zurückgehen, wie es sich in den Schultern absolut schmerzfrei anfühlt."
+  },
+  pb5: {
+    muscles: { primary: "Trizeps", secondary: "Großer Brustmuskel, vorderer Schultermuskel" },
+    steps: [
+      "Flach auf die Bank legen und die Langhantel etwa schulterbreit greifen (nicht enger!).",
+      "Die Stange herausheben und mit gestreckten Armen stabil über der Brust halten.",
+      "Die Stange kontrolliert zur unteren Brust absenken, wobei die Ellbogen eng am Körper entlanggleiten.",
+      "Die Stange aus der Trizepskraft kraftvoll senkrecht nach oben drücken."
+    ],
+    mistakes: [
+      "Zu enger Griff (unter Schulterbreite belastet Hand- und Ellbogengelenke extrem).",
+      "Ellbogen klappen während der Bewegung nach außen weg.",
+      "Abprallen lassen der Hantelstange auf der Brust."
+    ],
+    safety: "Wegen der anspruchsvolleren Balance vorzugsweise mit einem Spotter oder in einem Rack mit Sicherheitsablagen trainieren."
+  },
+  pb6: {
+    muscles: { primary: "Trizeps (insbesondere der lange Kopf)", secondary: "Keine wesentlichen (Isolationsübung)" },
+    steps: [
+      "Aufrecht hinsetzen und eine Kurzhantel mit beiden Händen an der oberen Hantelscheibe senkrecht über dem Kopf halten.",
+      "Die Oberarme starr neben den Ohren positionieren, sodass die Ellbogen nach vorne zeigen.",
+      "Die Hantel langsam und kontrolliert hinter den Kopf absenken, bis eine Dehnung im Trizeps spürbar ist.",
+      "Das Gewicht aus der Trizepskraft wieder nach oben in die vollständige Streckung drücken."
+    ],
+    mistakes: [
+      "Ellbogen driften während der Bewegung weit nach außen ab.",
+      "Die Oberarme bewegen sich unkontrolliert vor und zurück.",
+      "Extremes Ausweichen ins Hohlkreuz, um das Gewicht nach oben zu bringen."
+    ],
+    safety: "Das Gewicht so wählen, dass die Hantel jederzeit sicher kontrolliert werden kann, ohne den Nacken zu gefährden."
+  },
+  pb7: {
+    muscles: { primary: "Gerade und tiefe Bauchmuskulatur", secondary: "Breiter Rückenmuskel (Latissimus), Hüftbeuger" },
+    steps: [
+      "Auf eine weiche Matte knien und das Ab-Wheel direkt unter den Schultern platzieren.",
+      "Den Rumpf fest anspannen und den unteren Rücken minimal runden (Becken nach hinten kippen).",
+      "Das Rad kontrolliert so weit nach vorne rollen, wie die Rumpfspannung stabil gehalten werden kann.",
+      "Ausschließlich mit der Kraft der Bauchmuskulatur zurück in die Ausgangsposition ziehen."
+    ],
+    mistakes: [
+      "Durchhängen des unteren Rückens im Hohlkreuz (erhebliches Verletzungsrisiko für die Lendenwirbel).",
+      "Die Rückwärtsbewegung wird durch das Gesäß statt durch den Bauch eingeleitet.",
+      "Zu weites Vorrollen ohne ausreichende Rumpfstabilität."
+    ],
+    safety: "Als Einsteiger nur ein kurzes Stück vorrollen oder eine Wand als Stopper nutzen, um ein Durchhängen zu verhindern."
+  },
+  plb1: {
+    muscles: { primary: "Oberer Rücken (Trapez, Rhomboideen), Latissimus", secondary: "Hinterer Schultermuskel, Bizeps" },
+    steps: [
+      "Mit der Brust flach auf das Polster der T-Bar-Maschine legen, die Füße stabil aufstellen.",
+      "Die Griffe fassen (neutraler oder breiter Griff) und die Schulterblätter aktiv nach unten ziehen.",
+      "Die Stange kontrolliert zum Körper ziehen, bis die Ellbogen maximal angewinkelt sind.",
+      "Das Gewicht langsam wieder absenken, bis die Arme vollständig gestreckt sind."
+    ],
+    mistakes: [
+      "Abheben der Brust vom Polster (Ausweichen über den unteren Rücken).",
+      "Hochziehen der Schultern in Richtung der Ohren bei hoher Last.",
+      "Ruckartiges Reißen des Gewichts mit Schwung."
+    ],
+    safety: "Die Brust während der gesamten Bewegung fest auf dem Polster belassen, um den unteren Rücken zu entlasten."
+  },
+  plb2: {
+    muscles: { primary: "Breiter Rückenmuskel (Latissimus, unterer Bereich)", secondary: "Bizeps, oberer Rücken, Unterarme" },
+    steps: [
+      "An der Latzugmaschine Platz nehmen, die Oberschenkel unter dem Polster fixieren und den engen Parallelgriff greifen.",
+      "Den Oberkörper minimal (circa 10 Grad) nach hinten lehnen und die Schultern nach unten ziehen.",
+      "Den Griff kontrolliert zur oberen Brust ziehen, während die Ellbogen eng am Körper nach unten führen.",
+      "Das Gewicht langsam wieder nach oben in die volle Dehnung führen."
+    ],
+    mistakes: [
+      "Starkes Zurückwerfen des Oberkörpers zum Schwungholen.",
+      "Ellbogen weichen nach hinten statt senkrecht nach unten aus.",
+      "Der Griff wird nicht weit genug bis zur oberen Brust gezogen."
+    ],
+    safety: "Die Schultern während der gesamten Bewegung unten halten, um Nackenüberlastungen zu vermeiden."
+  },
+  plb3: {
+    muscles: { primary: "Breiter Rückenmuskel (Latissimus)", secondary: "Oberer Rücken, hinterer Schultermuskel, Bizeps, Rumpf" },
+    steps: [
+      "Mit einem Knie und einer Hand stabil auf einer Flachbank abstützen. Der Rücken ist waagerecht und gerade.",
+      "Die Kurzhantel mit der freien Hand im neutralen Griff bei hängendem Arm halten.",
+      "Die Hantel kontrolliert in Richtung der Hüfte ziehen, wobei der Ellbogen eng am Körper vorbeigleitet.",
+      "Das Gewicht langsam wieder absenken, ohne die Schulter komplett hängen zu lassen."
+    ],
+    mistakes: [
+      "Einrunden des Rückens (belastet die Bandscheiben im Lendenbereich).",
+      "Drehen des gesamten Oberkörpers bei der Aufwärtsbewegung (Hüftrotation).",
+      "Ziehen der Hantel senkrecht nach oben zur Brust statt schräg zur Hüfte."
+    ],
+    safety: "Die Wirbelsäule stets stabil und parallel zum Boden halten. Ruckartiges Reißen der Gewichte vermeiden."
+  },
+  plb4: {
+    muscles: { primary: "Hinterer Schultermuskel", secondary: "Mittlerer oberer Rücken (Trapez, Rhomboideen)" },
+    steps: [
+      "Den Oberkörper mit fast geradem Rücken weit nach vorne beugen (oder nach vorne gebeugt auf einer Bank sitzen).",
+      "Die Kurzhanteln mit leicht gebeugten Ellbogen hängend vor dem Körper halten, die Handflächen zeigen zueinander.",
+      "Die Arme in einer weiten, kontrollierten Bogenbewegung seitlich nach oben heben.",
+      "Die Hanteln langsam wieder absenken, ohne die Muskelspannung im tiefsten Punkt ganz zu verlieren."
+    ],
+    mistakes: [
+      "Schwungholen mit dem Oberkörper zur Bewältigung des Gewichts.",
+      "Starkes Beugen der Ellbogen während der Aufwärtsbewegung (wird zu einer Ruderbewegung).",
+      "Unbewusstes Hochziehen der Schultern zu den Ohren."
+    ],
+    safety: "Den Nacken stets in Verlängerung der Wirbelsäule halten (Blick zum Boden richten, nicht nach vorne)."
+  },
+  plb5: {
+    muscles: { primary: "Zweiköpfiger Armbeuger (Bizeps)", secondary: "Armbeuger (Brachialis), Unterarmmuskulatur" },
+    steps: [
+      "Aufrecht vor dem Kabelzug stehen und die gerade oder geformte Stange im Untergriff bei gestreckten Armen greifen.",
+      "Die Ellbogen fest an den Körperseiten fixieren.",
+      "Die Stange kontrolliert nach oben in Richtung der Schultern beugen.",
+      "Das Gewicht langsam und gebremst wieder absenken, bis die Arme vollständig gestreckt sind."
+    ],
+    mistakes: [
+      "Die Ellbogen driften während der Bewegung nach vorne (die Schulter übernimmt Arbeit).",
+      "Der Oberkörper wippt mit, um Schwung zu holen.",
+      "Unvollständige Streckung der Arme im tiefsten Punkt."
+    ],
+    safety: "Die konstante Kabelspannung erfordert ein sehr kontrolliertes Absenken – abruptes Herablassen vermeiden."
+  },
+  plb6: {
+    muscles: { primary: "Zweiköpfiger Armbeuger (Bizeps)", secondary: "Armbeuger (Brachialis), Unterarmmuskeln" },
+    steps: [
+      "Auf einer Bank sitzen, die Beine weit spreizen und eine Kurzhantel in einer Hand halten.",
+      "Die Rückseite des Oberarms (Trizepsbereich) fest an die Innenseite des gleichseitigen Oberschenkels stützen.",
+      "Die Hantel kontrolliert nach oben zur Schulter beugen, ohne dass sich der Oberarm bewegt.",
+      "Das Gewicht langsam und vollständig wieder nach unten absenken."
+    ],
+    mistakes: [
+      "Der Ellbogen wird direkt auf den Oberschenkel aufgelegt (Hebelwirkung entlastet den Bizeps).",
+      "Schwungholen mit dem Oberkörper.",
+      "Unvollständiger Bewegungsumfang (keine vollständige Armstreckung am Ende)."
+    ],
+    safety: "Die Schulter des arbeitenden Arms stabil halten und nicht aktiv nach oben ziehen."
+  },
+  plb7: {
+    muscles: { primary: "Unterarmmuskulatur (Griffkraft), Rumpfmuskulatur, Trapezmuskel", secondary: "Beine, Gesäß, Schultern" },
+    steps: [
+      "Zwei schwere Kurzhanteln mit geradem Rücken (Kreuzhebe-Form) kontrolliert vom Boden aufheben.",
+      "Aufrecht stehen, die Schultern nach hinten-unten ziehen und den Rumpf maximal anspannen.",
+      "Mit kurzen, schnellen und absolut kontrollierten Schritten geradeaus vorwärtsgehen.",
+      "Die Gewichte nach der Distanz mit geradem Rücken wieder kontrolliert absetzen."
+    ],
+    mistakes: [
+      "Rundrücken beim Aufheben, Tragen oder Absetzen der Gewichte.",
+      "Schultern hängen schlaff nach vorne oder kollabieren.",
+      "Die Gewichte schwingen unkontrolliert hin und her."
+    ],
+    safety: "Den Blick stets nach vorne richten und den Rumpf fest anspannen, um die Wirbelsäule bei schwerer Last zu sichern."
+  },
+  lb1: {
+    muscles: { primary: "Großer Gesäßmuskel, Beinbeuger (Hamstrings)", secondary: "Vorderer Oberschenkelmuskel (Quadrizeps)" },
+    steps: [
+      "Stabil in der Beinpresse sitzen, Rücken und Gesäß pressen fest in das Polster.",
+      "Die Füße hüft- bis schulterbreit ganz oben am Rand der Plattform platzieren.",
+      "Das Gewicht langsam absenken, am tiefsten Punkt sollten die Knie einen Winkel von etwa 90 Grad bilden.",
+      "Die Plattform kraftvoll über die Fersen nach oben zurückdrücken, ohne die Knie vollständig durchzustrecken."
+    ],
+    mistakes: [
+      "Das Gesäß oder der untere Rücken hebt sich am tiefsten Punkt von der Sitzfläche ab (hohe Wirbelsäulenbelastung).",
+      "Die Knie fallen nach innen zusammen.",
+      "Vollständiges Einrasten der Knie am obersten Punkt unter Belastung."
+    ],
+    safety: "Sobald sich das Gesäß vom Polster abhebt, ist der Bewegungsumfang zu tief gewählt und belastet die Lendenwirbelsäule gefährlich."
+  },
+  lb2: {
+    muscles: { primary: "Großer Gesäßmuskel", secondary: "Beinbeuger (Hamstrings), Rumpfmuskulatur" },
+    steps: [
+      "Den oberen Rücken stabil auf einer Flachbank positionieren, die Füße schulterbreit flach auf den Boden stellen.",
+      "Eine gepolsterte Langhantel direkt in der Hüftbeuge platzieren.",
+      "Die Hüfte kraftvoll nach oben drücken, bis der Rumpf von den Schultern bis zu den Knien eine gerade Linie bildet.",
+      "Das Gesäß am höchsten Punkt fest anspannen und kontrolliert wieder absenken."
+    ],
+    mistakes: [
+      "Überstrecken des unteren Rückens statt einer bewussten Beckenkippung am obersten Punkt.",
+      "Der Blick wandert an die Decke (der Kopf sollte leicht nach vorne gerichtet bleiben).",
+      "Die Füße stehen zu weit entfernt (verlagert die Last auf die Hamstrings)."
+    ],
+    safety: "Ein ausreichendes Polster für die Langhantel nutzen, um schmerzhaften Druck auf den Beckenknochen zu vermeiden."
+  },
+  lb3: {
+    muscles: { primary: "Vorderer Oberschenkelmuskel (Quadrizeps), großer Gesäßmuskel", secondary: "Beinbeuger (Hamstrings), Waden, Rumpf" },
+    steps: [
+      "Aufrecht stehen, die Füße hüftbreit platzieren und je eine Kurzhantel seitlich in den Händen halten.",
+      "Einen großen Schritt nach vorne machen und die Hüfte absenken, bis das hintere Knie fast den Boden berührt.",
+      "Das vordere Knie sollte einen stabilen 90-Grad-Winkel bilden und nicht weit über die Zehen hinausragen.",
+      "Über die vordere Ferse nach oben drücken und direkt den nächsten Schritt nach vorne einleiten."
+    ],
+    mistakes: [
+      "Das vordere Knie knickt unkontrolliert nach innen ein.",
+      "Die Schrittlänge ist zu kurz gewählt (erhöht den Druck auf das vordere Knie massiv).",
+      "Der Oberkörper kippt stark nach vorne um."
+    ],
+    safety: "Die Schritte hochgradig kontrolliert ausführen. Bei Kniebeschwerden sind Ausfallschritte rückwärts im Stand deutlich gelenkschonender."
+  },
+  lb4: {
+    muscles: { primary: "Beinbeuger (Hamstrings)", secondary: "Wadenmuskulatur, Gesäßmuskel" },
+    steps: [
+      "Aufrecht in der Maschine sitzen, die Oberschenkelstütze fest fixieren und die Waden auf das Polster legen.",
+      "Den Rücken fest an die Rückenlehne drücken und die Griffe greifen.",
+      "Die Beine kraftvoll beugen, indem das Polster kontrolliert so weit wie möglich unter den Sitz gezogen wird.",
+      "Das Gewicht langsam und gebremst wieder nach oben in die Dehnung führen."
+    ],
+    mistakes: [
+      "Der Oberkörper weicht nach vorne aus oder das Gesäß hebt sich von der Sitzfläche ab.",
+      "Ruckartige Bewegungsdurchführung mit Schwung statt kontrollierter Muskelkraft.",
+      "Unvollständiger Bewegungsumfang (keine volle Streckung)."
+    ],
+    safety: "Die Oberschenkelstütze eng und fest einstellen, um Ausweichbewegungen des Beckens komplett zu blockieren."
+  },
+  lb5: {
+    muscles: { primary: "Vorderer Oberschenkelmuskel (Quadrizeps)", secondary: "Keine wesentlichen (Isolationsübung)" },
+    steps: [
+      "Aufrecht in der Maschine sitzen, das Polster knapp über den Fußgelenken positionieren. Die Knie befinden sich auf Höhe des Drehgelenks.",
+      "An den Haltegriffen festhalten und den Bauch anspannen.",
+      "Die Beine kontrolliert nach oben ausstrecken, bis sie gerade sind, und die Kontraktion kurz halten.",
+      "Das Gewicht langsam und gebremst wieder in die Ausgangsposition absenken."
+    ],
+    mistakes: [
+      "Schwungholen und ruckartiges Schleudern des Gewichts nach oben.",
+      "Das Gesäß hebt während der Bewegung vom Sitzpolster ab.",
+      "Falsch eingestelltes Fußpolster (zu weit oben auf dem Schienbein)."
+    ],
+    safety: "Das Kniegelenk muss exakt auf einer Linie mit dem Drehpunkt der Maschine liegen, um schädliche Scherkräfte im Knie zu minimieren."
+  },
+  lb6: {
+    muscles: { primary: "Schollenmuskel (Soleus)", secondary: "Zwillingswadenmuskel (Gastrocnemius)" },
+    steps: [
+      "Aufrecht in der Maschine sitzen, das Kniepolster fest auf den Oberschenkeln fixieren und die Fußballen auf die Trittstufe setzen.",
+      "Die Fersen langsam absenken, bis eine spürbare Dehnung in den Waden entsteht.",
+      "Das Polster kraftvoll nach oben drücken, indem so hoch wie möglich auf die Zehenspitzen gestellt wird.",
+      "Die Kontraktion kurz halten und das Gewicht langsam wieder absenken."
+    ],
+    mistakes: [
+      "Abfedern oder Federn am tiefsten Punkt (Nutzung des Sehnen-Rückfederungseffekts).",
+      "Das Kniepolster ist zu locker eingestellt, was Ausweichbewegungen erlaubt.",
+      "Unvollständige Dehnungs- oder Streckphase."
+    ],
+    safety: "Die Bewegung langsam und kontrolliert ausführen, mit einer kurzen Pause am tiefsten und höchsten Punkt, um die Sehneneffekte auszuschalten."
+  },
+  lb7: {
+    muscles: { primary: "Rumpfmuskulatur (gerade, schräge und tiefe Bauchmuskeln, Rückenstrecker)", secondary: "Schultern, Gesäß" },
+    steps: [
+      "Plank: Auf die Unterarme und Zehen stützen, Bauch und Gesäß fest anspannen (der Rumpf bildet eine gerade Linie).",
+      "Diese Position stabil halten und ruhig weiteratmen, ohne die Hüfte durchhängen zu lassen.",
+      "Side Plank: Auf die Seite drehen, auf einen Unterarm und die Fußaußenkante stützen.",
+      "Die Hüfte aktiv nach oben drücken, bis der Körper eine gerade Linie bildet."
+    ],
+    mistakes: [
+      "Durchhängen der Hüfte im Hohlkreuz (Plank) oder Absinken der Hüfte (Side Plank).",
+      "Der Kopf wird extrem in den Nacken gelegt oder hängt schlaff herab.",
+      "Luftanhalten während der statischen Haltearbeit."
+    ],
+    safety: "Sobald die Hüfte nicht mehr stabil in einer geraden Linie gehalten werden kann, die Übung beenden, um den unteren Rücken vor Fehlbelastung zu schonen."
+  }
+};
+
+// Quelle: 01_Recherchen/03_Aufwaermen/Aufwaermprogramm.md (Gemini Deep Research). Pro Tagestyp (push/pull/legs), nicht pro Einzeltag.
+const WARMUP = {
+  push: {
+    general: "2-3 Min. moderates Rudern auf dem Ergometer zur Erhöhung der Körperkerntemperatur.",
+    mobilization: [
+      { text: "Brustwirbelsäulen-Rotation im Vierfüßlerstand", reps: "10 Wdh. pro Seite" },
+      { text: "Schulter-Dislokation mit elastischem Band", reps: "12 Wdh." },
+      { text: "Dynamischer herabschauender Hund in die Planke", reps: "10 Wdh." },
+    ],
+    activation: [
+      { text: "Band Pull-Aparts", reps: "1 x 15 Wdh." },
+      { text: "Kontrollierte Liegestütze mit Fokus auf die Scapula-Aktivität", reps: "1 x 10 Wdh." },
+    ],
+    rampSets: [
+      { pct: "50%", reps: "8 Wdh." },
+      { pct: "70%", reps: "5 Wdh." },
+      { pct: "80%", reps: "3 Wdh." },
+      { pct: "90%", reps: "1 Wdh." },
+    ],
+  },
+  pull: {
+    general: "2-3 Min. auf dem Ruderergometer bei moderater Intensität zur Mobilisierung des Oberkörpers.",
+    mobilization: [
+      { text: "Katze-Kuh-Bewegung zur Mobilisierung der Wirbelsäule", reps: "12 Wdh." },
+      { text: "Scapular Pull-ups (kontrolliertes Heben und Senken im Hang)", reps: "10 Wdh." },
+      { text: "Spiderman Lunge mit Oberkörperrotation", reps: "8 Wdh. pro Seite" },
+    ],
+    activation: [
+      { text: "Face Pulls mit dem elastischen Band", reps: "1 x 15 Wdh." },
+      { text: "Lat-Halbkreis-Zug am Kabelzug (gestreckte Arme)", reps: "1 x 12 Wdh." },
+    ],
+    rampSets: [
+      { pct: "50%", reps: "8 Wdh." },
+      { pct: "70%", reps: "5 Wdh." },
+      { pct: "80%", reps: "3 Wdh." },
+      { pct: "90%", reps: "1 Wdh." },
+    ],
+  },
+  legs: {
+    general: "2-3 Min. auf dem AirBike oder Fahrradergometer bei moderater Intensität.",
+    mobilization: [
+      { text: "Goblet Squat Hold (tiefer Kniebeugensitz mit leichter Hüftöffnung)", reps: "45 Sek." },
+      { text: "Cossack Squats (kontrollierte seitliche Ausfallschritte)", reps: "8 Wdh. pro Seite" },
+      { text: "Sprunggelenks-Dorsalflexion an der Wand", reps: "10 Wdh. pro Seite" },
+    ],
+    activation: [
+      { text: "Glute Bridges mit Miniband um die Knie", reps: "1 x 15 Wdh." },
+      { text: "Kniebeugen mit dem eigenen Körpergewicht (Air Squats)", reps: "1 x 12 Wdh." },
+    ],
+    rampSets: [
+      { pct: "50%", reps: "8 Wdh." },
+      { pct: "70%", reps: "5 Wdh." },
+      { pct: "80%", reps: "3 Wdh." },
+      { pct: "90%", reps: "1 Wdh." },
+    ],
+  },
+};
+
+// Quelle: 01_Recherchen/04_Stretching/Stretching.md (Gemini Deep Research). Pro Tagestyp (push/pull/legs), nicht pro Einzeltag.
+const STRETCHING_NOTE = "Statisches Dehnen direkt nach dem Training lindert weder Muskelkater noch beschleunigt es die Kraftregeneration messbar — das ist wissenschaftlich gut belegt. Der reale Nutzen liegt in der Beruhigung des Nervensystems (parasympathische Erholung) nach einem intensiven Training, nicht in schnellerer Gewebereparatur.";
+const STRETCHING = {
+  push: [
+    { name: "Brustdehnung im Türrahmen", muscle: "M. pectoralis major", duration: "30-45 Sek. x 2", cue: "Aufrechter Stand im Türrahmen, die Unterarme im 90-Grad-Winkel flach anlegen, den Oberkörper langsam nach vorne lehnen und die Schulterblätter zusammenführen, um den Brustkorb zu öffnen." },
+    { name: "Tiefe Dehnung des kleinen Brustmuskels", muscle: "M. pectoralis minor", duration: "30-45 Sek. x 2", cue: "Den Arm weit nach oben gestreckt an eine Wand legen, den Oberkörper kontrolliert nach vorne und leicht nach unten absenken, um den Zug nahe dem Schultergelenk zu spüren." },
+    { name: "Statische Trizepsdehnung über Kopf", muscle: "M. triceps brachii", duration: "30-45 Sek. x 2", cue: "Einen Arm nach oben strecken, im Ellbogen beugen und die Hand auf den oberen Rücken legen; die andere Hand zieht den Ellbogen behutsam nach hinten-unten." },
+    { name: "Dehnung der vorderen Schultermuskulatur", muscle: "M. deltoideus anterior", duration: "30-45 Sek. x 2", cue: "Die Hände hinter dem Gesäß falten, die Arme strecken und langsam vom Rücken wegbewegen, während die Brust aufgerichtet bleibt." },
+  ],
+  pull: [
+    { name: "Kindeshaltung mit Latissimus-Fokus", muscle: "M. latissimus dorsi", duration: "45-60 Sek. x 2", cue: "Aus dem Vierfüßlerstand das Gesäß nach hinten auf die Fersen schieben, die Arme weit nach vorne strecken und das Brustbein kontrolliert zum Boden absenken." },
+    { name: "Laterale Oberkörperdehnung im Stand", muscle: "M. latissimus dorsi", duration: "30-45 Sek. x 2", cue: "Hüftbreit stehen, einen Arm weit über den Kopf zur Seite neigen und mit der Hüfte leicht zur Gegenseite ausweichen, um die Flanke zu öffnen." },
+    { name: "Nackendehnung für den oberen Trapez", muscle: "M. trapezius", duration: "30-45 Sek. x 2", cue: "Den Kopf kontrolliert zur Seite neigen, während die gegenüberliegende Hand aktiv in Richtung Boden schiebt, um eine sanfte Dehnung im Nacken zu erzeugen." },
+    { name: "Hintere Schulterdehnung im Stand", muscle: "M. deltoideus posterior", duration: "30-45 Sek. x 2", cue: "Einen gestreckten Arm auf Schulterhöhe quer vor die Brust führen und mit dem anderen Arm sanft an den Oberkörper heranziehen." },
+    { name: "Bizeps- und Unterarmdehnung im Vierfüßlerstand", muscle: "M. biceps brachii", duration: "30-45 Sek. x 2", cue: "Die Hände im Vierfüßlerstand so aufsetzen, dass die Finger zum Knie zeigen; das Gesäß vorsichtig nach hinten verlagern, bis ein milder Zug spürbar wird." },
+  ],
+  legs: [
+    { name: "Statischer Quadriceps-Stretch im Stand", muscle: "M. quadriceps femoris", duration: "30-45 Sek. x 2", cue: "Auf einem Bein stehen, den Fuß des anderen Beines am Knöchel greifen, das Knie nach unten richten und die Ferse vorsichtig zum Gesäß ziehen." },
+    { name: "Tiefer Ausfallschritt für den Hüftbeuger", muscle: "M. iliopsoas", duration: "30-45 Sek. x 2", cue: "Einen weiten Ausfallschritt ausführen, das hintere Knie ablegen und das Becken kontrolliert nach vorne-unten sinken lassen, während der Oberkörper aufrecht gehalten wird." },
+    { name: "Rückseitige Oberschenkeldehnung im Stand", muscle: "Ischiocrurale Muskulatur", duration: "30-45 Sek. x 2", cue: "Ein Bein gestreckt leicht nach vorne setzen, die Fußspitze anziehen und den Oberkörper mit absolut geradem Rücken aus der Hüfte nach vorne-unten beugen." },
+    { name: "Klassische Wadendehnung an der Wand", muscle: "M. gastrocnemius", duration: "30-45 Sek. x 2", cue: "In Schrittstellung die Hände an einer Wand abstützen, das hintere Bein vollständig strecken und die Ferse fest in den Boden pressen." },
+    { name: "Gesäßdehnung im Sitz", muscle: "M. gluteus maximus", duration: "30-45 Sek. x 2", cue: "Im Sitzen ein Bein anwinkeln, über das aufgestellte andere Knie legen und den Oberkörper mit geradem Rücken sanft nach vorne neigen, bis ein Zug im Gesäß auftritt." },
+  ],
+};
+
+const APP_VERSION = "1.4.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -360,6 +1119,9 @@ function loadState() {
 
 let state = loadState();
 let swapOpenKey = null;
+let infoOpenKey = null;
+let warmupOpen = false;
+let stretchOpen = false;
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -544,6 +1306,51 @@ function escapeAttr(str) {
   return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+function warmupSectionHTML(type) {
+  const w = WARMUP[type];
+  const bodyHTML = warmupOpen ? `
+    <div class="collapsible-body">
+      <div class="collapsible-line"><b>Allgemein:</b> ${w.general}</div>
+      <div class="collapsible-sublabel">Mobilisation</div>
+      <ul class="collapsible-list">
+        ${w.mobilization.map(m => `<li>${m.text} <span class="collapsible-reps">${m.reps}</span></li>`).join("")}
+      </ul>
+      <div class="collapsible-sublabel">Aktivierung</div>
+      <ul class="collapsible-list">
+        ${w.activation.map(a => `<li>${a.text} <span class="collapsible-reps">${a.reps}</span></li>`).join("")}
+      </ul>
+      <div class="collapsible-sublabel">Aufwärmsätze Hauptübung</div>
+      <ul class="collapsible-list">
+        ${w.rampSets.map(r => `<li>${r.pct} vom Arbeitsgewicht <span class="collapsible-reps">${r.reps}</span></li>`).join("")}
+      </ul>
+    </div>
+  ` : "";
+  return `
+    <div class="collapsible-section">
+      <button class="collapsible-toggle" data-role="warmup-toggle">🔥 Aufwärmen ${warmupOpen ? "▲" : "▼"}</button>
+      ${bodyHTML}
+    </div>
+  `;
+}
+
+function stretchSectionHTML(type) {
+  const items = STRETCHING[type];
+  const bodyHTML = stretchOpen ? `
+    <div class="collapsible-body">
+      <ul class="collapsible-list">
+        ${items.map(s => `<li><b>${s.name}</b> <span class="collapsible-reps">${s.muscle} · ${s.duration}</span><br/><span class="collapsible-cue">${s.cue}</span></li>`).join("")}
+      </ul>
+      <div class="collapsible-note">${STRETCHING_NOTE}</div>
+    </div>
+  ` : "";
+  return `
+    <div class="collapsible-section">
+      <button class="collapsible-toggle" data-role="stretch-toggle">🧘 Stretching ${stretchOpen ? "▲" : "▼"}</button>
+      ${bodyHTML}
+    </div>
+  `;
+}
+
 function getRecommendedDay() {
   if (!state.lastCompletedDay) return DAYS[0].id;
   const idx = DAYS.findIndex(d => d.id === state.lastCompletedDay);
@@ -611,6 +1418,18 @@ function render() {
       </div>
     ` : "";
 
+    const info = EXERCISE_INFO[ex.id];
+    const infoPanelHTML = info && infoOpenKey === swapKey ? `
+      <div class="info-panel">
+        <div class="info-line"><b>Zielmuskulatur:</b> ${info.muscles.primary} <span class="info-dim">(primär)</span>, ${info.muscles.secondary} <span class="info-dim">(sekundär)</span></div>
+        <div class="info-sublabel">Ausführung</div>
+        <ol class="info-list">${info.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+        <div class="info-sublabel">Häufigste Fehler</div>
+        <ul class="info-list">${info.mistakes.map(m => `<li>${m}</li>`).join("")}</ul>
+        <div class="info-safety">⚠ ${info.safety}</div>
+      </div>
+    ` : "";
+
     const setsHTML = sets.map((s, i) => `
       <div class="set-row">
         <span class="set-idx">${i + 1}</span>
@@ -637,8 +1456,12 @@ function render() {
             <div class="target-line">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
           </div>
-          <button class="swap-btn" title="Übung tauschen" data-role="swap-toggle" data-day="${day}" data-exid="${ex.id}">⟲</button>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${day}" data-exid="${ex.id}">ℹ</button>` : ""}
+            <button class="swap-btn" title="Übung tauschen" data-role="swap-toggle" data-day="${day}" data-exid="${ex.id}">⟲</button>
+          </div>
         </div>
+        ${infoPanelHTML}
         ${swapPanelHTML}
         <div class="set-header">
           <span>#</span><span>kg</span><span>Wdh.</span><span>RIR</span><span></span>
@@ -676,7 +1499,9 @@ function render() {
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
       <div class="focus-line">Fokus: <span>${dayMeta.sub}</span></div>
+      ${warmupSectionHTML(dayMeta.type)}
       ${cardsHTML}
+      ${stretchSectionHTML(dayMeta.type)}
       <button class="finish-btn" data-role="finish" data-day="${day}">Training abschließen →</button>
       <div class="toast" id="toast"></div>
     </div>
@@ -795,6 +1620,9 @@ document.addEventListener("click", (e) => {
   if (dayTab) {
     state.currentDay = dayTab.dataset.day;
     swapOpenKey = null;
+    infoOpenKey = null;
+    warmupOpen = false;
+    stretchOpen = false;
     persist();
     render();
     return;
@@ -804,6 +1632,28 @@ document.addEventListener("click", (e) => {
   if (swapToggle) {
     const key = `${swapToggle.dataset.day}:${swapToggle.dataset.exid}`;
     swapOpenKey = swapOpenKey === key ? null : key;
+    render();
+    return;
+  }
+
+  const infoToggle = e.target.closest('[data-role="info-toggle"]');
+  if (infoToggle) {
+    const key = `${infoToggle.dataset.day}:${infoToggle.dataset.exid}`;
+    infoOpenKey = infoOpenKey === key ? null : key;
+    render();
+    return;
+  }
+
+  const warmupToggle = e.target.closest('[data-role="warmup-toggle"]');
+  if (warmupToggle) {
+    warmupOpen = !warmupOpen;
+    render();
+    return;
+  }
+
+  const stretchToggle = e.target.closest('[data-role="stretch-toggle"]');
+  if (stretchToggle) {
+    stretchOpen = !stretchOpen;
     render();
     return;
   }
