@@ -2,6 +2,13 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.5.2 — 2026-07-08 (Teil 21): Ausführungshinweise für Aufwärmübungen ergänzt
+
+- Nutzer-Feedback: Übungen und Stretching sind gut mit Ausführungshinweisen beschrieben, die Aufwärmübungen (Mobilisation/Aktivierung) bisher nicht — dort stand nur Name + Wiederholungen.
+- Für alle 15 Mobilisations-/Aktivierungsübungen in `WARMUP` (Push/Pull/Legs) ein neues `cue`-Feld ergänzt, analog zum bereits vorhandenen `cue`-Feld bei `STRETCHING` — kurze, eindeutige Standard-Ausführungshinweise (Cat-Cow, Band Pull-Apart, Goblet Squat Hold, etc.), nicht per Deep Research recherchiert, da es sich um allgemein bekannte, unstrittige Mobility-Drills handelt (anders als die Kernübungen/Trainingspläne, wo wissenschaftliche Fundierung wichtig war).
+- `warmupSectionHTML()` zeigt den Cue jetzt unter Name+Wiederholungen an, gleiches Markup wie bei Stretching.
+- Verifiziert: Render-Sweep über alle Pläne/Tage weiterhin fehlerfrei, Beispiel-Output der Push-Aufwärmsektion inhaltlich geprüft.
+
 ## v1.5.1 — 2026-07-08 (Teil 20): Neue Nutzer-Anleitung (`howto.html`)
 
 - Nutzerwunsch: eine howto-Seite, die die App für Endnutzer erklärt (keine Entwickler-Doku), aufrufbar direkt aus der App.
