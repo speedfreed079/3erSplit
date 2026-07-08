@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Eisernes Log". Neue Einträge oben anfügen.
 
+## 2026-07-08 (Teil 4): Live-Deploy
+
+- Auf Zuruf des Nutzers 5 lokale Commits (Satzpausen-Timer, KI-Übungstausch, Worker-Anbindung, Dokumentation) nach `origin/main` gepusht.
+- GitHub Pages hat neu gebaut; nach ca. 90s (6 Polling-Versuche à 15s) lieferte https://speedfreed079.github.io/3erSplit/ nachweislich den neuen Stand (`rest-timer-bar` im HTML gefunden) aus.
+- Damit sind Satzpausen-Timer und KI-gestützter Übungstausch (via Cloudflare Worker + Gemini) jetzt live nutzbar.
+
 ## 2026-07-08 (Teil 3): Worker deployed und live getestet
 
 - Cloudflare Worker `eisernes-log-proxy` erfolgreich deployed: https://eisernes-log-proxy.speedfreed.workers.dev (Subdomain `speedfreed.workers.dev`).
