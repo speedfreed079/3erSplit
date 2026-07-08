@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.3.2 — 2026-07-08 (Teil 16): Feinere Linien fürs Logo
+
+- Nutzer-Feedback: Logo-Linien sollen feiner werden, Farbe gleich lassen (kein neuer Farbwert).
+- Umgesetzt per Erosion auf der Alpha-Maske (`PIL.ImageFilter.MinFilter`, Stärke 7) vor dem Einfärben — schmälert Ring, Hantel-Icons und feine Gesichtslinien spürbar, ohne die Silhouette selbst (dicke Flächen wie Bart/Haare) zu verändern. Beide Theme-Varianten (`logo-mark-dark.png`, `logo-mark-sepia.png`) aus derselben verfeinerten Maske neu erzeugt, Farben unverändert (`#F97316` / `#A8461E`).
+- App-Icon-Set (`icon-192.png`/`icon-512*.png`, damit auch das Favicon) bewusst nicht angefasst — war nicht Teil der Anfrage, bleibt die separate, nicht themenabhängige Asset-Linie (siehe Teil 13/14).
+
 ## 2026-07-08 (Teil 15): Alle 4 Gemini-Deep-Research-Ergebnisse eingetroffen
 
 - Nutzer hat die Ergebnisse aller 4 Deep-Research-Prompts aus Teil 10 in `01_Recherchen` abgelegt; in die passenden Unterordner einsortiert: `01_Trainingsplaene/Trainingsplaene.md`, `02_Uebungserklaerungen/Uebungsdatenbank.md`, `03_Aufwaermen/Aufwaermprogramm.md`, `04_Stretching/Stretching.md`. `.gitkeep`-Platzhalter entfernt.
