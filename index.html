@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Eisernes Log – PPL Trainingstracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1c1b1a;
+    --surface: #242220;
+    --surface2: #2d2a27;
+    --border: #3d3934;
+    --chalk: #ede7db;
+    --chalk-dim: #a29a8c;
+    --rust: #c1440e;
+    --rust-dim: #7a2c09;
+    --olive: #7c8f5a;
+    --olive-dim: #4d5738;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--chalk);
+    padding-bottom: 48px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1, h3, .display { font-family: 'Oswald', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  .header { padding: 22px 16px 14px; border-bottom: 1px solid var(--border); }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .header-title { display: flex; align-items: center; gap: 8px; }
+  .header-title h1 {
+    font-weight: 600; font-size: 22px; letter-spacing: 1px;
+    text-transform: uppercase; margin: 0;
+  }
+  .header-sub { color: var(--chalk-dim); font-size: 13px; margin: 4px 0 0 28px; }
+  .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 9px; color: var(--chalk-dim); cursor: pointer; font-size: 12px;
+    font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 5px;
+  }
+  .icon-btn:active { border-color: var(--rust); color: var(--chalk); }
+  .backup-note { font-size: 11px; color: var(--chalk-dim); margin: 8px 16px 0; }
+
+  .today-banner {
+    margin: 14px 16px 0; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--rust-dim); background: linear-gradient(180deg, rgba(193,68,14,0.14), rgba(193,68,14,0.05));
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .today-banner.done-today { border-color: var(--olive-dim); background: linear-gradient(180deg, rgba(124,143,90,0.14), rgba(124,143,90,0.05)); }
+  .today-banner-text { font-size: 13px; color: var(--chalk-dim); }
+  .today-banner-text b { color: var(--chalk); font-family: 'Oswald', sans-serif; letter-spacing: 0.3px; text-transform: uppercase; font-weight: 600; }
+  .today-banner-btn {
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 7px 12px; border-radius: 7px; border: 1px solid var(--rust); background: var(--rust);
+    color: #fff; cursor: pointer; flex-shrink: 0;
+  }
+  .today-banner.done-today .today-banner-btn { border-color: var(--olive); background: var(--olive); }
+
+  .tabs {
+    display: flex; overflow-x: auto; gap: 8px; padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    flex-shrink: 0; font-family: 'Oswald', sans-serif; font-size: 14px;
+    letter-spacing: 0.5px; text-transform: uppercase; padding: 8px 14px;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--chalk-dim); cursor: pointer; white-space: nowrap;
+  }
+  .tab-btn.active { border-color: var(--rust); background: var(--rust); color: #fff; }
+
+  .content { padding: 16px; }
+  .focus-line { margin-bottom: 14px; color: var(--chalk-dim); font-size: 13px; }
+  .focus-line span { color: var(--chalk); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card-title-row h3 {
+    font-size: 17px; font-weight: 500; margin: 0; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .badge-core {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--olive);
+    border: 1px solid var(--olive-dim); border-radius: 4px; padding: 1px 5px;
+  }
+  .badge-swapped { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--chalk-dim); }
+  .target-line { font-size: 12px; color: var(--chalk-dim); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .history-line { font-size: 12px; color: var(--chalk-dim); margin-top: 4px; }
+  .history-line b { color: var(--chalk); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+
+  .swap-btn {
+    background: transparent; border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px; color: var(--chalk-dim); cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .swap-panel {
+    margin-top: 10px; padding: 10px; background: var(--surface2); border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .swap-panel-label {
+    font-size: 11px; color: var(--chalk-dim); margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+  }
+  .swap-options { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swap-opt-btn {
+    font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); cursor: pointer;
+  }
+  .swap-clear-btn {
+    font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--rust-dim);
+    background: transparent; color: var(--rust); cursor: pointer; display: flex; align-items: center; gap: 4px;
+  }
+
+  .set-header {
+    display: grid; grid-template-columns: 22px 1fr 1fr auto 24px; gap: 8px;
+    font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; margin: 12px 0 5px; padding-left: 2px;
+  }
+  .set-row {
+    display: grid; grid-template-columns: 22px 1fr 1fr auto 24px; gap: 8px;
+    align-items: center; margin-bottom: 6px;
+  }
+  .set-idx { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim); }
+  .set-input {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; color: var(--chalk);
+    padding: 7px 8px; width: 100%;
+  }
+  .rir-group { display: flex; gap: 3px; }
+  .rir-chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 4px 7px;
+    border-radius: 5px; border: 1px solid var(--border); background: transparent;
+    color: var(--chalk-dim); cursor: pointer; min-width: 26px;
+  }
+  .rir-chip.active { border-color: var(--rust); background: var(--rust); color: #fff; }
+  .done-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; color: #fff; font-size: 13px;
+  }
+  .done-btn.done { border-color: var(--olive); background: var(--olive); }
+
+  .set-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .tally { display: inline-flex; gap: 6px; }
+  .tally-group { display: inline-flex; position: relative; }
+  .tally-stroke { display: inline-block; width: 2px; height: 14px; background: var(--rust); margin-right: 3px; }
+  .tally-stroke:last-child { margin-right: 0; }
+  .tally-slash {
+    position: absolute; left: -1px; top: -1px; width: 22px; height: 16px;
+    border-top: 2px solid var(--rust); transform: rotate(-30deg); transform-origin: left top;
+  }
+  .set-count { font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; }
+
+  .note-input {
+    margin-top: 10px; width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--chalk); font-size: 12px; font-family: 'Inter', sans-serif;
+    padding: 7px 9px; resize: vertical; min-height: 34px;
+  }
+
+  .finish-btn {
+    width: 100%; margin-top: 6px; padding: 13px; border-radius: 9px; border: none;
+    background: var(--rust); color: #fff; font-family: 'Oswald', sans-serif; font-size: 15px;
+    letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center;
+    justify-content: center; gap: 6px; cursor: pointer;
+  }
+  .toast {
+    margin-top: 12px; padding: 10px 12px; background: var(--surface2);
+    border: 1px solid var(--olive-dim); border-radius: 8px; font-size: 12px; color: var(--olive);
+    display: none;
+  }
+  .toast.show { display: block; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ---------- EXERCISE DATABASE ----------
+const DAYS = [
+  { id: "pushA", label: "Push A", sub: "Brust" },
+  { id: "pullA", label: "Pull A", sub: "Breite" },
+  { id: "legsA", label: "Legs A", sub: "Quads" },
+  { id: "pushB", label: "Push B", sub: "Schulter" },
+  { id: "pullB", label: "Pull B", sub: "Dicke" },
+  { id: "legsB", label: "Legs B", sub: "Hintere Kette" },
+];
+
+const EXERCISES = {
+  pushA: [
+    { id: "pa1", name: "Flachbankdrücken Kurzhantel", sets: 4, reps: "6-8", alts: ["Flachbankdrücken Langhantel", "Machine Chest Press"] },
+    { id: "pa2", name: "Schrägbankdrücken Kurzhantel", sets: 3, reps: "8-10", alts: ["Schrägbankdrücken Langhantel", "Incline Machine Press"] },
+    { id: "pa3", name: "Dips (Brust-Lean)", sets: 3, reps: "8-12", alts: ["Dip-Maschine", "Cable Fly tief-hoch"] },
+    { id: "pa4", name: "Kabel-Crossover (tief→hoch)", sets: 3, reps: "12-15", alts: ["Pec Deck", "Kurzhantel Fly"] },
+    { id: "pa5", name: "Seitheben Kurzhantel/Kabel", sets: 4, reps: "12-15", alts: ["Lateral Raise Maschine", "Cable Lateral Raise"] },
+    { id: "pa6", name: "Trizeps-Seilzug Pushdown", sets: 3, reps: "10-12", alts: ["Trizeps Kickback", "Overhead Rope Extension"] },
+    { id: "pa7", name: "Pallof Press", sets: 3, reps: "12/Seite", alts: ["Suitcase Carry"], core: true },
+  ],
+  pullA: [
+    { id: "pl1", name: "Klimmzüge weit", sets: 4, reps: "6-10", alts: ["Latzug weit", "Assisted Pull-up Maschine"] },
+    { id: "pl2", name: "Chest-Supported Row", sets: 4, reps: "8-10", alts: ["T-Bar Row", "Maschinen-Rudern"] },
+    { id: "pl3", name: "Kabelrudern eng, sitzend", sets: 3, reps: "10-12", alts: ["Maschinenrudern eng"] },
+    { id: "pl4", name: "Face Pulls", sets: 3, reps: "15-20", alts: ["Reverse Pec Deck"] },
+    { id: "pl5", name: "Bizeps-Curl Lang-/Kurzhantel", sets: 3, reps: "8-12", alts: ["EZ-Bar Curl", "Kabel-Curl"] },
+    { id: "pl6", name: "Hammercurls", sets: 3, reps: "10-12", alts: ["Seil-Hammercurl"] },
+    { id: "pl7", name: "Hanging Leg Raise", sets: 3, reps: "10-15", alts: ["Captain's Chair Knee Raise"], core: true },
+  ],
+  legsA: [
+    { id: "la1", name: "Hackenschmidt / Beinpresse", sets: 4, reps: "8-10", alts: ["Beinpresse 45°"] },
+    { id: "la2", name: "Goblet Squat", sets: 3, reps: "10", alts: ["Frontkniebeuge", "Bulgarian Split Squat"] },
+    { id: "la3", name: "Beinstrecker", sets: 3, reps: "12-15", alts: [] },
+    { id: "la4", name: "Liegende Beincurls", sets: 4, reps: "10-12", alts: ["Sitzende Beincurls"] },
+    { id: "la5", name: "Hip Thrust Maschine/Langhantel", sets: 3, reps: "8-12", alts: ["Cable Pull-Through"] },
+    { id: "la6", name: "Wadenheben stehend", sets: 4, reps: "12-15", alts: ["Wadenheben Maschine"] },
+    { id: "la7", name: "Dead Bug", sets: 3, reps: "10/Seite", alts: ["Bird Dog"], core: true },
+  ],
+  pushB: [
+    { id: "pb1", name: "Schulterdrücken Lang-/Kurzhantel", sets: 4, reps: "6-8", alts: ["Machine Shoulder Press"] },
+    { id: "pb2", name: "Schrägbankdrücken Maschine", sets: 3, reps: "10", alts: ["Schrägbankdrücken Kurzhantel"] },
+    { id: "pb3", name: "Seitheben Kabel", sets: 4, reps: "15-20", alts: ["Seitheben Kurzhantel"] },
+    { id: "pb4", name: "Butterfly / Pec Deck", sets: 3, reps: "12-15", alts: ["Kabel-Crossover"] },
+    { id: "pb5", name: "Enges Bankdrücken", sets: 3, reps: "8-10", alts: ["Trizeps Dip Maschine"] },
+    { id: "pb6", name: "Trizeps Überkopf-Extension KH", sets: 3, reps: "10-12", alts: ["Seil Überkopf-Extension"] },
+    { id: "pb7", name: "Ab Wheel Rollout", sets: 3, reps: "8-10", alts: ["Cable Crunch"], core: true },
+  ],
+  pullB: [
+    { id: "plb1", name: "T-Bar Row Chest-Supported", sets: 4, reps: "8-10", alts: ["Langhantelrudern", "Maschinen-Rudern"] },
+    { id: "plb2", name: "Latzug eng/neutral", sets: 3, reps: "10-12", alts: ["Klimmzüge neutral"] },
+    { id: "plb3", name: "Einarmiges Kurzhantelrudern", sets: 3, reps: "10/Seite", alts: ["Kabel einarmig Rudern"] },
+    { id: "plb4", name: "Reverse Fly", sets: 3, reps: "15", alts: ["Face Pulls"] },
+    { id: "plb5", name: "Kabel-Curl", sets: 3, reps: "10-12", alts: ["Bizeps-Curl Kurzhantel"] },
+    { id: "plb6", name: "Konzentrationscurl", sets: 3, reps: "10-12", alts: ["Preacher Curl"] },
+    { id: "plb7", name: "Farmer's Carry", sets: 3, reps: "30-40m", alts: ["Suitcase Carry"], core: true },
+  ],
+  legsB: [
+    { id: "lb1", name: "Beinpresse hoher Fußstand", sets: 4, reps: "10-12", alts: ["Beinpresse 45°"] },
+    { id: "lb2", name: "Hip Thrust", sets: 4, reps: "8-10", alts: ["Cable Pull-Through"] },
+    { id: "lb3", name: "Walking Lunges", sets: 3, reps: "10/Bein", alts: ["Bulgarian Split Squat"] },
+    { id: "lb4", name: "Sitzende Beincurls", sets: 4, reps: "10-12", alts: ["Liegende Beincurls"] },
+    { id: "lb5", name: "Beinstrecker", sets: 3, reps: "12-15", alts: [] },
+    { id: "lb6", name: "Wadenheben sitzend", sets: 4, reps: "15", alts: ["Wadenheben stehend"] },
+    { id: "lb7", name: "Plank + Side Plank", sets: 3, reps: "30-45s", alts: ["Pallof Press"], core: true },
+  ],
+};
+
+const STORAGE_KEY = "eisernes-log-v1";
+
+function emptySets(n) {
+  return Array.from({ length: n }, () => ({ weight: "", reps: "", rir: "", done: false }));
+}
+
+function buildInitialSets(exId, n) {
+  const weights = state.lastWeights[exId] || [];
+  return Array.from({ length: n }, (_, i) => ({
+    weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
+    reps: "",
+    rir: "",
+    done: false,
+  }));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        currentDay: parsed.currentDay || "pushA",
+        sessions: parsed.sessions || {},
+        history: parsed.history || {},
+        swaps: parsed.swaps || {},
+        notes: parsed.notes || {},
+        lastWeights: parsed.lastWeights || {},
+        lastCompletedDay: parsed.lastCompletedDay || null,
+        lastCompletedDate: parsed.lastCompletedDate || null,
+      };
+    }
+  } catch (e) { /* ignore */ }
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null };
+}
+
+let state = loadState();
+let swapOpenKey = null;
+let saveTimer = null;
+
+function persist() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Speichern fehlgeschlagen", e);
+    }
+  }, 300);
+}
+
+function getSetsFor(dayId, ex) {
+  const day = state.sessions[dayId];
+  if (day && day[ex.id] && day[ex.id].length === ex.sets) return day[ex.id];
+  return buildInitialSets(ex.id, ex.sets);
+}
+
+function ensureDaySets(dayId, ex) {
+  if (!state.sessions[dayId]) state.sessions[dayId] = {};
+  if (!state.sessions[dayId][ex.id] || state.sessions[dayId][ex.id].length !== ex.sets) {
+    state.sessions[dayId][ex.id] = buildInitialSets(ex.id, ex.sets);
+  }
+  return state.sessions[dayId][ex.id];
+}
+
+function tallyHTML(count) {
+  if (count === 0) return '<span style="color: var(--chalk-dim); font-size: 13px;">—</span>';
+  const groups = [];
+  let remaining = count;
+  while (remaining > 0) {
+    const g = Math.min(5, remaining);
+    groups.push(g);
+    remaining -= g;
+  }
+  return '<span class="tally">' + groups.map(g => {
+    let strokes = "";
+    for (let i = 0; i < g; i++) strokes += '<span class="tally-stroke"></span>';
+    const slash = g === 5 ? '<span class="tally-slash"></span>' : "";
+    return `<span class="tally-group">${strokes}${slash}</span>`;
+  }).join("") + '</span>';
+}
+
+function escapeAttr(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function getRecommendedDay() {
+  if (!state.lastCompletedDay) return DAYS[0].id;
+  const idx = DAYS.findIndex(d => d.id === state.lastCompletedDay);
+  if (idx === -1) return DAYS[0].id;
+  return DAYS[(idx + 1) % DAYS.length].id;
+}
+
+function renderTodayBanner() {
+  const today = new Date().toLocaleDateString("de-DE");
+  const trainedToday = state.lastCompletedDate === today;
+  const recDay = getRecommendedDay();
+  const recLabel = DAYS.find(d => d.id === recDay).label;
+
+  if (trainedToday) {
+    const lastLabel = DAYS.find(d => d.id === state.lastCompletedDay).label;
+    return `
+      <div class="today-banner done-today">
+        <div class="today-banner-text">✅ Heute schon trainiert: <b>${lastLabel}</b>. Nächstes Mal: <b>${recLabel}</b></div>
+        <button class="today-banner-btn" data-role="day-tab" data-day="${recDay}">Zu ${recLabel}</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="today-banner">
+      <div class="today-banner-text">📅 Heute dran: <b>${recLabel}</b></div>
+      <button class="today-banner-btn" data-role="day-tab" data-day="${recDay}">Los geht's</button>
+    </div>
+  `;
+}
+
+function render() {
+  const day = state.currentDay;
+  const dayMeta = DAYS.find(d => d.id === day);
+  const exercises = EXERCISES[day];
+
+  const tabsHTML = DAYS.map(d => `
+    <button class="tab-btn ${d.id === day ? "active" : ""}" data-role="day-tab" data-day="${d.id}">${d.label}</button>
+  `).join("");
+
+  const cardsHTML = exercises.map(ex => {
+    const swapKey = `${day}:${ex.id}`;
+    const displayName = state.swaps[swapKey] || ex.name;
+    const sets = getSetsFor(day, ex);
+    const doneCount = sets.filter(s => s.done).length;
+    const hist = state.history[ex.id];
+    const note = state.notes[swapKey] || "";
+
+    const historyHTML = hist ? `
+      <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}${hist.rir ? " @" + escapeAttr(hist.rir) + " RIR" : ""}</b> <span>(${escapeAttr(hist.date)})</span></div>
+    ` : "";
+
+    const swapPanelHTML = swapOpenKey === swapKey ? `
+      <div class="swap-panel">
+        <div class="swap-panel-label">Alternative wählen</div>
+        <div class="swap-options">
+          ${ex.alts.length === 0 ? '<span style="font-size:12px;color:var(--chalk-dim);">Keine Standard-Alternativen hinterlegt.</span>' : ""}
+          ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
+          ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
+        </div>
+      </div>
+    ` : "";
+
+    const setsHTML = sets.map((s, i) => `
+      <div class="set-row">
+        <span class="set-idx">${i + 1}</span>
+        <input class="set-input" type="number" inputmode="decimal" placeholder="0"
+          value="${s.weight}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />
+        <input class="set-input" type="number" inputmode="numeric" placeholder="0"
+          value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />
+        <div class="rir-group">
+          ${["0","1","2","3+"].map(r => `<button class="rir-chip ${s.rir === r ? "active" : ""}" data-role="set-rir" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-rir="${r}">${r}</button>`).join("")}
+        </div>
+        <button class="done-btn ${s.done ? "done" : ""}" data-role="set-done" data-day="${day}" data-exid="${ex.id}" data-idx="${i}">${s.done ? "✓" : ""}</button>
+      </div>
+    `).join("");
+
+    return `
+      <div class="card">
+        <div class="card-top">
+          <div style="flex:1;">
+            <div class="card-title-row">
+              <h3>${displayName}</h3>
+              ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
+              ${state.swaps[swapKey] ? `<span class="badge-swapped">statt ${ex.name}</span>` : ""}
+            </div>
+            <div class="target-line">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
+            ${historyHTML}
+          </div>
+          <button class="swap-btn" title="Übung tauschen" data-role="swap-toggle" data-day="${day}" data-exid="${ex.id}">⟲</button>
+        </div>
+        ${swapPanelHTML}
+        <div class="set-header">
+          <span>#</span><span>kg</span><span>Wdh.</span><span>RIR</span><span></span>
+        </div>
+        ${setsHTML}
+        <div class="set-footer">
+          ${tallyHTML(doneCount)}
+          <span class="set-count">${doneCount}/${ex.sets} Sätze</span>
+        </div>
+        <textarea class="note-input" rows="1" placeholder="Notiz (Technik, Schmerzen, Griffweite …)"
+          data-role="note" data-day="${day}" data-exid="${ex.id}">${note}</textarea>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("app").innerHTML = `
+    <div class="header">
+      <div class="header-row">
+        <div>
+          <div class="header-title">
+            <span style="color: var(--rust); font-size: 18px;">🏋</span>
+            <h1>Eisernes Log</h1>
+          </div>
+          <div class="header-sub">Push · Pull · Legs — Fortschritt eintragen</div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
+          <button class="icon-btn" data-role="import-trigger" title="Backup aus JSON importieren">⭱ Import</button>
+          <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
+        </div>
+      </div>
+    </div>
+    ${renderTodayBanner()}
+    <div class="tabs">${tabsHTML}</div>
+    <div class="content">
+      <div class="focus-line">Fokus: <span>${dayMeta.sub}</span></div>
+      ${cardsHTML}
+      <button class="finish-btn" data-role="finish" data-day="${day}">Training abschließen →</button>
+      <div class="toast" id="toast"></div>
+    </div>
+  `;
+}
+
+function finishSession(dayId) {
+  const daySets = state.sessions[dayId] || {};
+  const today = new Date().toLocaleDateString("de-DE");
+  EXERCISES[dayId].forEach(ex => {
+    const sets = daySets[ex.id];
+    if (!sets) return;
+    const doneSets = sets.filter(s => s.weight || s.reps);
+    if (doneSets.length > 0) {
+      const last = doneSets[doneSets.length - 1];
+      state.history[ex.id] = { weight: last.weight, reps: last.reps, rir: last.rir, date: today };
+    }
+    // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind
+    const hasAnyWeight = sets.some(s => s.weight);
+    if (hasAnyWeight) {
+      state.lastWeights[ex.id] = sets.map(s => s.weight || "");
+    }
+  });
+  state.lastCompletedDay = dayId;
+  state.lastCompletedDate = today;
+  const resetDay = {};
+  EXERCISES[dayId].forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
+  state.sessions[dayId] = resetDay;
+  persist();
+  render();
+  showToast("Training gespeichert. Gewichte bleiben für nächstes Mal vorbefüllt.");
+}
+
+// ---------- EXPORT / IMPORT ----------
+function exportData() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    app: "eisernes-log",
+    version: 1,
+    state: state,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `eisernes-log-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Backup wurde heruntergeladen.");
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const incoming = parsed && parsed.state ? parsed.state : parsed;
+      if (!incoming || typeof incoming !== "object") throw new Error("Ungültiges Format");
+      const ok = confirm("Backup importieren? Deine aktuell gespeicherten Trainingsdaten in diesem Browser werden überschrieben.");
+      if (!ok) return;
+      state = {
+        currentDay: incoming.currentDay || "pushA",
+        sessions: incoming.sessions || {},
+        history: incoming.history || {},
+        swaps: incoming.swaps || {},
+        notes: incoming.notes || {},
+      };
+      swapOpenKey = null;
+      persist();
+      render();
+      showToast("Backup importiert.");
+    } catch (e) {
+      alert("Die Datei konnte nicht gelesen werden. Ist es ein gültiges Eisernes-Log-Backup (.json)?");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  if (toast) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3500);
+  }
+}
+
+// ---------- EVENT DELEGATION ----------
+document.addEventListener("click", (e) => {
+  const exportBtn = e.target.closest('[data-role="export"]');
+  if (exportBtn) {
+    exportData();
+    return;
+  }
+
+  const importTrigger = e.target.closest('[data-role="import-trigger"]');
+  if (importTrigger) {
+    const input = document.getElementById("import-file-input");
+    if (input) input.click();
+    return;
+  }
+
+  const dayTab = e.target.closest('[data-role="day-tab"]');
+  if (dayTab) {
+    state.currentDay = dayTab.dataset.day;
+    swapOpenKey = null;
+    persist();
+    render();
+    return;
+  }
+
+  const swapToggle = e.target.closest('[data-role="swap-toggle"]');
+  if (swapToggle) {
+    const key = `${swapToggle.dataset.day}:${swapToggle.dataset.exid}`;
+    swapOpenKey = swapOpenKey === key ? null : key;
+    render();
+    return;
+  }
+
+  const swapSelect = e.target.closest('[data-role="swap-select"]');
+  if (swapSelect) {
+    const key = `${swapSelect.dataset.day}:${swapSelect.dataset.exid}`;
+    state.swaps[key] = swapSelect.dataset.alt;
+    swapOpenKey = null;
+    persist();
+    render();
+    return;
+  }
+
+  const swapClear = e.target.closest('[data-role="swap-clear"]');
+  if (swapClear) {
+    const key = `${swapClear.dataset.day}:${swapClear.dataset.exid}`;
+    delete state.swaps[key];
+    swapOpenKey = null;
+    persist();
+    render();
+    return;
+  }
+
+  const rirChip = e.target.closest('[data-role="set-rir"]');
+  if (rirChip) {
+    const { day, exid, idx, rir } = rirChip.dataset;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const sets = ensureDaySets(day, ex);
+    sets[idx].rir = rir;
+    persist();
+    render();
+    return;
+  }
+
+  const doneBtn = e.target.closest('[data-role="set-done"]');
+  if (doneBtn) {
+    const { day, exid, idx } = doneBtn.dataset;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const sets = ensureDaySets(day, ex);
+    sets[idx].done = !sets[idx].done;
+    persist();
+    render();
+    return;
+  }
+
+  const finishBtn = e.target.closest('[data-role="finish"]');
+  if (finishBtn) {
+    finishSession(finishBtn.dataset.day);
+    return;
+  }
+});
+
+// Text inputs: update state without full re-render (preserves focus/cursor)
+document.addEventListener("input", (e) => {
+  const field = e.target.closest('[data-role="set-field"]');
+  if (field) {
+    const { day, exid, idx, field: f } = field.dataset;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const sets = ensureDaySets(day, ex);
+    sets[idx][f] = field.value;
+    persist();
+    return;
+  }
+  const note = e.target.closest('[data-role="note"]');
+  if (note) {
+    const key = `${note.dataset.day}:${note.dataset.exid}`;
+    state.notes[key] = note.value;
+    persist();
+    return;
+  }
+});
+
+document.addEventListener("change", (e) => {
+  if (e.target && e.target.id === "import-file-input") {
+    const file = e.target.files && e.target.files[0];
+    if (file) importData(file);
+    e.target.value = "";
+  }
+});
+
+render();
+</script>
+</body>
+</html>
