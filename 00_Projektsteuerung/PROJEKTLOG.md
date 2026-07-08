@@ -2,6 +2,23 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-08 (Teil 11): Repo in Ordnerstruktur aufgeräumt
+
+- Nutzer wollte eine übersichtliche Ordnerstruktur, während Gemini Deep Research für die Feature-Roadmap (Teil 10) läuft: Archiv, Webapp, Recherchen, Quellen, Tools, plus eigene Ideen.
+- Vorab geklärt: GitHub Pages liefert nur aus dem Repo-Root oder einem Ordner namens exakt `docs` aus — ein frei benannter "Webapp"-Ordner hätte das Deployment gebrochen (außer mit zusätzlichem Build-Workflow, den `CLAUDE.md` bewusst vermeidet). Nutzer hat sich für "Webapp-Dateien bleiben im Root" entschieden.
+- Neue Struktur: `00_Projektsteuerung/` (MEMORY.md, PROJEKTLOG.md, hierher verschoben), `01_Recherchen/` (leere Unterordner für die 4 Deep-Research-Themen: Trainingspläne, Übungserklärungen, Aufwärmen, Stretching), `02_Quellen/` (Belege), `03_Tools/worker/` (Cloudflare-Gemini-Proxy, verschoben aus `worker/`), `04_Archiv/` (`files.zip`, ursprünglicher Projekt-Upload, gitignored).
+- Webapp-Dateien (`index.html`, `sw.js`, `manifest.json`, `icon-*.png`) sowie `CLAUDE.md`/`README.md` bleiben bewusst im Root (GitHub-Pages- bzw. Tooling-Konvention).
+- Alle Pfad-Referenzen in `CLAUDE.md` (PROJEKTLOG-Verweise, `cd worker`-Befehl, Worker-Dateipfade) und `.gitignore` (`worker/.wrangler/` → `03_Tools/worker/.wrangler/`) entsprechend aktualisiert; per `git mv` verschoben, keine App-Datei inhaltlich verändert (bestätigt: kein Diff auf `index.html`/`sw.js`/`manifest.json`/Icons gegenüber `origin/main`) — daher kein Versions-Bump.
+- Lokal committed, noch nicht gepusht (reine Struktur-/Doku-Änderung ohne Live-Auswirkung).
+
+## 2026-07-08 (Teil 10): Feature-Roadmap dokumentiert
+
+- Nutzer hat eine Wunschliste für die Zukunft skizziert: vorgefertigte wissenschaftlich fundierte Trainingspläne zur Auswahl, Plan-Wechsel ohne Datenverlust, Übungserklärungen in der App, Login-Funktion, eigene Übungen hinzufügen, Aufwärmen und Stretching passend zum jeweiligen Workout-Typ.
+- Eingeordnet in Recherche-Themen (Trainingspläne, Übungserklärungen, Aufwärmen, Stretching — brauchen wissenschaftliche Quellen) vs. reine Engineering-Themen (Plan-Wechsel, Login, eigene Übungen — Datenmodell-/Architekturarbeit ohne Recherchebedarf).
+- 4 copy-paste-fertige Gemini-Deep-Research-Prompts erstellt (strukturierte Ausgabeformate, damit die Ergebnisse später leicht ins bestehende `EXERCISES`-Datenmodell passen), um Recherche-Token in dieser Session zu sparen — Nutzer führt sie separat aus.
+- Empfohlene Umsetzungsreihenfolge in `MEMORY.md` festgehalten (Abschnitt "Feature-Roadmap"): Phase 0 (Übungs-Bibliothek vom Plan-Datenmodell trennen) → Phase 1 (Übungserklärungen, Aufwärmen, Stretching — additiv, kein Datenmodell-Umbau) → Phase 2 (mehrere Pläne + Plan-Wechsel + eigene Übungen — echter Datenmodell-Umbau) → Phase 3 (Login/Firebase, bewusst zuletzt, gekoppelt an "erster Freund steigt ein").
+- Kein App-Code geändert, daher kein Versions-Bump; Doku liegt in `MEMORY.md`, nicht hier im chronologischen Log — dieser Eintrag verweist nur darauf.
+
 ## v1.2.3 — 2026-07-08 (Teil 9): Header bricht auf schmalen Screens sauber um
 
 - Nutzer meldete: auf dem Handy erschien unter dem Titel nur noch "Push · Pull · ", der Rest der Subzeile war abgeschnitten (v1.2.1-Ellipsis-Fix hat den Titel-Container nicht ausreichend Platz gelassen, weil `flex: 1` mit Flex-Basis 0 der Actions-Leiste (Theme-Toggle + Export + Import) fast die ganze Zeile überlässt, bevor überhaupt "gewrapped" würde).
