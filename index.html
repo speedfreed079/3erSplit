@@ -22,7 +22,11 @@
     --rust-dim: #7a2c09;
     --olive: #7c8f5a;
     --olive-dim: #4d5738;
+    --text-zoom: 1;
   }
+  :root[data-textsize="gross"] { --text-zoom: 1.15; }
+  :root[data-textsize="xgross"] { --text-zoom: 1.3; }
+  #app, #rest-timer-bar { zoom: var(--text-zoom); }
   :root[data-theme="sepia"] {
     --bg: #f2e8d5;
     --surface: #e9dcc0;
@@ -1222,7 +1226,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.5.3";
+const APP_VERSION = "1.6.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1257,10 +1261,11 @@ function loadState() {
         lastCompletedDate: parsed.lastCompletedDate || null,
         theme: parsed.theme || "sepia",
         currentPlan: parsed.currentPlan || "ppl",
+        textSize: parsed.textSize || "normal",
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl" };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal" };
 }
 
 let state = loadState();
@@ -1454,6 +1459,15 @@ function escapeAttr(str) {
   return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+const TEXT_SIZES = ["normal", "gross", "xgross"];
+function nextTextSize(size) {
+  const idx = TEXT_SIZES.indexOf(size);
+  return TEXT_SIZES[(idx + 1) % TEXT_SIZES.length];
+}
+function textSizeLabel(size) {
+  return { normal: "Aa ●○○", gross: "Aa ●●○", xgross: "Aa ●●●" }[size] || "Aa ●○○";
+}
+
 function warmupSectionHTML(type) {
   const w = WARMUP[type];
   if (!w) return "";
@@ -1533,6 +1547,7 @@ function renderTodayBanner() {
 
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
+  document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
 
@@ -1639,6 +1654,7 @@ function render() {
         </div>
         <div class="header-actions">
           <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
+          <button class="icon-btn" data-role="textsize-toggle" title="Schriftgröße">${textSizeLabel(state.textSize || "normal")}</button>
           <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
           <button class="icon-btn" data-role="import-trigger" title="Backup aus JSON importieren">⭱ Import</button>
           <a class="icon-btn" href="howto.html" title="Anleitung öffnen">❓ Anleitung</a>
@@ -1734,6 +1750,7 @@ function importData(file) {
         lastCompletedDate: incoming.lastCompletedDate || null,
         theme: incoming.theme || "sepia",
         currentPlan: incoming.currentPlan || "ppl",
+        textSize: incoming.textSize || "normal",
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -1765,6 +1782,14 @@ document.addEventListener("click", (e) => {
   const themeToggle = e.target.closest('[data-role="theme-toggle"]');
   if (themeToggle) {
     state.theme = state.theme === "sepia" ? "dark" : "sepia";
+    persist();
+    render();
+    return;
+  }
+
+  const textSizeToggle = e.target.closest('[data-role="textsize-toggle"]');
+  if (textSizeToggle) {
+    state.textSize = nextTextSize(state.textSize || "normal");
     persist();
     render();
     return;

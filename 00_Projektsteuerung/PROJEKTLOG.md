@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.6.0 — 2026-07-08 (Teil 23): Schriftgrößen-Umschalter (3 Stufen)
+
+- Nutzer-Feedback zur Logo-Größenanpassung führte zur eigentlichen Anfrage: "jede Schrift soll größer werden, 3 Stufen wären gut" — also ein globaler Text-/UI-Skalierungs-Regler, nicht nur eine einzelne Schriftgröße.
+- Umsetzung: neue CSS-Variable `--text-zoom` (Default 1, `gross` → 1.15, `xgross` → 1.3), gesetzt über `data-textsize` auf `<html>` (exakt dasselbe Muster wie `data-theme`). Angewendet als `zoom` auf `#app` und `#rest-timer-bar` — skaliert dadurch die **gesamte** Oberfläche (Schrift, Buttons, Abstände) proportional, nicht nur einzelne Font-Size-Regeln. Dadurch mussten nicht ~40 einzelne `font-size`-Deklarationen im Stylesheet angefasst werden.
+- Neuer Button "Aa ●○○/●●○/●●●" im Header (neben Dark/Sepia-Toggle), zyklisch normal → groß → sehr groß → normal. Neues `state.textSize`, persistiert, mit Fallback in `loadState()` und `importData()`.
+- `zoom` als CSS-Property braucht Firefox 126+ (Mitte 2024) — auf älteren Firefox-Versionen wird die Skalierung einfach ignoriert (kein Crash, nur kein Effekt), alle anderen relevanten Browser unterstützen es schon lange.
+- `howto.html` (neuer Abschnitt "Schriftgröße") und `CLAUDE.md` (State-Beschreibung) gemäß der neuen Doku-Regel aktualisiert.
+- Verifiziert: Node-Harness bestätigt korrekte 3-Stufen-Rotation, korrektes Button-Label pro Stufe und korrektes `data-textsize`-Attribut nach `render()`.
+
 ## v1.5.3 — 2026-07-08 (Teil 22): Header-Logo nochmal größer
 
 - Nutzer-Feedback: Logo wirkt im Verhältnis zu "Fretze pumpt" noch zu klein.
