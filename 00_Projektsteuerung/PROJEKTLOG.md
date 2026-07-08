@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.3.3 — 2026-07-08 (Teil 17): Header-Unterzeile ist jetzt ehrlich statisch
+
+- Nutzer bemerkte zurecht: `Push · Pull · Legs — Fortschritt eintragen · v${APP_VERSION}` war komplett statisch (nur die Version änderte sich), wirkte aber wie ein Status. Direkt darunter liefert die bestehende "Heute dran"/"Heute schon trainiert"-Banner bereits den echten tagesaktuellen Inhalt.
+- Von 3 vorgeschlagenen Optionen (1: kürzen zu ehrlichem Tagline, 2: echter dynamischer Wert wie ein Streak-Zähler, 3: heutigen Fokus nochmal im Header spiegeln — redundant zur Banner) hat sich der Nutzer für **Option 1** entschieden, jetzt umgesetzt: Text gekürzt zu `PPL Trainingstracker · v${APP_VERSION}` (passt zum `<title>`), keine neue Logik.
+- **Offen für später**: Option 2 (z.B. Trainingsserie/Streak aus `state.history`/`lastCompletedDate` berechnet) als eigenes kleines Feature, falls gewünscht — siehe `MEMORY.md` für die Feature-Roadmap, dort ergänzen falls das umgesetzt werden soll.
+
 ## v1.3.2 — 2026-07-08 (Teil 16): Feinere Linien fürs Logo
 
 - Nutzer-Feedback: Logo-Linien sollen feiner werden, Farbe gleich lassen (kein neuer Farbwert).
