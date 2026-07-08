@@ -56,7 +56,10 @@
     font-weight: 600; font-size: 22px; letter-spacing: 1px;
     text-transform: uppercase; margin: 0;
   }
-  .header-sub { color: var(--chalk-dim); font-size: 13px; margin: 4px 0 0 28px; }
+  .header-sub {
+    color: var(--chalk-dim); font-size: 13px; margin: 4px 0 0 28px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
   .icon-btn {
     background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
@@ -311,7 +314,7 @@ const EXERCISES = {
   ],
 };
 
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.2.2";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -344,11 +347,11 @@ function loadState() {
         lastWeights: parsed.lastWeights || {},
         lastCompletedDay: parsed.lastCompletedDay || null,
         lastCompletedDate: parsed.lastCompletedDate || null,
-        theme: parsed.theme || "dark",
+        theme: parsed.theme || "sepia",
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "dark" };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia" };
 }
 
 let state = loadState();
@@ -650,7 +653,7 @@ function render() {
   document.getElementById("app").innerHTML = `
     <div class="header">
       <div class="header-row">
-        <div>
+        <div style="min-width:0; flex:1;">
           <div class="header-title">
             <span style="color: var(--rust); font-size: 18px;">🏋</span>
             <h1>Fretze pumpt</h1>

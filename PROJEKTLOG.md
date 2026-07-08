@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.2.2 — 2026-07-08 (Teil 8): Sepia als Standard-Theme
+
+- Nutzer gefällt Sepia besser als das ursprüngliche dunkle Theme; Default für neue/leere `localStorage`-Stände (erster Start, neues Gerät, Inkognito) von `"dark"` auf `"sepia"` geändert (beide Stellen in `loadState()`).
+- Wirkt nur, wo noch kein `theme`-Wert gespeichert ist — bestehende Installationen, bei denen bereits ein Theme persistiert wurde (z.B. durch Antippen des Toggles), bleiben unverändert bei ihrer aktuellen Wahl. Der Toggle-Button wechselt weiterhin frei zwischen beiden Modi.
+
+## v1.2.1 — 2026-07-08 (Teil 7): Header-Subzeile ohne Umbruch
+
+- Nutzer meldete per Screenshot (Sepia-Theme auf dem Handy): die Subzeile "Push · Pull · Legs — Fortschritt eintragen · v1.2.0" brach auf 3 Zeilen um, weil die Header-Actions (Theme-Toggle/Export/Import) den Titelblock zu stark einengten.
+- `.header-sub` auf `white-space: nowrap` + `text-overflow: ellipsis` umgestellt; der umschließende Titel-Container hat jetzt `min-width:0; flex:1`, damit er im Flex-Layout tatsächlich schrumpfen darf (sonst hätte `overflow:hidden` keine Wirkung gehabt). Bei sehr schmalen Screens wird die Zeile jetzt sauber mit "…" abgeschnitten statt hässlich umzubrechen.
+
 ## v1.2.0 — 2026-07-08 (Teil 6): Zweites Theme (Sepia/hell)
 
 - Zweiter Anzeigemodus neben dem bisherigen dunklen Theme: helles Sepia-Theme (warme Papier-/Beige-Töne statt Schwarz) für Nutzung bei hellem Umgebungslicht/Sonne.
