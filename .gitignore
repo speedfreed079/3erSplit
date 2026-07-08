@@ -2,3 +2,5 @@
 files.zip
 .DS_Store
 Thumbs.db
+worker/.wrangler/
+worker/node_modules/

@@ -301,8 +301,7 @@ const EXERCISES = {
 
 const STORAGE_KEY = "eisernes-log-v1";
 
-// TODO: nach "wrangler deploy" die echte Worker-URL hier eintragen (z.B. "https://eisernes-log-proxy.DEIN-SUBDOMAIN.workers.dev")
-const PROXY_URL = "";
+const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 
 function emptySets(n) {
   return Array.from({ length: n }, () => ({ weight: "", reps: "", rir: "", done: false }));
@@ -455,7 +454,7 @@ async function fetchAiSuggestions(day, exId) {
   render();
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
   try {
     const res = await fetch(PROXY_URL, {
       method: "POST",

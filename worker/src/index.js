@@ -1,5 +1,5 @@
 const ALLOWED_ORIGIN = "https://speedfreed079.github.io";
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 function corsHeaders() {
   return {
