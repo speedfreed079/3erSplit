@@ -2,6 +2,13 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-08 (Teil 15): Alle 4 Gemini-Deep-Research-Ergebnisse eingetroffen
+
+- Nutzer hat die Ergebnisse aller 4 Deep-Research-Prompts aus Teil 10 in `01_Recherchen` abgelegt; in die passenden Unterordner einsortiert: `01_Trainingsplaene/Trainingsplaene.md`, `02_Uebungserklaerungen/Uebungsdatenbank.md`, `03_Aufwaermen/Aufwaermprogramm.md`, `04_Stretching/Stretching.md`. `.gitkeep`-Platzhalter entfernt.
+- Kurz gegengecheckt: alle 4 Dokumente sind vollständig, gut strukturiert (Gliederung mit Referenzen-Abschnitt) und decken die angefragten Themen ab; die Übungsdatenbank geht die aktuelle `EXERCISES`-Liste Übung für Übung durch.
+- Noch nicht inhaltlich ausgewertet/ins Datenmodell integriert — das ist Phase 0/1 der Roadmap (siehe `MEMORY.md`), eigener Arbeitsschritt.
+- Kein App-Code geändert, daher kein Versions-Bump.
+
 ## v1.3.1 — 2026-07-08 (Teil 14): Header-Logo größer + Darkmode-Lesbarkeit
 
 - Nutzer-Feedback zum Live-Ergebnis von v1.3.0: Logo im Header darf größer sein, im Darkmode schlecht erkennbar.
