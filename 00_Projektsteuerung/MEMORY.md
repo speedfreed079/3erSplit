@@ -22,6 +22,7 @@ Projektweite Fakten und Entscheidungen für "Fretze pumpt" (bis 2026-07-08 "Eise
 ## Offene Punkte / Ideen
 
 - **Firebase-Migration geplant** (besprochen 2026-07-08): Umstieg von `localStorage` auf Firestore + Firebase Auth, sobald der erste Freund die App tatsächlich mitnutzt — nicht vorher, da es bis dahin keinen Mehrwert bringt. Nutzer hat bereits ein Firebase-Konto/-Projekt (aus anderem Kontext), das senkt die Einstiegshürde. Kernpunkt bei der Umsetzung: Firestore Security Rules sauber aufsetzen, damit Nutzer sich nicht gegenseitig Daten lesen/schreiben können — das ist der eigentliche Sorgfalts-Teil, nicht die SDK-Anbindung selbst (die geht per CDN-Script ohne Build-Step, Single-File-Architektur bleibt erhalten).
+- **Standard-Schriftgröße evtl. auf "sehr groß" (`xgross`) ändern?** (Notiz vom 2026-07-08, nach Einführung des 3-Stufen-Schriftgrößen-Reglers in v1.6.0): Nutzer fand beim Ausprobieren die größte Stufe am angenehmsten zu lesen ("konnte so entspannt lesen"), aktueller Default ist aber `"normal"`. Noch keine endgültige Entscheidung — nächste Session zuerst fragen, ob der Default wirklich auf `xgross` umgestellt werden soll (betrifft nur `loadState()`-Fallback für neue/leere Installationen, analog zur früheren Sepia-Default-Änderung in v1.2.2).
 
 ## Feature-Roadmap (Stand 2026-07-08)
 

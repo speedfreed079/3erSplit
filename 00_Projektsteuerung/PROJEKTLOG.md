@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-08 (Teil 24): Notiz zum Schriftgrößen-Default für nächste Session
+
+- Nutzer hat nach v1.6.0 die 3 Schriftgrößen-Stufen ausprobiert und fand die größte Stufe ("sehr groß") am angenehmsten zu lesen — aktueller Default bleibt aber `"normal"`, das war noch keine finale Entscheidung, nur eine Beobachtung zum Merken für die nächste Session.
+- In `MEMORY.md` unter "Offene Punkte" festgehalten: nächstes Mal zuerst fragen, ob der Default in `loadState()` auf `"xgross"` umgestellt werden soll, bevor das umgesetzt wird.
+- Kein Code geändert, daher kein Versions-Bump. Session wird vom Nutzer geschlossen.
+
 ## v1.6.0 — 2026-07-08 (Teil 23): Schriftgrößen-Umschalter (3 Stufen)
 
 - Nutzer-Feedback zur Logo-Größenanpassung führte zur eigentlichen Anfrage: "jede Schrift soll größer werden, 3 Stufen wären gut" — also ein globaler Text-/UI-Skalierungs-Regler, nicht nur eine einzelne Schriftgröße.
