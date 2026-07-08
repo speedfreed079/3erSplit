@@ -2,6 +2,11 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.5.3 — 2026-07-08 (Teil 22): Header-Logo nochmal größer
+
+- Nutzer-Feedback: Logo wirkt im Verhältnis zu "Fretze pumpt" noch zu klein.
+- Anzeigehöhe im Header von 36px auf 46px erhöht (Verhältnis zur 22px-Schrift jetzt ~2.1:1 statt ~1.6:1).
+
 ## v1.5.2 — 2026-07-08 (Teil 21): Ausführungshinweise für Aufwärmübungen ergänzt
 
 - Nutzer-Feedback: Übungen und Stretching sind gut mit Ausführungshinweisen beschrieben, die Aufwärmübungen (Mobilisation/Aktivierung) bisher nicht — dort stand nur Name + Wiederholungen.
