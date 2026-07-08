@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-08 (Teil 12): Nutzer-Änderungen an der Ordnerstruktur übernommen + dokumentiert
+
+- Nutzer hat direkt im Dateisystem (außerhalb der Session) zwei Änderungen an der in Teil 11 angelegten Struktur vorgenommen:
+  - `04_Archiv/` → `99_Archiv/` umbenannt (Archiv bewusst ans Ende der Nummerierung, da am wenigsten relevant für den Alltag). Git hat das als Rename erkannt (`README.md` inhaltsgleich verschoben), `files.zip` bleibt wie zuvor gitignored/nur lokal.
+  - Neuer Ordner `04_Medien/` mit `logo_fretze_pumpt.png` (rundes Logo: stilisierter Kopf mit Bart + Hantel-Motiv, in Rust-Rot passend zur `--rust`-Akzentfarbe der App) — noch nicht in `index.html`/`manifest.json` verdrahtet, reine Ablage.
+  - **Auffälligkeit, dem Nutzer zur Bestätigung vorgelegt statt stillschweigend übernommen**: der Schriftzug im Logo lautet "FRED PUMPT", der Dateiname und die App selbst heißen "Fretze pumpt" — ungeklärt, ob das Logo noch überarbeitet wird oder ein bewusster Kurzname ist.
+  - `CLAUDE.md`-Abschnitt "Ordnerstruktur" entsprechend aktualisiert (`99_Archiv`, neuer `04_Medien`-Eintrag).
+- Kein App-Code geändert, daher kein Versions-Bump.
+
 ## 2026-07-08 (Teil 11): Repo in Ordnerstruktur aufgeräumt
 
 - Nutzer wollte eine übersichtliche Ordnerstruktur, während Gemini Deep Research für die Feature-Roadmap (Teil 10) läuft: Archiv, Webapp, Recherchen, Quellen, Tools, plus eigene Ideen.

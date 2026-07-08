@@ -14,7 +14,8 @@ Die eigentliche Webapp (`index.html`, `sw.js`, `manifest.json`, `icon-*.png`) bl
 - `01_Recherchen/` — Ergebnisse der Gemini-Deep-Research-Prompts (Trainingspläne, Übungserklärungen, Aufwärmen, Stretching), je ein Unterordner.
 - `02_Quellen/` — Rohquellen/Belege, die die Recherchen stützen.
 - `03_Tools/worker/` — der Cloudflare-Gemini-Proxy-Worker (siehe unten), nicht Teil des GitHub-Pages-Deploys.
-- `04_Archiv/` — alte/nicht mehr aktiv genutzte Dateien (z.B. `files.zip`, der ursprüngliche Projekt-Upload vor dem Repo-Setup; gitignored).
+- `04_Medien/` — Grafik-/Bildassets (z.B. Logo), noch nicht in der Webapp verdrahtet (kein direkter Bezug aus `index.html`/`manifest.json`).
+- `99_Archiv/` — alte/nicht mehr aktiv genutzte Dateien (z.B. `files.zip`, der ursprüngliche Projekt-Upload vor dem Repo-Setup; gitignored). Bewusst mit hoher Nummer ans Ende sortiert, war ursprünglich `04_Archiv/`.
 
 ## Versioning (process rule, active since v1.1.0)
 
