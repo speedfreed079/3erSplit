@@ -38,9 +38,8 @@ Wunschliste des Nutzers, einsortiert nach Recherche- vs. Engineering-Aufwand und
 
 **Empfohlene Reihenfolge:**
 
-- **Phase 0 — Fundament (klein, einmalig):** Datenmodell in `index.html` erweitern, um eine "Übungs-Bibliothek" (kanonische Fakten: Name, Zielmuskeln, Erklärung, Formhinweise) von der reinen Plan-Struktur (welcher Tag enthält welche Übung mit welchen Sätzen/Wdh.) zu trennen. Zahlt sich sofort für Punkt 3 aus und macht 1 und 5 später sauberer, statt mehrfach Datenmodelle zu flicken.
-- **Phase 1 — Low-Risk-Content (kein Datenmodell-Umbau, additiv zum bestehenden PPL-Plan):** Punkt 3 (Übungserklärungen), Punkt 6 + 7 (Aufwärmen/Stretching pro Workout-Typ Push/Pull/Legs). Alle drei hängen nur an den Deep-Research-Ergebnissen, nicht an Punkt 1/2.
-- **Phase 2 — Echter Datenmodell-Umbau:** Punkt 1 (mehrere Pläne) zusammen mit Punkt 2 (Plan-Wechsel ohne Datenverlust — im Grunde derselbe Umbau: State/History/Gewichte müssen pro Plan+Tag statt nur pro Tag geführt werden). Punkt 5 (eigene Übungen hinzufügen) passt danach natürlich dazu, weil dann klar ist, zu welchem Plan/Tag eine custom Übung gehört.
+- **Phase 0/1 (erledigt, v1.4.0, 2026-07-08):** Übungs-Erklärungen (`EXERCISE_INFO`), Aufwärmen/Stretching pro Workout-Typ (`WARMUP`/`STRETCHING`) additiv zum bestehenden PPL-Plan eingebaut, siehe `PROJEKTLOG.md` Teil 18.
+- **Phase 2 (erledigt, v1.5.0, 2026-07-08):** Punkt 1 (mehrere Pläne: PPL/Upper-Lower/Ganzkörper/Bro-Split) + Punkt 2 (Plan-Wechsel ohne Datenverlust) umgesetzt, siehe `PROJEKTLOG.md` Teil 19 und `CLAUDE.md` Abschnitt "Data model" für den ID-Namensraum-Mechanismus. Punkt 5 (eigene Übungen hinzufügen) war bewusst **nicht** Teil dieser Version — offener nächster Schritt, sobald gewünscht.
 - **Phase 3 — bewusst zuletzt:** Punkt 4 (Login/Firebase). Bleibt an die bestehende Entscheidung gekoppelt (Auslöser = erster mitnutzender Freund, siehe oben), zusätzlich sinnvoll erst NACH Phase 2, damit nur einmal migriert wird (fertiges Datenmodell nach Firestore, nicht zweimal migrieren).
 
-**Nächster konkreter Schritt:** Nutzer führt die 4 Deep-Research-Prompts aus; sobald Ergebnisse da sind, startet Phase 1.
+**Nächster konkreter Schritt:** eigene Übungen hinzufügen (Punkt 5) — bisher einziger offener Roadmap-Punkt außer Login/Firebase (Phase 3, absichtlich später).

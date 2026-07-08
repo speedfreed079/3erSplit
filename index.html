@@ -73,6 +73,16 @@
   .icon-btn:active { border-color: var(--rust); color: var(--chalk); }
   .backup-note { font-size: 11px; color: var(--chalk-dim); margin: 8px 16px 0; }
 
+  .plan-row { display: flex; align-items: center; gap: 8px; margin: 14px 16px 0; }
+  .plan-label {
+    font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .plan-select {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+    color: var(--chalk); padding: 7px 9px; font-size: 13px; font-family: 'Inter', sans-serif;
+  }
+
   .today-banner {
     margin: 14px 16px 0; padding: 12px 14px; border-radius: 10px;
     border: 1px solid var(--rust-dim); background: linear-gradient(180deg, rgba(193,68,14,0.14), rgba(193,68,14,0.05));
@@ -294,7 +304,7 @@
 
 <script>
 // ---------- EXERCISE DATABASE ----------
-const DAYS = [
+const PPL_DAYS = [
   { id: "pushA", label: "Push A", sub: "Brust", type: "push" },
   { id: "pullA", label: "Pull A", sub: "Breite", type: "pull" },
   { id: "legsA", label: "Legs A", sub: "Quads", type: "legs" },
@@ -303,7 +313,7 @@ const DAYS = [
   { id: "legsB", label: "Legs B", sub: "Hintere Kette", type: "legs" },
 ];
 
-const EXERCISES = {
+const PPL_EXERCISES = {
   pushA: [
     { id: "pa1", name: "Flachbankdrücken Kurzhantel", sets: 4, reps: "6-8", alts: ["Flachbankdrücken Langhantel", "Machine Chest Press"] },
     { id: "pa2", name: "Schrägbankdrücken Kurzhantel", sets: 3, reps: "8-10", alts: ["Schrägbankdrücken Langhantel", "Incline Machine Press"] },
@@ -359,6 +369,140 @@ const EXERCISES = {
     { id: "lb7", name: "Plank + Side Plank", sets: 3, reps: "30-45s", alts: ["Pallof Press"], core: true },
   ],
 };
+
+// ---------- ALTERNATIVE PLÄNE (Quelle: 01_Recherchen/01_Trainingsplaene/Trainingsplaene.md) ----------
+const UL_DAYS = [
+  { id: "ulUpperA", label: "Oberkörper A", sub: "Oberkörper" },
+  { id: "ulLowerA", label: "Unterkörper A", sub: "Unterkörper", type: "legs" },
+  { id: "ulUpperB", label: "Oberkörper B", sub: "Oberkörper" },
+  { id: "ulLowerB", label: "Unterkörper B", sub: "Unterkörper", type: "legs" },
+];
+
+const UL_EXERCISES = {
+  ulUpperA: [
+    { id: "uua1", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "uua2", name: "Klimmzüge im Ristgriff", sets: 3, reps: "8-10", alts: [] },
+    { id: "uua3", name: "Schrägbankdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
+    { id: "uua4", name: "Rudern am Kabelzug im breiten Parallelgriff", sets: 3, reps: "10-12", alts: [] },
+    { id: "uua5", name: "Seitheben am Kabelzug", sets: 3, reps: "12-15", alts: [] },
+    { id: "uua6", name: "Incline Dumbbell Curls", sets: 3, reps: "10-12", alts: [] },
+    { id: "uua7", name: "Overhead-Trizepsdrücken am Kabelzug mit Seil", sets: 3, reps: "10-12", alts: [] },
+  ],
+  ulLowerA: [
+    { id: "ula1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "ula2", name: "Sitzender Beinbeuger", sets: 3, reps: "8-10", alts: [] },
+    { id: "ula3", name: "Beinpresse 45 Grad", sets: 3, reps: "10-12", alts: [] },
+    { id: "ula4", name: "Wadenheben stehend an der Maschine", sets: 4, reps: "8-10", alts: [] },
+    { id: "ula5", name: "Cable Crunches", sets: 3, reps: "12-15", alts: [], core: true },
+  ],
+  ulUpperB: [
+    { id: "uub1", name: "Kurzhantel-Rudern", sets: 3, reps: "6-8", alts: [] },
+    { id: "uub2", name: "Schulterdrücken mit der Langhantel stehend", sets: 3, reps: "6-8", alts: [] },
+    { id: "uub3", name: "Fliegende Bewegung mit Kurzhanteln auf der Flachbank", sets: 3, reps: "10-12", alts: [] },
+    { id: "uub4", name: "Latzug an der Maschine", sets: 3, reps: "10-12", alts: [] },
+    { id: "uub5", name: "Seitheben mit Kurzhanteln", sets: 3, reps: "12-15", alts: [] },
+    { id: "uub6", name: "Preacher Curls an der Maschine", sets: 3, reps: "10-12", alts: [] },
+    { id: "uub7", name: "Trizepsdrücken am Kabelzug mit gerader Stange", sets: 3, reps: "10-12", alts: [] },
+  ],
+  ulLowerB: [
+    { id: "ulb1", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "ulb2", name: "Beinstrecker-Maschine", sets: 3, reps: "10-12", alts: [] },
+    { id: "ulb3", name: "Ausfallschritte mit Kurzhanteln", sets: 3, reps: "10-12", alts: [] },
+    { id: "ulb4", name: "Wadenheben sitzend an der Maschine", sets: 4, reps: "12-15", alts: [] },
+    { id: "ulb5", name: "Beinheben hängend", sets: 3, reps: "max", alts: [], core: true },
+  ],
+};
+
+const FB_DAYS = [
+  { id: "fbA", label: "Ganzkörper A", sub: "Kniebeugen & Druck" },
+  { id: "fbB", label: "Ganzkörper B", sub: "Hüftstreckung & Zug" },
+  { id: "fbC", label: "Ganzkörper C", sub: "Ausfallschritte & Drücken/Ziehen" },
+];
+
+const FB_EXERCISES = {
+  fbA: [
+    { id: "fba1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "fba2", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "fba3", name: "Klimmzüge im Untergriff", sets: 3, reps: "8-10", alts: [] },
+    { id: "fba4", name: "Sitzender Beinbeuger", sets: 3, reps: "10-12", alts: [] },
+    { id: "fba5", name: "Seitheben mit Kurzhanteln", sets: 3, reps: "12-15", alts: [] },
+    { id: "fba6", name: "Overhead-Trizepsdrücken am Kabelzug mit Seil", sets: 3, reps: "10-12", alts: [] },
+  ],
+  fbB: [
+    { id: "fbb1", name: "Kreuzheben mit der Langhantel", sets: 3, reps: "5", alts: [] },
+    { id: "fbb2", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
+    { id: "fbb3", name: "Kurzhantel-Rudern auf der Schrägbank", sets: 3, reps: "8-10", alts: [] },
+    { id: "fbb4", name: "Beinstrecker-Maschine", sets: 3, reps: "10-12", alts: [] },
+    { id: "fbb5", name: "Incline Dumbbell Curls", sets: 3, reps: "10-12", alts: [] },
+    { id: "fbb6", name: "Wadenheben stehend an der Maschine", sets: 4, reps: "10-12", alts: [] },
+  ],
+  fbC: [
+    { id: "fbc1", name: "Hackenschmidt-Kniebeuge", sets: 3, reps: "8-10", alts: [] },
+    { id: "fbc2", name: "Schrägbankdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
+    { id: "fbc3", name: "Rudern am Kabelzug im engen Parallelgriff", sets: 3, reps: "10-12", alts: [] },
+    { id: "fbc4", name: "Sitzender Beinbeuger", sets: 3, reps: "10-12", alts: [] },
+    { id: "fbc5", name: "Face Pulls am Kabelzug", sets: 3, reps: "12-15", alts: [] },
+    { id: "fbc6", name: "Preacher Curls am Kabelzug", sets: 3, reps: "12-15", alts: [] },
+  ],
+};
+
+const BRO_DAYS = [
+  { id: "broChest", label: "Brust", sub: "Brust", type: "push" },
+  { id: "broBack", label: "Rücken", sub: "Rücken", type: "pull" },
+  { id: "broLegs", label: "Beine", sub: "Beine", type: "legs" },
+  { id: "broShoulders", label: "Schultern", sub: "Schultern" },
+  { id: "broArms", label: "Arme", sub: "Arme" },
+];
+
+const BRO_EXERCISES = {
+  broChest: [
+    { id: "brc1", name: "Flachbankdrücken mit der Langhantel", sets: 4, reps: "6-8", alts: [] },
+    { id: "brc2", name: "Schrägbankdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
+    { id: "brc3", name: "Dips am Barren", sets: 3, reps: "8-10", alts: [] },
+    { id: "brc4", name: "Fliegende Bewegung am Kabelzug", sets: 3, reps: "12-15", alts: [] },
+  ],
+  broBack: [
+    { id: "brb1", name: "Klimmzüge im Ristgriff", sets: 4, reps: "max", alts: [] },
+    { id: "brb2", name: "Langhantelrudern vorgebeugt", sets: 3, reps: "6-8", alts: [] },
+    { id: "brb3", name: "Latzug im engen Untergriff", sets: 3, reps: "10-12", alts: [] },
+    { id: "brb4", name: "Kurzhantel-Überzüge", sets: 3, reps: "12-15", alts: [] },
+  ],
+  broLegs: [
+    { id: "brl1", name: "Kniebeugen mit der Langhantel", sets: 4, reps: "6-8", alts: [] },
+    { id: "brl2", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "8-10", alts: [] },
+    { id: "brl3", name: "Hackenschmidt-Kniebeuge", sets: 3, reps: "10-12", alts: [] },
+    { id: "brl4", name: "Sitzender Beinbeuger", sets: 3, reps: "12-15", alts: [] },
+    { id: "brl5", name: "Wadenheben stehend an der Maschine", sets: 4, reps: "10-12", alts: [] },
+  ],
+  broShoulders: [
+    { id: "brs1", name: "Schulterdrücken mit der Langhantel stehend", sets: 4, reps: "6-8", alts: [] },
+    { id: "brs2", name: "Seitheben am Kabelzug", sets: 3, reps: "10-12", alts: [] },
+    { id: "brs3", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "10-12", alts: [] },
+    { id: "brs4", name: "Face Pulls am Kabelzug", sets: 3, reps: "12-15", alts: [] },
+  ],
+  broArms: [
+    { id: "bra1", name: "Incline Dumbbell Curls", sets: 3, reps: "10-12", alts: [] },
+    { id: "bra2", name: "Overhead-Trizepsdrücken am Kabelzug mit Seil", sets: 3, reps: "10-12", alts: [] },
+    { id: "bra3", name: "Preacher Curls an der Maschine", sets: 3, reps: "12-15", alts: [] },
+    { id: "bra4", name: "Trizepsdrücken am Kabelzug mit gerader Stange", sets: 3, reps: "12-15", alts: [] },
+  ],
+};
+
+const PLANS = [
+  { id: "ppl", label: "Push/Pull/Legs", days: PPL_DAYS, exercises: PPL_EXERCISES },
+  { id: "upperLower", label: "Upper/Lower", days: UL_DAYS, exercises: UL_EXERCISES },
+  { id: "fullbody", label: "Ganzkörper", days: FB_DAYS, exercises: FB_EXERCISES },
+  { id: "broSplit", label: "Bro-Split", days: BRO_DAYS, exercises: BRO_EXERCISES },
+];
+
+let DAYS = PPL_DAYS;
+let EXERCISES = PPL_EXERCISES;
+
+function applyPlan(planId) {
+  const plan = PLANS.find(p => p.id === planId) || PLANS[0];
+  DAYS = plan.days;
+  EXERCISES = plan.exercises;
+}
 
 // Quelle: 01_Recherchen/02_Uebungserklaerungen/Uebungsdatenbank.md (Gemini Deep Research). Keyed by ex.id, nicht ex.name (Namen weichen leicht ab).
 const EXERCISE_INFO = {
@@ -1077,7 +1221,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1111,13 +1255,16 @@ function loadState() {
         lastCompletedDay: parsed.lastCompletedDay || null,
         lastCompletedDate: parsed.lastCompletedDate || null,
         theme: parsed.theme || "sepia",
+        currentPlan: parsed.currentPlan || "ppl",
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia" };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl" };
 }
 
 let state = loadState();
+applyPlan(state.currentPlan);
+if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
 let swapOpenKey = null;
 let infoOpenKey = null;
 let warmupOpen = false;
@@ -1308,6 +1455,7 @@ function escapeAttr(str) {
 
 function warmupSectionHTML(type) {
   const w = WARMUP[type];
+  if (!w) return "";
   const bodyHTML = warmupOpen ? `
     <div class="collapsible-body">
       <div class="collapsible-line"><b>Allgemein:</b> ${w.general}</div>
@@ -1335,6 +1483,7 @@ function warmupSectionHTML(type) {
 
 function stretchSectionHTML(type) {
   const items = STRETCHING[type];
+  if (!items) return "";
   const bodyHTML = stretchOpen ? `
     <div class="collapsible-body">
       <ul class="collapsible-list">
@@ -1495,6 +1644,12 @@ function render() {
         </div>
       </div>
     </div>
+    <div class="plan-row">
+      <label class="plan-label" for="plan-select">Plan</label>
+      <select id="plan-select" class="plan-select" data-role="plan-select">
+        ${PLANS.map(p => `<option value="${p.id}" ${p.id === state.currentPlan ? "selected" : ""}>${p.label}</option>`).join("")}
+      </select>
+    </div>
     ${renderTodayBanner()}
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
@@ -1572,8 +1727,18 @@ function importData(file) {
         history: incoming.history || {},
         swaps: incoming.swaps || {},
         notes: incoming.notes || {},
+        lastWeights: incoming.lastWeights || {},
+        lastCompletedDay: incoming.lastCompletedDay || null,
+        lastCompletedDate: incoming.lastCompletedDate || null,
+        theme: incoming.theme || "sepia",
+        currentPlan: incoming.currentPlan || "ppl",
       };
+      applyPlan(state.currentPlan);
+      if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
       swapOpenKey = null;
+      infoOpenKey = null;
+      warmupOpen = false;
+      stretchOpen = false;
       persist();
       render();
       showToast("Backup importiert.");
@@ -1758,6 +1923,19 @@ document.addEventListener("change", (e) => {
     const file = e.target.files && e.target.files[0];
     if (file) importData(file);
     e.target.value = "";
+  }
+
+  const planSelect = e.target.closest('[data-role="plan-select"]');
+  if (planSelect) {
+    state.currentPlan = planSelect.value;
+    applyPlan(state.currentPlan);
+    state.currentDay = DAYS[0].id;
+    swapOpenKey = null;
+    infoOpenKey = null;
+    warmupOpen = false;
+    stretchOpen = false;
+    persist();
+    render();
   }
 });
 
