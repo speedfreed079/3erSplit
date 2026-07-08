@@ -13,6 +13,7 @@ There is no build, lint, or test tooling — no `package.json`, no dependencies.
 - **Develop**: edit `index.html` directly and reload in a browser.
 - **Test PWA/offline behavior**: the service worker (`sw.js`) only registers on a real HTTP origin, not `file://`. Serve the folder locally, e.g. `npx serve` or `python -m http.server`, then open it.
 - **Deploy**: pushing to `main` on GitHub is the deploy — GitHub Pages serves this repo directly (no `gh-pages` branch, no build step). Live at the repo's Pages URL. Only push to `main` when explicitly asked to deploy.
+- **Deploy the Gemini proxy worker**: `cd worker && wrangler deploy` (requires `wrangler secret put GEMINI_API_KEY` once beforehand). This is separate from the GitHub Pages deploy — the worker lives on Cloudflare, not in this repo's Pages site.
 
 ## Architecture
 
@@ -30,4 +31,8 @@ Everything lives in one file, `index.html`: inline `<style>` block plus a single
 
 **Session flow**: `finishSession(dayId)` records the last completed set per exercise into `state.history` (shown as "Letztes Mal: ..."), snapshots current weights into `state.lastWeights` (used by `buildInitialSets` to prefill next time), resets the day's sets, and stamps `lastCompletedDay`/`lastCompletedDate` (used by `renderTodayBanner()`/`getRecommendedDay()` to suggest the next day in the PPL rotation on the home banner).
 
-**Exercise swapping**: `state.swaps[`${day}:${exId}`]` maps an exercise slot to a chosen alternative name (from that exercise's `alts` list); the original exercise's `sets`/`reps` targets and history are still keyed by the original `ex.id`, only the displayed name changes.
+**Exercise swapping**: `state.swaps[`${day}:${exId}`]` maps an exercise slot to a chosen alternative name (from that exercise's `alts` list, or an AI-suggested name); the original exercise's `sets`/`reps` targets and history are still keyed by the original `ex.id`, only the displayed name changes.
+
+**Rest timer**: `restTimer` (endsAt/duration/intervalId) is module-level, in-memory only — deliberately not part of `state`/`localStorage`. Starts via `startRestTimer()` when a set is marked done (in the `set-done` click handler). Its bar (`#rest-timer-bar`) lives outside `#app` in the static HTML and is updated directly via `renderRestTimer()`, not through the main `render()` pipeline, so it survives full re-renders without extra bookkeeping.
+
+**KI-gestützter Übungstausch**: `worker/` contains a standalone Cloudflare Worker (`wrangler deploy` from that directory, not part of the GitHub Pages deploy) that proxies to the Gemini API — it holds `GEMINI_API_KEY` server-side so the key never reaches the client. The client's `PROXY_URL` constant (top of the script) must point at the deployed worker URL; empty string disables the feature gracefully. `fetchAiSuggestions()` calls the worker and stores results in the in-memory (non-persisted) `aiSuggestions` map, keyed like `state.swaps`; results render via `aiSuggestHTML()` inside the existing swap panel and, on selection, flow through the same `swap-select` mechanism as the static `alts`.

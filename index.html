@@ -126,6 +126,21 @@
     background: transparent; color: var(--rust); cursor: pointer; display: flex; align-items: center; gap: 4px;
   }
 
+  .ai-suggest-panel { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .ai-suggest-btn {
+    font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--olive-dim);
+    background: transparent; color: var(--olive); cursor: pointer;
+  }
+  .ai-suggest-btn:disabled { opacity: 0.6; cursor: default; }
+  .ai-suggest-status { font-size: 12px; color: var(--chalk-dim); }
+  .ai-suggest-error { font-size: 12px; color: var(--rust); }
+  .ai-opt-btn {
+    display: block; width: 100%; text-align: left; margin-top: 6px;
+    font-size: 12px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--olive-dim);
+    background: var(--bg); color: var(--chalk); cursor: pointer;
+  }
+  .ai-opt-reason { display: block; font-size: 11px; color: var(--chalk-dim); margin-top: 2px; }
+
   .set-header {
     display: grid; grid-template-columns: 22px 1fr 1fr auto 24px; gap: 8px;
     font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
@@ -184,10 +199,37 @@
     display: none;
   }
   .toast.show { display: block; }
+
+  .rest-timer-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: var(--surface2); border-top: 1px solid var(--rust);
+    padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.35);
+  }
+  .rest-timer-bar.hidden { display: none; }
+  .rest-timer-label { font-size: 11px; color: var(--chalk-dim); text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Oswald', sans-serif; }
+  .rest-timer-time { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--chalk); font-weight: 600; }
+  .rest-timer-actions { display: flex; gap: 6px; align-items: center; }
+  .rest-timer-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 11px; color: var(--chalk); cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  .rest-timer-skip { border-color: var(--rust); color: var(--rust); }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="rest-timer-bar" class="rest-timer-bar hidden">
+  <div>
+    <div class="rest-timer-label">Satzpause</div>
+    <div class="rest-timer-time" id="rest-timer-time">01:30</div>
+  </div>
+  <div class="rest-timer-actions">
+    <button class="rest-timer-btn" data-role="rest-minus">−15s</button>
+    <button class="rest-timer-btn" data-role="rest-plus">+15s</button>
+    <button class="rest-timer-btn rest-timer-skip" data-role="rest-skip">Überspringen</button>
+  </div>
+</div>
 
 <script>
 // ---------- EXERCISE DATABASE ----------
@@ -259,6 +301,9 @@ const EXERCISES = {
 
 const STORAGE_KEY = "eisernes-log-v1";
 
+// TODO: nach "wrangler deploy" die echte Worker-URL hier eintragen (z.B. "https://eisernes-log-proxy.DEIN-SUBDOMAIN.workers.dev")
+const PROXY_URL = "";
+
 function emptySets(n) {
   return Array.from({ length: n }, () => ({ weight: "", reps: "", rir: "", done: false }));
 }
@@ -296,6 +341,142 @@ function loadState() {
 let state = loadState();
 let swapOpenKey = null;
 let saveTimer = null;
+
+// ---------- REST TIMER ----------
+const restTimer = { endsAt: null, duration: 90, intervalId: null };
+
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) { /* Audio nicht verfügbar */ }
+}
+
+function renderRestTimer() {
+  const bar = document.getElementById("rest-timer-bar");
+  const timeEl = document.getElementById("rest-timer-time");
+  if (!bar || !timeEl) return;
+  if (!restTimer.endsAt) {
+    bar.classList.add("hidden");
+    return;
+  }
+  const remainingMs = restTimer.endsAt - Date.now();
+  if (remainingMs <= 0) {
+    stopRestTimer();
+    beep();
+    if (navigator.vibrate) navigator.vibrate(200);
+    return;
+  }
+  bar.classList.remove("hidden");
+  const remainingSec = Math.ceil(remainingMs / 1000);
+  const mm = String(Math.floor(remainingSec / 60)).padStart(2, "0");
+  const ss = String(remainingSec % 60).padStart(2, "0");
+  timeEl.textContent = `${mm}:${ss}`;
+}
+
+function startRestTimer(seconds = restTimer.duration) {
+  restTimer.endsAt = Date.now() + seconds * 1000;
+  renderRestTimer();
+  if (restTimer.intervalId) clearInterval(restTimer.intervalId);
+  restTimer.intervalId = setInterval(renderRestTimer, 250);
+}
+
+function adjustRestTimer(deltaSeconds) {
+  if (!restTimer.endsAt) return;
+  restTimer.endsAt += deltaSeconds * 1000;
+  renderRestTimer();
+}
+
+function stopRestTimer() {
+  restTimer.endsAt = null;
+  if (restTimer.intervalId) clearInterval(restTimer.intervalId);
+  restTimer.intervalId = null;
+  renderRestTimer();
+}
+
+// ---------- KI-ÜBUNGSVORSCHLÄGE (via Cloudflare-Worker-Proxy) ----------
+// Flüchtiger State, nicht in localStorage: { [swapKey]: { status: 'loading'|'done'|'error', suggestions?, error? } }
+const aiSuggestions = {};
+
+function aiSuggestHTML(day, ex, swapKey) {
+  if (!PROXY_URL) {
+    return `<div class="ai-suggest-panel"><span class="ai-suggest-status">KI-Vorschläge noch nicht konfiguriert (PROXY_URL fehlt).</span></div>`;
+  }
+  const entry = aiSuggestions[swapKey];
+
+  if (!entry) {
+    return `
+      <div class="ai-suggest-panel">
+        <button class="ai-suggest-btn" data-role="ai-suggest" data-day="${day}" data-exid="${ex.id}">✨ KI-Vorschläge holen</button>
+      </div>
+    `;
+  }
+  if (entry.status === "loading") {
+    return `<div class="ai-suggest-panel"><span class="ai-suggest-status">Lade Vorschläge von Gemini…</span></div>`;
+  }
+  if (entry.status === "error") {
+    return `
+      <div class="ai-suggest-panel">
+        <span class="ai-suggest-error">Fehler: ${escapeAttr(entry.error)}</span><br/>
+        <button class="ai-suggest-btn" data-role="ai-suggest" data-day="${day}" data-exid="${ex.id}">Erneut versuchen</button>
+      </div>
+    `;
+  }
+  const items = entry.suggestions.length
+    ? entry.suggestions.map(s => `
+        <button class="ai-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(s.name)}">
+          ${escapeAttr(s.name)}
+          ${s.reason ? `<span class="ai-opt-reason">${escapeAttr(s.reason)}</span>` : ""}
+        </button>
+      `).join("")
+    : `<span class="ai-suggest-status">Keine Vorschläge erhalten.</span>`;
+  return `
+    <div class="ai-suggest-panel">
+      ${items}
+      <button class="ai-suggest-btn" style="margin-top:6px;" data-role="ai-suggest" data-day="${day}" data-exid="${ex.id}">🔄 Neu vorschlagen</button>
+    </div>
+  `;
+}
+
+async function fetchAiSuggestions(day, exId) {
+  const ex = EXERCISES[day].find(x => x.id === exId);
+  const swapKey = `${day}:${exId}`;
+  const dayMeta = DAYS.find(d => d.id === day);
+  aiSuggestions[swapKey] = { status: "loading" };
+  render();
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exercise: state.swaps[swapKey] || ex.name,
+        muscleFocus: dayMeta.sub,
+        existingAlts: ex.alts,
+      }),
+      signal: controller.signal,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Server-Fehler (${res.status})`);
+    aiSuggestions[swapKey] = { status: "done", suggestions: data.suggestions || [] };
+  } catch (e) {
+    aiSuggestions[swapKey] = { status: "error", error: e.name === "AbortError" ? "Zeitüberschreitung" : e.message };
+  } finally {
+    clearTimeout(timeoutId);
+    render();
+  }
+}
 
 function persist() {
   if (saveTimer) clearTimeout(saveTimer);
@@ -402,6 +583,7 @@ function render() {
           ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
           ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
         </div>
+        ${aiSuggestHTML(day, ex, swapKey)}
       </div>
     ` : "";
 
@@ -498,6 +680,7 @@ function finishSession(dayId) {
   const resetDay = {};
   EXERCISES[dayId].forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
   state.sessions[dayId] = resetDay;
+  stopRestTimer();
   persist();
   render();
   showToast("Training gespeichert. Gewichte bleiben für nächstes Mal vorbefüllt.");
@@ -612,6 +795,12 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  const aiSuggestBtn = e.target.closest('[data-role="ai-suggest"]');
+  if (aiSuggestBtn) {
+    fetchAiSuggestions(aiSuggestBtn.dataset.day, aiSuggestBtn.dataset.exid);
+    return;
+  }
+
   const rirChip = e.target.closest('[data-role="set-rir"]');
   if (rirChip) {
     const { day, exid, idx, rir } = rirChip.dataset;
@@ -628,9 +817,29 @@ document.addEventListener("click", (e) => {
     const { day, exid, idx } = doneBtn.dataset;
     const ex = EXERCISES[day].find(x => x.id === exid);
     const sets = ensureDaySets(day, ex);
-    sets[idx].done = !sets[idx].done;
+    const nowDone = !sets[idx].done;
+    sets[idx].done = nowDone;
     persist();
     render();
+    if (nowDone) startRestTimer();
+    return;
+  }
+
+  const restMinus = e.target.closest('[data-role="rest-minus"]');
+  if (restMinus) {
+    adjustRestTimer(-15);
+    return;
+  }
+
+  const restPlus = e.target.closest('[data-role="rest-plus"]');
+  if (restPlus) {
+    adjustRestTimer(15);
+    return;
+  }
+
+  const restSkip = e.target.closest('[data-role="rest-skip"]');
+  if (restSkip) {
+    stopRestTimer();
     return;
   }
 
