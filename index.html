@@ -354,6 +354,34 @@
   .sparkline { display: block; width: 100%; height: 48px; margin-top: 10px; }
   .sparkline-empty { margin-top: 10px; font-size: 12px; color: var(--chalk-dim); }
 
+  .volume-hint { font-size: 12px; color: var(--chalk-dim); margin-bottom: 14px; }
+  .volume-row { margin-bottom: 14px; }
+  .volume-row-top {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .volume-row-label {
+    font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 0.3px;
+    text-transform: uppercase; color: var(--chalk);
+  }
+  .volume-row-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim);
+  }
+  .volume-status-low { color: var(--chalk-dim); }
+  .volume-status-ok { color: var(--olive); }
+  .volume-status-high { color: var(--rust); }
+  .volume-row-bar {
+    position: relative; height: 10px; border-radius: 5px; background: var(--surface);
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .volume-row-target {
+    position: absolute; top: 0; bottom: 0; background: rgba(124, 143, 90, 0.18);
+  }
+  .volume-row-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 5px 0 0 5px; }
+  .volume-fill-low { background: var(--chalk-dim); }
+  .volume-fill-ok { background: var(--olive); }
+  .volume-fill-high { background: var(--rust); }
+
   .home-continue-btn {
     width: 100%; padding: 14px; border-radius: 9px; border: 1px solid var(--rust);
     background: var(--rust); color: #fff; font-family: 'Oswald', sans-serif; font-size: 15px;
@@ -764,7 +792,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.17.0";
+const APP_VERSION = "1.18.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -869,6 +897,60 @@ function computePersonalRecords() {
     });
   });
   return records;
+}
+
+// Wochenvolumen-Dashboard (seit v1.18.0): wie computePersonalRecords oben wird nichts
+// zusaetzlich gespeichert, sondern bei Bedarf aus state.journal + exerciseLibrary abgeleitet.
+// MUSCLE_GROUPS ist die kanonische, feste Reihenfolge (grob anatomisch von oben nach unten),
+// in der alle Gruppen angezeigt werden - auch mit 0 Saetzen, damit Luecken sichtbar sind.
+const MUSCLE_GROUPS = ["Brust", "Rücken", "Schultern", "Bizeps", "Trizeps", "Quadrizeps", "Beinbeuger", "Gesäß", "Waden", "Bauch"];
+
+// state.journal speichert nur die Plan-Slot-exId, nicht die libraryId - diese Funktion sucht
+// die urspruengliche Uebungsdefinition ueber alle Plaene (eingebaut + eigene) anhand der exId,
+// da IDs plan-uebergreifend eindeutig sind (siehe CLAUDE.md). Liefert null, wenn die Uebung
+// zwischenzeitlich aus einem bearbeiteten/geloeschten eigenen Plan entfernt wurde - graceful,
+// kein Absturz, der Satz zaehlt dann einfach als "nicht zuordenbar".
+function findExerciseDefById(exId) {
+  for (const plan of getAllPlans()) {
+    for (const dayId of Object.keys(plan.exercises)) {
+      const found = plan.exercises[dayId].find(ex => ex.id === exId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0 = Sonntag .. 6 = Samstag
+  const diffToMonday = day === 0 ? 6 : day - 1;
+  d.setDate(d.getDate() - diffToMonday);
+  return d;
+}
+
+// Zaehlt bewusst 1 Satz = 1 Volumen-Punkt fuer die primaere Muskelgruppe, ohne MJ/SJ-fraktionale
+// Anrechnung auf Sekundaermuskeln (siehe 01_Recherchen/01_Trainingsplaene/Trainingswissenschaft-
+// Uebungsauswahl.md) - bewusste Vereinfachung fuer die erste Version.
+function computeWeeklyVolume() {
+  const weekStart = getWeekStart(new Date());
+  const counts = {};
+  MUSCLE_GROUPS.forEach(g => { counts[g] = 0; });
+  let unattributed = 0;
+  state.journal.forEach(entry => {
+    if (entry.timestamp < weekStart.getTime()) return;
+    entry.exercises.forEach(ex => {
+      const def = findExerciseDefById(ex.exId);
+      const info = def && def.libraryId ? exerciseLibrary[def.libraryId] : null;
+      const group = info ? info.muscleGroup : null;
+      ex.sets.forEach(s => {
+        if (s.isWarmup) return;
+        if (group && counts.hasOwnProperty(group)) counts[group]++;
+        else unattributed++;
+      });
+    });
+  });
+  return { counts, unattributed, weekStart };
 }
 
 // Kleine, abhaengigkeitsfreie Inline-SVG-Sparkline (kein Chart-Framework im Projekt).
@@ -1137,7 +1219,7 @@ let focusInfoOpen = false;
 
 // Tagebuch-Ansicht: ebenfalls ephemer, gleiche Konvention wie der Trainingsmodus oben.
 let journalViewActive = false;
-let journalTab = "verlauf"; // "verlauf" | "rekorde"
+let journalTab = "verlauf"; // "verlauf" | "rekorde" | "volumen"
 
 // Startbildschirm: bewusst initial true (nicht false wie die anderen ephemeren Views) -
 // erscheint dadurch automatisch beim allerersten render()-Aufruf nach dem Laden, ohne
@@ -1668,12 +1750,46 @@ function journalRecordsHTML() {
   }).join("");
 }
 
+function journalVolumeHTML() {
+  const { counts, unattributed } = computeWeeklyVolume();
+  const maxScale = 24; // etwas ueber dem oberen Zielwert (20), damit der Balken nicht abgeschnitten wirkt
+  const targetMinPct = (12 / maxScale) * 100;
+  const targetMaxPct = (20 / maxScale) * 100;
+  const rows = MUSCLE_GROUPS.map(group => {
+    const n = counts[group];
+    const pct = Math.min(100, (n / maxScale) * 100);
+    const status = n < 12 ? "low" : n <= 20 ? "ok" : "high";
+    const statusLabel = { low: "niedrig", ok: "im Zielbereich", high: "hoch" }[status];
+    return `
+      <div class="volume-row">
+        <div class="volume-row-top">
+          <span class="volume-row-label">${escapeAttr(group)}</span>
+          <span class="volume-row-count">${n} Sätze · <span class="volume-status volume-status-${status}">${statusLabel}</span></span>
+        </div>
+        <div class="volume-row-bar">
+          <div class="volume-row-target" style="left:${targetMinPct}%; width:${targetMaxPct - targetMinPct}%"></div>
+          <div class="volume-row-fill volume-fill-${status}" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+  const unattributedHTML = unattributed > 0
+    ? `<div class="journal-empty">${unattributed} diese Woche erfasste(r) Satz/Sätze ohne zuordenbare Muskelgruppe (z.B. aus einer gelöschten oder bearbeiteten eigenen Übung).</div>`
+    : "";
+  return `
+    <div class="volume-hint">Zielbereich (heller Balkenbereich): 12–20 Sätze pro Muskelgruppe und Woche (Mo–So) — Richtwert für trainierte Sportler.</div>
+    ${rows}
+    ${unattributedHTML}
+  `;
+}
+
 function renderJournalView() {
   const tabsHTML = `
     <button class="tab-btn ${journalTab === "verlauf" ? "active" : ""}" data-role="journal-tab" data-tab="verlauf">📅 Verlauf</button>
     <button class="tab-btn ${journalTab === "rekorde" ? "active" : ""}" data-role="journal-tab" data-tab="rekorde">🏆 Rekorde</button>
+    <button class="tab-btn ${journalTab === "volumen" ? "active" : ""}" data-role="journal-tab" data-tab="volumen">📊 Wochenvolumen</button>
   `;
-  const bodyHTML = journalTab === "rekorde" ? journalRecordsHTML() : journalHistoryHTML();
+  const bodyHTML = journalTab === "rekorde" ? journalRecordsHTML() : journalTab === "volumen" ? journalVolumeHTML() : journalHistoryHTML();
 
   return `
     <div class="focusmode-topbar">

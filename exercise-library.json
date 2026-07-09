@@ -17,7 +17,8 @@
       "Unkontrolliertes Herablassen der Gewichte ohne Muskelspannung."
     ],
     "safety": "Am Ende des Satzes die Hanteln kontrolliert auf die Oberschenkel sinken lassen, statt sie seitlich auf den Boden fallen zu lassen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "schraegbankdruecken-kurzhantel": {
     "name": "Schrägbankdrücken Kurzhantel",
@@ -37,7 +38,8 @@
       "Anheben des Gesäßes von der Sitzfläche während der Bewegung."
     ],
     "safety": "Der Winkel der Bank sollte moderat gewählt werden, um ein Schultergelenks-Impingement zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "dips-brust-lean": {
     "name": "Dips (Brust-Lean)",
@@ -57,7 +59,8 @@
       "Zu tiefes Absinken deutlich unter einen 90-Grad-Winkel im Ellbogengelenk."
     ],
     "safety": "Die Schulterblätter während der gesamten Bewegung hinten-unten fixiert halten und die Übung nur bei ausreichender Grundkraft ausführen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "kabel-crossover-tief-hoch": {
     "name": "Kabel-Crossover (tief→hoch)",
@@ -77,7 +80,8 @@
       "Ein zu hohes Zusammenführen weit über den Kopf hinaus."
     ],
     "safety": "Die Aufwärtsbewegung absolut gleichmäßig ausführen, um ruckartige Belastungen der Schultern und Bizepssehnen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "seitheben-kurzhantel-kabel": {
     "name": "Seitheben Kurzhantel/Kabel",
@@ -97,7 +101,8 @@
       "Die Ellbogen hängen tiefer als die Handgelenke, wodurch der Fokus auf die seitliche Schulter verloren geht."
     ],
     "safety": "Die Arme nicht über Schulterhöhe heben, um ein potenzielles Impingement-Syndrom in der Schulter zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "trizeps-seilzug-pushdown": {
     "name": "Trizeps-Seilzug Pushdown",
@@ -117,7 +122,8 @@
       "Abknicken der Handgelenke unter Last."
     ],
     "safety": "Die Schultern tief halten und vermeiden, sich mit dem gesamten Oberkörper über das Seil zu hängen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Trizeps"
   },
   "pallof-press": {
     "name": "Pallof Press",
@@ -137,7 +143,8 @@
       "Zu hohes Gewicht, was zu Ausweichbewegungen in der Hüfte führt."
     ],
     "safety": "Diese Übung lebt von maximaler Rumpfstabilität, nicht von schwerem Gewicht. Mit sehr leichtem Widerstand beginnen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   },
   "klimmzuege-weit": {
     "name": "Klimmzüge weit",
@@ -157,7 +164,8 @@
       "Einknicken der Schultern nach vorne am obersten Punkt der Bewegung."
     ],
     "safety": "Sollten freie Klimmzüge zu schwer sein, ist die Nutzung eines Widerstandsbandes oder einer geführten Klimmzugmaschine ratsam.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "chest-supported-row": {
     "name": "Chest-Supported Row",
@@ -177,7 +185,8 @@
       "Die Ellbogen werden unkontrolliert weit nach außen gespreizt."
     ],
     "safety": "Die Brust muss stets fest am Polster gepresst bleiben, um die Lendenwirbelsäule vollständig zu entlasten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "kabelrudern-eng-sitzend": {
     "name": "Kabelrudern eng, sitzend",
@@ -197,7 +206,8 @@
       "Die Ellbogen spreizen sich stark nach außen ab."
     ],
     "safety": "Die Wirbelsäule stets gerade und stabil halten, um bandscheibenschädigende Scherkräfte zu minimieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "face-pulls": {
     "name": "Face Pulls",
@@ -217,7 +227,8 @@
       "Ruckartiges Ziehen mit zu viel Gewicht unter Einsatz von Körperschwung."
     ],
     "safety": "Ein moderates Gewicht wählen. Die Übung dient primär der Gelenkstabilisierung und Haltungsverbesserung, nicht dem maximalen Kraftaufbau.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "bizeps-curl-lang-kurzhantel": {
     "name": "Bizeps-Curl Lang-/Kurzhantel",
@@ -237,7 +248,8 @@
       "Kein vollständiges Absenken des Gewichts (Verkürzung des Bewegungsumfangs)."
     ],
     "safety": "Die Handgelenke nicht abknicken lassen, sondern während der gesamten Bewegung stabil und gerade halten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "hammercurls": {
     "name": "Hammercurls",
@@ -257,7 +269,8 @@
       "Seitliches Abknicken der Handgelenke unter Belastung."
     ],
     "safety": "Den Rumpf während der gesamten Bewegung bewusst stabil und angespannt halten, um ein Ausweichen des Rückens zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "hanging-leg-raise": {
     "name": "Hanging Leg Raise",
@@ -277,7 +290,8 @@
       "Passives, schlaffes Hängen in den Schultergelenken."
     ],
     "safety": "Die Schultern aktiv nach unten-hinten stabilisieren, um die Gelenkkapseln der Schultern vor Überlastung zu schonen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   },
   "hackenschmidt-beinpresse": {
     "name": "Hackenschmidt / Beinpresse",
@@ -297,7 +311,8 @@
       "Anheben der Fersen von der Plattform oder des Beckens vom Rückenpolster."
     ],
     "safety": "Die Knie am obersten Punkt niemals ganz durchstrecken, um schwerwiegende Gelenkschäden zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "goblet-squat": {
     "name": "Goblet Squat",
@@ -317,7 +332,8 @@
       "Die Hantel wird zu weit vom Körper entfernt gehalten, was den Rücken überlastet."
     ],
     "safety": "Die Hantel während der gesamten Bewegung fest an der Brust gepresst halten, um die Lendenwirbelsäule zu stabilisieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "beinstrecker": {
     "name": "Beinstrecker",
@@ -337,7 +353,8 @@
       "Falsch eingestelltes Fußpolster (zu weit oben auf dem Schienbein)."
     ],
     "safety": "Das Kniegelenk muss exakt auf einer Linie mit dem Drehpunkt der Maschine liegen, um schädliche Scherkräfte im Knie zu minimieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "liegende-beincurls": {
     "name": "Liegende Beincurls",
@@ -357,7 +374,8 @@
       "Ruckartiges Reißen des Gewichts mit Schwung."
     ],
     "safety": "Die Hüfte während der gesamten Übung flach auf das Polster gepresst halten, um den unteren Rücken zu entlasten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Beinbeuger"
   },
   "hip-thrust-maschine-langhantel": {
     "name": "Hip Thrust Maschine/Langhantel",
@@ -377,7 +395,8 @@
       "Die Füße stehen zu weit entfernt (verlagert die Last auf die Hamstrings)."
     ],
     "safety": "Stets ein dickes Hantelpolster verwenden, um schmerzhafte Druckbelastungen auf dem Beckenknochen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Gesäß"
   },
   "wadenheben-stehend": {
     "name": "Wadenheben stehend",
@@ -397,7 +416,8 @@
       "Unvollständiger Bewegungsumfang ohne volle Dehnung oder Streckung."
     ],
     "safety": "Schnelles Federn am tiefsten Punkt vermeiden, um Überlastungen der Achillessehne vorzubeugen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Waden"
   },
   "dead-bug": {
     "name": "Dead Bug",
@@ -417,7 +437,8 @@
       "Koordinative Fehler (gleichzeitiges Bewegen der selben Seite statt der Diagonalen)."
     ],
     "safety": "Sobald der untere Rücken abhebt, die Bewegung abbrechen oder die Beine nicht ganz so tief absenken.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   },
   "schulterdruecken-lang-kurzhantel": {
     "name": "Schulterdrücken Lang-/Kurzhantel",
@@ -437,7 +458,8 @@
       "Unvollständiger Bewegungsumfang (kein ausreichendes Absenken)."
     ],
     "safety": "Die Ellbogen leicht nach vorne geneigt führen (circa 30 Grad in der Skapularebene), um das Schultergelenk zu entlasten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "schraegbankdruecken-maschine": {
     "name": "Schrägbankdrücken Maschine",
@@ -457,7 +479,8 @@
       "Das Gesäß rutscht auf der Sitzfläche nach vorne."
     ],
     "safety": "Die Schulterblätter während der gesamten Bewegung fest an das Rückenpolster gepresst halten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "seitheben-kabel": {
     "name": "Seitheben Kabel",
@@ -477,7 +500,8 @@
       "Das Handgelenk wird höher angehoben als der Ellbogen."
     ],
     "safety": "Die Hand nicht höher als auf Schulterhöhe anheben, um Schulterengpässe zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "butterfly-pec-deck": {
     "name": "Butterfly / Pec Deck",
@@ -497,7 +521,8 @@
       "Schwungvolles Zusammenreißen statt kontrollierter Bewegung."
     ],
     "safety": "In der Dehnungsphase nur so weit zurückgehen, wie es sich in den Schultern absolut schmerzfrei anfühlt.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "enges-bankdruecken": {
     "name": "Enges Bankdrücken",
@@ -517,7 +542,8 @@
       "Abprallen lassen der Hantelstange auf der Brust."
     ],
     "safety": "Wegen der anspruchsvolleren Balance vorzugsweise mit einem Spotter oder in einem Rack mit Sicherheitsablagen trainieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Trizeps"
   },
   "trizeps-ueberkopf-extension-kh": {
     "name": "Trizeps Überkopf-Extension KH",
@@ -537,7 +563,8 @@
       "Extremes Ausweichen ins Hohlkreuz, um das Gewicht nach oben zu bringen."
     ],
     "safety": "Das Gewicht so wählen, dass die Hantel jederzeit sicher kontrolliert werden kann, ohne den Nacken zu gefährden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Trizeps"
   },
   "ab-wheel-rollout": {
     "name": "Ab Wheel Rollout",
@@ -557,7 +584,8 @@
       "Zu weites Vorrollen ohne ausreichende Rumpfstabilität."
     ],
     "safety": "Als Einsteiger nur ein kurzes Stück vorrollen oder eine Wand als Stopper nutzen, um ein Durchhängen zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   },
   "t-bar-row-chest-supported": {
     "name": "T-Bar Row Chest-Supported",
@@ -577,7 +605,8 @@
       "Ruckartiges Reißen des Gewichts mit Schwung."
     ],
     "safety": "Die Brust während der gesamten Bewegung fest auf dem Polster belassen, um den unteren Rücken zu entlasten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "latzug-eng-neutral": {
     "name": "Latzug eng/neutral",
@@ -597,7 +626,8 @@
       "Der Griff wird nicht weit genug bis zur oberen Brust gezogen."
     ],
     "safety": "Die Schultern während der gesamten Bewegung unten halten, um Nackenüberlastungen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "einarmiges-kurzhantelrudern": {
     "name": "Einarmiges Kurzhantelrudern",
@@ -617,7 +647,8 @@
       "Ziehen der Hantel senkrecht nach oben zur Brust statt schräg zur Hüfte."
     ],
     "safety": "Die Wirbelsäule stets stabil und parallel zum Boden halten. Ruckartiges Reißen der Gewichte vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "reverse-fly": {
     "name": "Reverse Fly",
@@ -637,7 +668,8 @@
       "Unbewusstes Hochziehen der Schultern zu den Ohren."
     ],
     "safety": "Den Nacken stets in Verlängerung der Wirbelsäule halten (Blick zum Boden richten, nicht nach vorne).",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "kabel-curl": {
     "name": "Kabel-Curl",
@@ -657,7 +689,8 @@
       "Unvollständige Streckung der Arme im tiefsten Punkt."
     ],
     "safety": "Die konstante Kabelspannung erfordert ein sehr kontrolliertes Absenken – abruptes Herablassen vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "konzentrationscurl": {
     "name": "Konzentrationscurl",
@@ -677,7 +710,8 @@
       "Unvollständiger Bewegungsumfang (keine vollständige Armstreckung am Ende)."
     ],
     "safety": "Die Schulter des arbeitenden Arms stabil halten und nicht aktiv nach oben ziehen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "farmer-s-carry": {
     "name": "Farmer's Carry",
@@ -697,7 +731,8 @@
       "Die Gewichte schwingen unkontrolliert hin und her."
     ],
     "safety": "Den Blick stets nach vorne richten und den Rumpf fest anspannen, um die Wirbelsäule bei schwerer Last zu sichern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "beinpresse-hoher-fussstand": {
     "name": "Beinpresse hoher Fußstand",
@@ -717,7 +752,8 @@
       "Vollständiges Einrasten der Knie am obersten Punkt unter Belastung."
     ],
     "safety": "Sobald sich das Gesäß vom Polster abhebt, ist der Bewegungsumfang zu tief gewählt und belastet die Lendenwirbelsäule gefährlich.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Beinbeuger"
   },
   "hip-thrust": {
     "name": "Hip Thrust",
@@ -737,7 +773,8 @@
       "Die Füße stehen zu weit entfernt (verlagert die Last auf die Hamstrings)."
     ],
     "safety": "Ein ausreichendes Polster für die Langhantel nutzen, um schmerzhaften Druck auf den Beckenknochen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Gesäß"
   },
   "walking-lunges": {
     "name": "Walking Lunges",
@@ -757,7 +794,8 @@
       "Der Oberkörper kippt stark nach vorne um."
     ],
     "safety": "Die Schritte hochgradig kontrolliert ausführen. Bei Kniebeschwerden sind Ausfallschritte rückwärts im Stand deutlich gelenkschonender.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "sitzende-beincurls": {
     "name": "Sitzende Beincurls",
@@ -777,7 +815,8 @@
       "Unvollständiger Bewegungsumfang (keine volle Streckung)."
     ],
     "safety": "Die Oberschenkelstütze eng und fest einstellen, um Ausweichbewegungen des Beckens komplett zu blockieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Beinbeuger"
   },
   "wadenheben-sitzend": {
     "name": "Wadenheben sitzend",
@@ -797,7 +836,8 @@
       "Unvollständige Dehnungs- oder Streckphase."
     ],
     "safety": "Die Bewegung langsam und kontrolliert ausführen, mit einer kurzen Pause am tiefsten und höchsten Punkt, um die Sehneneffekte auszuschalten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Waden"
   },
   "plank-side-plank": {
     "name": "Plank + Side Plank",
@@ -817,7 +857,8 @@
       "Luftanhalten während der statischen Haltearbeit."
     ],
     "safety": "Sobald die Hüfte nicht mehr stabil in einer geraden Linie gehalten werden kann, die Übung beenden, um den unteren Rücken vor Fehlbelastung zu schonen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "flachbankdruecken-mit-der-langhantel": {
     "name": "Flachbankdrücken mit der Langhantel",
@@ -837,7 +878,8 @@
       "Unkontrolliertes Herablassen der Stange ohne Muskelspannung (Abfedern auf der Brust)."
     ],
     "safety": "Die Daumen stets fest um die Stange schließen (kein \"Suicide Grip\"), um ein unkontrolliertes Abrutschen der Hantel auf den Brustkorb zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "schraegbankdruecken-mit-kurzhanteln": {
     "name": "Schrägbankdrücken mit Kurzhanteln",
@@ -857,7 +899,8 @@
       "Einknicken der Handgelenke nach hinten unter dem Gewicht der Hanteln."
     ],
     "safety": "Am Ende des Satzes die Hanteln kontrolliert auf die Oberschenkel sinken lassen, statt sie seitlich auf den Boden fallen zu lassen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "fliegende-bewegung-mit-kurzhanteln-auf-der-flachbank": {
     "name": "Fliegende Bewegung mit Kurzhanteln auf der Flachbank",
@@ -877,7 +920,8 @@
       "Schwungvolles Zusammenführen der Hanteln am obersten Punkt mit gegenseitigem Anschlagen."
     ],
     "safety": "Die Ellbogen während der gesamten Ausführung minimal gebeugt halten, um die Gelenkstrukturen und die Bizepssehne vor übermäßigen Zugkräften zu bewahren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "fliegende-bewegung-am-kabelzug": {
     "name": "Fliegende Bewegung am Kabelzug",
@@ -897,7 +941,8 @@
       "Vernachlässigung der exzentrischen Phase durch unkontrolliertes Zurückschnellenlassen der Griffe."
     ],
     "safety": "Den Bewegungsumfang in der Dehnungsphase nur so weit wählen, wie es die Schulterflexibilität schmerzfrei erlaubt, um Risse im Brustmuskelansatz zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "dips-am-barren": {
     "name": "Dips am Barren",
@@ -917,7 +962,8 @@
       "Schwingen oder Kicken der Beine, um die Aufwärtsbewegung zu unterstützen."
     ],
     "safety": "Bei bestehenden Schulter- oder Ellbogenbeschwerden die Übung durch eine stabilere, geführte Drückvariante ersetzen oder den Bewegungsumfang einschränken.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "schulterdruecken-mit-der-langhantel-stehend": {
     "name": "Schulterdrücken mit der Langhantel stehend",
@@ -937,7 +983,8 @@
       "Unvollständiger Bewegungsumfang ohne vollständiges Absenken der Stange bis auf Schlüsselbeinhöhe."
     ],
     "safety": "Eine kompromisslose Vorspannung der Bauch- und Gesäßmuskulatur schützt die Wirbelsäule effektiv vor schädlicher Hyperlordose unter axialer Last.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "schulterdruecken-mit-kurzhanteln": {
     "name": "Schulterdrücken mit Kurzhanteln",
@@ -957,7 +1004,8 @@
       "Nach vorne Rutschen des Gesäßes auf der Sitzfläche, was die Lendenwirbelsäule belastet."
     ],
     "safety": "Die Ellbogen während der Ausführung stets circa 30 Grad nach vorne geneigt halten, um die natürliche Bewegungsebene des Schulterblatts zu respektieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "klimmzuege-im-ristgriff": {
     "name": "Klimmzüge im Ristgriff",
@@ -977,7 +1025,8 @@
       "Kollabieren der Schultern nach vorne und oben am höchsten Punkt der Bewegung."
     ],
     "safety": "Den Körper im tiefsten Punkt stets kontrolliert abfangen und ein passives, ruckartiges Hängen in den Schultergelenkbändern vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "klimmzuege-im-untergriff": {
     "name": "Klimmzüge im Untergriff",
@@ -997,7 +1046,8 @@
       "Unzureichende Einbindung der Rückenmuskulatur durch ausschließliches Ziehen aus den Armen."
     ],
     "safety": "Die Ellbogen am tiefsten Punkt nicht vollständig einrasten lassen, um die Ellenbogengelenke und die Sehnenansätze des Bizeps vor Überlastung zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "rudern-am-kabelzug-im-breiten-parallelgriff": {
     "name": "Rudern am Kabelzug im breiten Parallelgriff",
@@ -1017,7 +1067,8 @@
       "Unvollständige Bewegung der Schulterblätter, was den Trainingseffekt auf die mittlere Rückenmuskulatur stark reduziert."
     ],
     "safety": "Der Oberkörper muss während der gesamten Ausführung stabil und nahezu vertikal bleiben, um asymmetrische Scherkräfte auf die Lendenwirbelsäule zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "rudern-am-kabelzug-im-engen-parallelgriff": {
     "name": "Rudern am Kabelzug im engen Parallelgriff",
@@ -1037,7 +1088,8 @@
       "Abspreizen der Ellbogen nach außen, was den Fokus vom breiten Rückenmuskel wegbewegt."
     ],
     "safety": "Eine kontinuierliche Rumpfspannung ist zwingend erforderlich, um die Lendenwirbelsäule in ihrer neutralen Doppel-S-Kurve zu stabilisieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "kurzhantel-rudern": {
     "name": "Kurzhantel-Rudern",
@@ -1057,7 +1109,8 @@
       "Abrunden der Lendenwirbelsäule während des gesamten Satzes."
     ],
     "safety": "Den Rücken konsequent gerade halten, um asymmetrische Torsionskräfte auf die Bandscheiben der Lendenwirbelsäule zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "kurzhantel-rudern-auf-der-schraegbank": {
     "name": "Kurzhantel-Rudern auf der Schrägbank",
@@ -1077,7 +1130,8 @@
       "Schnelles Fallenlassen der Hanteln ohne muskuläre Abbremsung in der Exzentrik."
     ],
     "safety": "Den Kopf stets in neutraler Verlängerung der Wirbelsäule belassen, um akute Verspannungen oder Zerrungen der Nackenmuskulatur zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "langhantelrudern-vorgebeugt": {
     "name": "Langhantelrudern vorgebeugt",
@@ -1097,7 +1151,8 @@
       "Generierung von Schwung aus den Knien durch dynamisches Wippen."
     ],
     "safety": "Bei Schmerzen im Lendenwirbelbereich die Übung sofort beenden und auf eine Variante mit abgestütztem Oberkörper ausweichen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "latzug-an-der-maschine": {
     "name": "Latzug an der Maschine",
@@ -1117,7 +1172,8 @@
       "Unkontrolliertes Aufsteigenlassen des Gewichtsblocks ohne exzentrische Muskelkontrolle."
     ],
     "safety": "Die Stange ausnahmslos vor dem Gesicht zur oberen Brust führen, um das Schulterdach und die Halswirbelsäule vor Mikrotraumen zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "latzug-im-engen-untergriff": {
     "name": "Latzug im engen Untergriff",
@@ -1137,7 +1193,8 @@
       "Vermeidung der vollen Dehnung am obersten Punkt der Bewegung."
     ],
     "safety": "Die Ellbogen während des gesamten Bewegungsablaufs konsequent eng führen, um Gelenkbelastungen im Hand- und Ellenbogenbereich zu minimieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "kurzhantel-ueberzuege": {
     "name": "Kurzhantel-Überzüge",
@@ -1157,7 +1214,8 @@
       "Zu schnelles Absenken der Hantel ohne konstante Muskelspannung in der Exzentrik."
     ],
     "safety": "Den Bewegungsumfang präzise an die individuelle Schultermobilität anpassen, um das Schultergelenk vor Kapselverletzungen zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Brust"
   },
   "face-pulls-am-kabelzug": {
     "name": "Face Pulls am Kabelzug",
@@ -1177,7 +1235,8 @@
       "Führen der Hände unterhalb der Ellbogenlinie, wodurch die Außenrotatoren nicht effektiv trainiert werden."
     ],
     "safety": "Die Bewegung kontrolliert und ohne Schwung ausführen, um die empfindlichen Muskeln der Rotatorenmanschette vor Reizungen zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "seitheben-am-kabelzug": {
     "name": "Seitheben am Kabelzug",
@@ -1197,7 +1256,8 @@
       "Das Handgelenk wird höher geführt als der Ellbogen, was zu einer unphysiologischen Innenrotation führt."
     ],
     "safety": "Die Bewegung strikt im Ellenbogengelenk einfrieren, um das Schultergelenk vor asymmetrischen Scherkräften zu schonen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "seitheben-mit-kurzhanteln": {
     "name": "Seitheben mit Kurzhanteln",
@@ -1217,7 +1277,8 @@
       "Führen der Hände weit über Ellbogenhöhe am obersten Punkt der Bewegung."
     ],
     "safety": "Die Bewegung minimal vor der Scapular-Ebene (ca. 15 Grad nach vorne geneigt) ausführen, um das Schulterdach vor einem mechanischen Impingement zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Schultern"
   },
   "incline-dumbbell-curls": {
     "name": "Incline Dumbbell Curls",
@@ -1237,7 +1298,8 @@
       "Ausführung ohne vollständige Ellbogenstreckung im tiefsten Punkt."
     ],
     "safety": "Das Ellenbogengelenk am tiefsten Punkt der exzentrischen Phase nicht ruckartig überstrecken, um Sehnenreizungen an den Sehnenansätzen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "preacher-curls-an-der-maschine": {
     "name": "Preacher Curls an der Maschine",
@@ -1257,7 +1319,8 @@
       "Hochziehen der Schultern während der Zugphase."
     ],
     "safety": "Die Ellbogen im tiefsten Punkt der Bewegung niemals komplett durchstrecken, da hier die ungünstigsten Hebelkräfte direkt auf die Bizepssehne einwirken.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "preacher-curls-am-kabelzug": {
     "name": "Preacher Curls am Kabelzug",
@@ -1277,7 +1340,8 @@
       "Hektisches und unkontrolliertes Absenken der Stange."
     ],
     "safety": "Die Handgelenke während des gesamten Bewegungsablaufs konsequent gerade und stabil in einer Linie mit den Unterarmen halten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bizeps"
   },
   "overhead-trizepsdruecken-am-kabelzug-mit-seil": {
     "name": "Overhead-Trizepsdrücken am Kabelzug mit Seil",
@@ -1298,7 +1362,8 @@
       "Mangelnde Rumpfspannung, die zu einem schädlichen Ausweichen in ein Hohlkreuz führt."
     ],
     "safety": "Die Ellbogen während des gesamten Satzes eng und stabil am Kopf fixiert halten, um Scherkräfte im Ellenbogengelenk zu minimieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Trizeps"
   },
   "trizepsdruecken-am-kabelzug-mit-gerader-stange": {
     "name": "Trizepsdrücken am Kabelzug mit gerader Stange",
@@ -1318,7 +1383,8 @@
       "Unvollständige Ellbogenstreckung im tiefsten Punkt der Bewegung."
     ],
     "safety": "Die Schultern während der gesamten Bewegung tief halten und die Ausführung rein aus dem Ellenbogengelenk vollziehen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Trizeps"
   },
   "kniebeugen-mit-der-langhantel": {
     "name": "Kniebeugen mit der Langhantel",
@@ -1338,7 +1404,8 @@
       "Abheben der Fersen vom Boden durch mangelnde Sprunggelenksmobilität."
     ],
     "safety": "Bei schweren Arbeitssätzen stets in einem Powerrack mit präzise eingestellten Sicherheitsablagen (Safety Pins) trainieren.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "hackenschmidt-kniebeuge": {
     "name": "Hackenschmidt-Kniebeuge",
@@ -1358,7 +1425,8 @@
       "Platzierung der Füße zu hoch auf der Plattform, was den Trainingsfokus auf das Gesäß verlagert."
     ],
     "safety": "Das Gesäß muss während der gesamten Bewegung fest an das Polster gepresst bleiben, um die Lendenwirbelsäule vor gefährlichen Scherkräften zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "beinpresse-45-grad": {
     "name": "Beinpresse 45 Grad",
@@ -1378,7 +1446,8 @@
       "Abheben der Fersen von der Plattform während der exzentrischen Phase."
     ],
     "safety": "Die Knie am Ende der Bewegung niemals komplett einrasten lassen, um schwere Gelenkschäden zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "beinstrecker-maschine": {
     "name": "Beinstrecker-Maschine",
@@ -1398,7 +1467,8 @@
       "Falsche Achseneinstellung der Maschine im Verhältnis zum biologischen Kniegelenksdrehpunkt."
     ],
     "safety": "Der Drehpunkt der Maschine muss exakt auf Höhe der Kniegelenksachse eingestellt sein, um unphysiologische Druckkräfte auf die Kniescheibe zu verhindern.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "ausfallschritte-mit-kurzhanteln": {
     "name": "Ausfallschritte mit Kurzhanteln",
@@ -1418,7 +1488,8 @@
       "Nach-vorne-Kippen des Oberkörpers unter Belastung."
     ],
     "safety": "Das vordere Knie stets stabil in einer Linie mit der Fußspitze halten und ein Abweichen nach innen konsequent vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   },
   "rumaenisches-kreuzheben-mit-der-langhantel": {
     "name": "Rumänisches Kreuzheben mit der Langhantel",
@@ -1438,7 +1509,8 @@
       "Führen der Langhantel weit weg vom Körper."
     ],
     "safety": "Die Wirbelsäule muss während des gesamten Bewegungsablaufs absolut neutral bleiben, um schädliche Scherkräfte im Lendenwirbelbereich zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Beinbeuger"
   },
   "kreuzheben-mit-der-langhantel": {
     "name": "Kreuzheben mit der Langhantel",
@@ -1458,7 +1530,8 @@
       "Überstrecken der Lendenwirbelsäule im aufrechten Stand nach hinten."
     ],
     "safety": "Vor jedem Anheben des Gewichts eine maximale Rumpfspannung aufbauen, um die Wirbelsäule unter axialer Kompression zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Rücken"
   },
   "sitzender-beinbeuger": {
     "name": "Sitzender Beinbeuger",
@@ -1478,7 +1551,8 @@
       "Falsche Achseneinstellung der Maschine im Verhältnis zum biologischen Kniegelenk."
     ],
     "safety": "Den Drehpunkt der Maschine exakt auf Höhe des Kniegelenks einstellen, um unphysiologische Kniegelenksbelastungen zu vermeiden.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Beinbeuger"
   },
   "wadenheben-stehend-an-der-maschine": {
     "name": "Wadenheben stehend an der Maschine",
@@ -1498,7 +1572,8 @@
       "Unvollständiger Bewegungsumfang sowohl in der Dehnung als auch in der Kontraktion."
     ],
     "safety": "Jede Wiederholung im tiefsten Dehnpunkt für mindestens eine Sekunde pausieren, um die Elastizität der Achillessehne auszuschalten.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Waden"
   },
   "wadenheben-sitzend-an-der-maschine": {
     "name": "Wadenheben sitzend an der Maschine",
@@ -1518,7 +1593,8 @@
       "Zu hohe Gewichte, die den Bewegungsumfang auf ein Minimum reduzieren."
     ],
     "safety": "Das Oberschenkelpolster fest fixieren, damit die Krafteinleitung ausschließlich über das Sprunggelenk erfolgt.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Waden"
   },
   "cable-crunches": {
     "name": "Cable Crunches",
@@ -1538,7 +1614,8 @@
       "Generierung von Zugkraft aus den Armen und dem Trizeps statt aus dem Bauch."
     ],
     "safety": "Die Hüftgelenksbewegung komplett einfrieren, um die Belastung gezielt auf die gerade Bauchmuskulatur zu lenken.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   },
   "beinheben-haengend": {
     "name": "Beinheben hängend",
@@ -1558,6 +1635,7 @@
       "Reine Hüftbeugung ohne das notwendige Einrollen des Beckens."
     ],
     "safety": "Die Schulterblätter während des gesamten Satzes aktiv nach unten und hinten gezogen halten, um das Schultergelenk im freien Hang vor Überlastung zu schützen.",
-    "image": null
+    "image": null,
+    "muscleGroup": "Bauch"
   }
 }
