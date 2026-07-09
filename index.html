@@ -368,12 +368,28 @@
     padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
     background: var(--surface); margin-bottom: 8px; font-size: 13px; color: var(--chalk);
   }
+  .library-plan-label {
+    font-size: 15px; font-weight: 500; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .library-day { margin-bottom: 14px; }
+  .library-day-label {
+    font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .library-ex-row { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .library-ex-row:last-child { border-bottom: none; }
+  .library-ex-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .library-ex-name { font-size: 13px; color: var(--chalk); }
   .home-plan-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .home-plan-btn {
     flex: 1; text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
     background: var(--surface); color: var(--chalk); font-size: 14px; cursor: pointer;
   }
   .home-plan-btn.active { border-color: var(--rust); }
+  .home-plan-edit {
+    background: transparent; border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px; color: var(--chalk-dim); cursor: pointer;
+  }
   .home-plan-delete {
     background: transparent; border: 1px solid var(--border); border-radius: 7px;
     padding: 9px; color: var(--rust); cursor: pointer;
@@ -1364,7 +1380,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.14.0";
+const APP_VERSION = "1.15.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1498,7 +1514,29 @@ function sparklineSVG(points) {
 // Views) - ein halb gebauter Plan mit mehreren Tagen/Uebungen ist echte Nutzereingabe,
 // die ein versehentliches Schliessen/Reload nicht verlieren soll.
 function newPlanDraft() {
-  return { label: "", days: [{ label: "Tag 1", exercises: [{ name: "", sets: 3, reps: "8-10" }] }] };
+  return { editingPlanId: null, label: "", days: [{ label: "Tag 1", exercises: [{ name: "", sets: 3, reps: "8-10" }] }] };
+}
+
+// Laedt einen bestehenden eigenen Plan zum Bearbeiten in den Entwurf - Tage/Uebungen
+// behalten ihre bestehende id (wichtig, damit History/Gewichte/Notizen dieser Uebungen
+// beim Speichern nicht verwaist werden), neu hinzugefuegte Zeilen bekommen erst beim
+// Speichern eine id (siehe buildPlanFromDraft).
+function startEditingPlan(planId) {
+  const plan = state.customPlans.find(p => p.id === planId);
+  if (!plan) return;
+  state.planDraft = {
+    editingPlanId: plan.id,
+    label: plan.label,
+    days: plan.days.map(d => ({
+      id: d.id,
+      label: d.label,
+      exercises: (plan.exercises[d.id] || []).map(ex => ({ id: ex.id, name: ex.name, sets: ex.sets, reps: ex.reps })),
+    })),
+  };
+  planBuilderActive = true;
+  homeScreenActive = false;
+  persist();
+  render();
 }
 
 function draftAddDay() {
@@ -1526,16 +1564,41 @@ function validatePlanDraft(draft) {
 // Zeitstempel-basierte IDs garantieren by construction keine Kollision mit den ~90 fest
 // eingebauten Uebungs-/Tag-IDs - EXERCISE_INFO/state.history/state.lastWeights/state.swaps/
 // state.notes sind global nach ex.id geschluesselt, es gibt keinen anderen Kollisionsschutz.
+// Beim Bearbeiten (draft.editingPlanId gesetzt) behalten Tage/Uebungen mit vorhandener id
+// diese id (History/Gewichte bleiben verknuepft); nur neu hinzugefuegte Zeilen (ohne id)
+// bekommen eine frische, fortlaufende id oberhalb der bereits vorhandenen Nummern.
+function nextIndexFor(prefix, existingIds) {
+  let max = 0;
+  const re = new RegExp(`^${prefix}(\\d+)$`);
+  existingIds.forEach(id => {
+    const m = re.exec(id);
+    if (m) max = Math.max(max, Number(m[1]));
+  });
+  return max + 1;
+}
+
 function buildPlanFromDraft(draft) {
-  const planId = `custom_${Date.now()}`;
-  let exCounter = 0;
-  const days = draft.days.map((d, dayIdx) => ({ id: `${planId}_day${dayIdx + 1}`, label: d.label.trim(), sub: d.label.trim() }));
+  const planId = draft.editingPlanId || `custom_${Date.now()}`;
+  const existingDayIds = draft.days.filter(d => d.id).map(d => d.id);
+  const existingExIds = draft.days.flatMap(d => d.exercises.filter(ex => ex.id).map(ex => ex.id));
+  let dayCounter = nextIndexFor(`${planId}_day`, existingDayIds);
+  let exCounter = nextIndexFor(`${planId}_ex`, existingExIds);
+
+  const days = draft.days.map(d => ({
+    id: d.id || `${planId}_day${dayCounter++}`,
+    label: d.label.trim(),
+    sub: d.label.trim(),
+  }));
   const exercises = {};
   draft.days.forEach((d, dayIdx) => {
-    exercises[days[dayIdx].id] = d.exercises.map(ex => {
-      exCounter++;
-      return { id: `${planId}_ex${exCounter}`, name: ex.name.trim(), sets: Number(ex.sets) || 1, reps: ex.reps.trim(), alts: [], core: false };
-    });
+    exercises[days[dayIdx].id] = d.exercises.map(ex => ({
+      id: ex.id || `${planId}_ex${exCounter++}`,
+      name: ex.name.trim(),
+      sets: Number(ex.sets) || 1,
+      reps: ex.reps.trim(),
+      alts: [],
+      core: false,
+    }));
   });
   return { id: planId, label: draft.label.trim(), days, exercises };
 }
@@ -1545,8 +1608,14 @@ function savePlanDraft() {
     showToast("Bitte Plan-Name, mindestens einen Tag und je Tag mindestens eine vollständige Übung angeben.");
     return;
   }
+  const wasEditing = !!state.planDraft.editingPlanId;
   const plan = buildPlanFromDraft(state.planDraft);
-  state.customPlans.push(plan);
+  if (wasEditing) {
+    const idx = state.customPlans.findIndex(p => p.id === plan.id);
+    if (idx !== -1) state.customPlans[idx] = plan; else state.customPlans.push(plan);
+  } else {
+    state.customPlans.push(plan);
+  }
   state.planDraft = null;
   state.currentPlan = plan.id;
   applyPlan(plan.id);
@@ -1555,7 +1624,7 @@ function savePlanDraft() {
   homeScreenActive = false;
   persist();
   render();
-  showToast("Plan gespeichert.");
+  showToast(wasEditing ? "Plan aktualisiert." : "Plan gespeichert.");
 }
 
 function cancelPlanDraft() {
@@ -1696,6 +1765,14 @@ let planBuilderActive = false;
 // alle in eine Zeile passten. Bewusst als eigene Ansicht statt weiterer Header-Icons -
 // zukuenftig auch der vorgesehene Ort fuer eine spaetere Login-Funktion.
 let profileActive = false;
+
+// Uebungsbibliothek: durchsuchbare Liste aller Uebungen ueber alle Plaene hinweg,
+// unabhaengig vom gerade aktiven Tag/Plan. Bewusst keine Live-Suche (wuerde bei jedem
+// Tastendruck render() aufrufen und damit den Eingabefokus verlieren, wie beim
+// bestehenden input-Listener-Muster vermieden) - stattdessen gruppiert nach Plan/Tag,
+// wie eine aufklappbare Inhaltsuebersicht.
+let libraryActive = false;
+let libraryInfoOpenKey = null;
 
 let saveTimer = null;
 
@@ -2255,6 +2332,52 @@ function renderProfileView() {
   `;
 }
 
+function libraryExerciseRowHTML(ex) {
+  const info = EXERCISE_INFO[ex.id];
+  const isOpen = info && libraryInfoOpenKey === ex.id;
+  return `
+    <div class="library-ex-row">
+      <div class="library-ex-header">
+        <span class="library-ex-name">${escapeAttr(ex.name)}</span>
+        ${info ? `<button class="swap-btn" data-role="library-info-toggle" data-exid="${escapeAttr(ex.id)}" title="Übung erklären">ℹ</button>` : ""}
+      </div>
+      ${isOpen ? exerciseInfoPanelHTML(ex) : ""}
+    </div>
+  `;
+}
+
+function renderLibraryView() {
+  const sections = getAllPlans().map(plan => {
+    const daysHTML = plan.days.map(day => {
+      const exercises = plan.exercises[day.id] || [];
+      if (exercises.length === 0) return "";
+      return `
+        <div class="library-day">
+          <div class="library-day-label">${escapeAttr(day.label)}</div>
+          ${exercises.map(libraryExerciseRowHTML).join("")}
+        </div>
+      `;
+    }).join("");
+    if (!daysHTML.trim()) return "";
+    return `
+      <div class="card">
+        <h3 class="library-plan-label">${escapeAttr(plan.label)}</h3>
+        ${daysHTML}
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="library-exit">✕ Schließen</button>
+      <span class="focusmode-progress">📚 Übungen</span>
+    </div>
+    <div class="focusmode-content">
+      ${sections}
+    </div>
+  `;
+}
+
 function renderHomeScreen() {
   const recDay = getRecommendedDay();
   const recDayMeta = DAYS.find(d => d.id === recDay);
@@ -2265,6 +2388,7 @@ function renderHomeScreen() {
     return `
       <div class="home-plan-row">
         <button class="home-plan-btn ${p.id === state.currentPlan ? "active" : ""}" data-role="home-select-plan" data-planid="${escapeAttr(p.id)}">${escapeAttr(p.label)}</button>
+        ${isCustom ? `<button class="home-plan-edit" data-role="home-edit-plan" data-planid="${escapeAttr(p.id)}" title="Plan bearbeiten">✏</button>` : ""}
         ${isCustom ? `<button class="home-plan-delete" data-role="home-delete-plan" data-planid="${escapeAttr(p.id)}" title="Plan löschen">🗑</button>` : ""}
       </div>
     `;
@@ -2280,6 +2404,7 @@ function renderHomeScreen() {
       <div class="home-section-label">Plan wählen</div>
       ${plansHTML}
       <button class="home-create-btn" data-role="plan-builder-enter">+ Neuen Plan erstellen</button>
+      <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
     </div>
   `;
 }
@@ -2319,17 +2444,18 @@ function renderPlanBuilder() {
     `;
   }).join("");
 
+  const isEditing = !!draft.editingPlanId;
   return `
     <div class="focusmode-topbar">
       <button class="focusmode-exit-btn" data-role="plan-draft-cancel">✕ Abbrechen</button>
-      <span class="focusmode-progress">Neuen Plan erstellen</span>
+      <span class="focusmode-progress">${isEditing ? "Plan bearbeiten" : "Neuen Plan erstellen"}</span>
     </div>
     <div class="focusmode-content">
       <input class="draft-plan-label" type="text" placeholder="Name des Plans"
         value="${escapeAttr(draft.label)}" data-role="draft-label" />
       ${daysHTML}
       <button class="draft-add-btn" data-role="draft-add-day">+ Tag hinzufügen</button>
-      <button class="finish-btn" data-role="plan-draft-save">✓ Plan speichern</button>
+      <button class="finish-btn" data-role="plan-draft-save">${isEditing ? "✓ Änderungen speichern" : "✓ Plan speichern"}</button>
       ${planBuilderExerciseNamesDatalist()}
     </div>
   `;
@@ -2348,6 +2474,11 @@ function render() {
 
   if (profileActive) {
     document.getElementById("app").innerHTML = renderProfileView();
+    return;
+  }
+
+  if (libraryActive) {
+    document.getElementById("app").innerHTML = renderLibraryView();
     return;
   }
 
@@ -2661,6 +2792,7 @@ document.addEventListener("click", (e) => {
     focusModeActive = false;
     homeScreenActive = false;
     profileActive = false;
+    libraryActive = false;
     journalViewActive = true;
     render();
     return;
@@ -2685,6 +2817,7 @@ document.addEventListener("click", (e) => {
     focusModeActive = false;
     journalViewActive = false;
     profileActive = false;
+    libraryActive = false;
     homeScreenActive = true;
     render();
     return;
@@ -2702,6 +2835,7 @@ document.addEventListener("click", (e) => {
     focusModeActive = false;
     journalViewActive = false;
     homeScreenActive = false;
+    libraryActive = false;
     profileActive = true;
     render();
     return;
@@ -2710,6 +2844,33 @@ document.addEventListener("click", (e) => {
   const profileExit = e.target.closest('[data-role="profile-exit"]');
   if (profileExit) {
     profileActive = false;
+    render();
+    return;
+  }
+
+  const libraryEnter = e.target.closest('[data-role="library-enter"]');
+  if (libraryEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    profileActive = false;
+    homeScreenActive = false;
+    libraryInfoOpenKey = null;
+    libraryActive = true;
+    render();
+    return;
+  }
+
+  const libraryExit = e.target.closest('[data-role="library-exit"]');
+  if (libraryExit) {
+    libraryActive = false;
+    render();
+    return;
+  }
+
+  const libraryInfoToggle = e.target.closest('[data-role="library-info-toggle"]');
+  if (libraryInfoToggle) {
+    const exid = libraryInfoToggle.dataset.exid;
+    libraryInfoOpenKey = libraryInfoOpenKey === exid ? null : exid;
     render();
     return;
   }
@@ -2733,6 +2894,12 @@ document.addEventListener("click", (e) => {
     homeScreenActive = false;
     persist();
     render();
+    return;
+  }
+
+  const homeEditPlan = e.target.closest('[data-role="home-edit-plan"]');
+  if (homeEditPlan) {
+    startEditingPlan(homeEditPlan.dataset.planid);
     return;
   }
 
