@@ -2,6 +2,19 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.10.0 — 2026-07-09 (Teil 29): Tagebuch-Paket (chronologisches Log + PRs + Fortschritts-Chart)
+
+- Aus einer Brainstorming-Session zu weiteren Features hat sich der Nutzer entschieden, statt Phase D (Gewichtsprogression) direkt fortzusetzen erst zwei neue Pakete zu bauen: Tagebuch (dieses) und danach Startseite/eigener Plan-Builder. Plan unter `C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`.
+- **Neues Feld `state.journal`** (Array, additiv, kein Migrationsrisiko) — ein Eintrag pro abgeschlossener Trainingseinheit: Datum, Zeitstempel, Plan/Tag, Gym (falls gewählt, nur zur Anzeige), und je Übung die tatsächlich eingetragenen Sätze (Gewicht/Wdh./Aufwärm-Flag/"mehr möglich"-Flag). Nur Sätze mit tatsächlicher Eingabe werden gespeichert, komplett leere/unberührte Sätze nicht — und eine komplett leere Session (nichts eingetragen) erzeugt gar keinen Eintrag.
+- **PRs und Fortschritts-Chart werden bewusst NICHT gespeichert**, sondern aus `state.journal` bei Bedarf berechnet (`computePersonalRecords()`, `journalPointsFor(exId)`) — keine Synchronisations-Sorgen, die PR-Definition bleibt jederzeit änderbar ohne Datenmodell-Migration. **PR-Definition v1: schwerstes je geloggtes Gewicht** (Aufwärmsätze ausgeschlossen), unabhängig von der Wiederholungszahl — bewusst die einfachste, am leichtesten verständliche Definition für den Anfang.
+- `finishSession()` sammelt jetzt zusätzlich die eingetragenen Sätze pro Übung im bestehenden Loop und hängt danach (falls mindestens eine Übung Daten hatte) einen Eintrag per `addJournalEntry()` an — bestehende Logik (History/lastWeights) unverändert.
+- Neue eigenständige **Tagebuch-Ansicht** (`renderJournalView()`), folgt demselben Muster wie der Trainingsmodus (ephemer, `journalViewActive`/`journalTab`, früher Ausstieg in `render()`): neuer Header-Button "📔 Tagebuch", zwei Reiter:
+  - **📅 Verlauf**: alle Einheiten rückwärts-chronologisch, kompakte Übungs-/Satz-Zeilen, Aufwärmsätze kursiv.
+  - **🏆 Rekorde**: eine Karte pro Übung mit vorhandenen Daten — PR (Gewicht×Wdh., Datum) plus `sparklineSVG()`, einer kleinen abhängigkeitsfreien Inline-SVG-Polyline (kein Chart-Framework im Projekt vorhanden), mit Hinweistext statt Chart bei 0-1 Datenpunkten.
+- Reine Lese-Ansicht in dieser Version — keine Bearbeitung/Löschung einzelner Journal-Einträge.
+- `howto.html` (neuer Abschnitt "📔 Tagebuch") aktualisiert.
+- Verifiziert: `node --check`; Node-Test-Harness bestätigt u.a. dass eine leere Session keinen Journal-Eintrag erzeugt, eine Session mit Daten genau einen Eintrag mit korrektem Datum-/Übungs-/Satz-Inhalt erzeugt (inkl. Aufwärm-/"mehr möglich"-Flags), `computePersonalRecords()` bei mehreren Einträgen korrekt das Maximalgewicht liefert, `sparklineSVG()` bei 0/1/vielen Punkten nie abstürzt, und beide Tagebuch-Reiter ohne Exception rendern (auch mit leerem Journal). Realer Gym-Test durch den Nutzer steht noch aus.
+
 ## v1.9.0 — 2026-07-09 (Teil 28): Trainingsmodus (Phase C von 4) + vereinfachtes RIR als "mehr möglich?"-Toggle
 
 - Brainstorming-Session zu weiteren Features; Nutzer wollte konkret mit Phase C aus dem 4-Phasen-Plan (`C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`) starten, dabei aber die in Phase B entfernten RIR-Chips in vereinfachter Form zurückbringen: kein 0/1/2/3+, nur noch "wären mehr Wdh. möglich gewesen?" (ja/nein) — als späterer Hinweis für automatische Gewichtsvorschläge (Phase D, noch offen). Per Rückfrage geklärt: pro Satz (nicht einmal pro Übung) und in diesem Durchgang nur das Erfassen, die Vorschlagsberechnung folgt separat.

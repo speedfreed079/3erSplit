@@ -320,6 +320,33 @@
   .focusmode-nav-btn.primary { background: var(--rust); border-color: var(--rust); color: #fff; }
   .focusmode-nav-btn.finish { background: var(--olive); border-color: var(--olive); color: #fff; }
 
+  .journal-empty { padding: 20px 4px; color: var(--chalk-dim); font-size: 13px; }
+  .journal-entry-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .journal-entry-date {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim);
+  }
+  .journal-entry-day {
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.3px;
+    text-transform: uppercase; color: var(--chalk);
+  }
+  .journal-ex-line { font-size: 13px; margin-bottom: 4px; }
+  .journal-ex-line i { color: var(--chalk-dim); font-style: italic; }
+  .journal-record-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  }
+  .journal-record-header h3 {
+    font-size: 16px; font-weight: 500; margin: 0; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .journal-record-pr {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--rust);
+  }
+  .journal-record-date { color: var(--chalk-dim); }
+  .sparkline { display: block; width: 100%; height: 48px; margin-top: 10px; }
+  .sparkline-empty { margin-top: 10px; font-size: 12px; color: var(--chalk-dim); }
+
   .rest-timer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
     background: var(--surface2); border-top: 1px solid var(--rust);
@@ -1270,7 +1297,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.10.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1351,6 +1378,55 @@ function deleteGym(id) {
   render();
 }
 
+// Tagebuch: state.journal ist eine flache chronologische Liste (nicht gym-gescoped - ein PR
+// ist ein PR, egal in welchem Studio). PRs/Chart-Daten werden bewusst NICHT gespeichert,
+// sondern bei Bedarf aus state.journal abgeleitet (computePersonalRecords) - so bleibt die
+// PR-Definition jederzeit aenderbar, ohne Datenmodell/Migration anzufassen.
+function addJournalEntry(entry) {
+  state.journal.push(entry);
+}
+
+function computePersonalRecords() {
+  const records = {};
+  state.journal.forEach(entry => {
+    entry.exercises.forEach(ex => {
+      ex.sets.forEach(s => {
+        if (s.isWarmup) return;
+        const weight = parseFloat(s.weight);
+        if (!Number.isFinite(weight)) return;
+        const current = records[ex.exId];
+        if (!current || weight > current.weight) {
+          records[ex.exId] = { exId: ex.exId, name: ex.name, weight, reps: s.reps, date: entry.date, timestamp: entry.timestamp };
+        }
+      });
+    });
+  });
+  return records;
+}
+
+// Kleine, abhaengigkeitsfreie Inline-SVG-Sparkline (kein Chart-Framework im Projekt).
+function sparklineSVG(points) {
+  if (points.length < 2) {
+    return '<div class="sparkline-empty">Noch nicht genug Daten für einen Verlauf.</div>';
+  }
+  const recent = points.slice(-15);
+  const weights = recent.map(p => p.weight);
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const w = 240, h = 48, pad = 4;
+  const range = max - min || 1;
+  const coords = recent.map((p, i) => {
+    const x = pad + (i / (recent.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((p.weight - min) / range) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  return `
+    <svg class="sparkline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <polyline points="${coords.join(" ")}" fill="none" stroke="var(--rust)" stroke-width="2" />
+    </svg>
+  `;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1372,10 +1448,11 @@ function loadState() {
         currentGymId: parsed.currentGymId || null,
         gymLastWeights: parsed.gymLastWeights || {},
         gymHistory: parsed.gymHistory || {},
+        journal: parsed.journal || [],
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [] };
 }
 
 let state = loadState();
@@ -1395,6 +1472,11 @@ let focusModeActive = false;
 let focusQueue = [];
 let focusPos = 0;
 let focusInfoOpen = false;
+
+// Tagebuch-Ansicht: ebenfalls ephemer, gleiche Konvention wie der Trainingsmodus oben.
+let journalViewActive = false;
+let journalTab = "verlauf"; // "verlauf" | "rekorde"
+
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -1819,11 +1901,97 @@ function renderFocusMode() {
   `;
 }
 
+function journalPointsFor(exId) {
+  const points = [];
+  state.journal.forEach(entry => {
+    entry.exercises.forEach(ex => {
+      if (ex.exId !== exId) return;
+      ex.sets.forEach(s => {
+        if (s.isWarmup) return;
+        const weight = parseFloat(s.weight);
+        if (!Number.isFinite(weight)) return;
+        points.push({ weight, timestamp: entry.timestamp });
+      });
+    });
+  });
+  points.sort((a, b) => a.timestamp - b.timestamp);
+  return points;
+}
+
+function journalHistoryHTML() {
+  if (state.journal.length === 0) {
+    return `<div class="journal-empty">Noch keine abgeschlossenen Einheiten im Tagebuch.</div>`;
+  }
+  return [...state.journal].reverse().map(entry => {
+    const gym = entry.gymId ? state.gyms.find(g => g.id === entry.gymId) : null;
+    const exercisesHTML = entry.exercises.map(ex => {
+      const setsText = ex.sets.map(s => {
+        const label = `${escapeAttr(s.weight || "–")}kg×${escapeAttr(s.reps || "–")}`;
+        return s.isWarmup ? `<i>${label}</i>` : label;
+      }).join(", ");
+      return `<div class="journal-ex-line"><b>${escapeAttr(ex.name)}:</b> ${setsText}</div>`;
+    }).join("");
+    return `
+      <div class="card">
+        <div class="journal-entry-header">
+          <span class="journal-entry-date">${escapeAttr(entry.date)}</span>
+          <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}</span>
+        </div>
+        ${exercisesHTML}
+      </div>
+    `;
+  }).join("");
+}
+
+function journalRecordsHTML() {
+  const records = computePersonalRecords();
+  const exIds = Object.keys(records).sort((a, b) => records[b].timestamp - records[a].timestamp);
+  if (exIds.length === 0) {
+    return `<div class="journal-empty">Noch keine Rekorde — schließe ein paar Trainingseinheiten ab.</div>`;
+  }
+  return exIds.map(exId => {
+    const rec = records[exId];
+    return `
+      <div class="card">
+        <div class="journal-record-header">
+          <h3>${escapeAttr(rec.name)}</h3>
+          <span class="journal-record-pr">${escapeAttr(String(rec.weight))}kg × ${escapeAttr(rec.reps || "–")} <span class="journal-record-date">(${escapeAttr(rec.date)})</span></span>
+        </div>
+        ${sparklineSVG(journalPointsFor(exId))}
+      </div>
+    `;
+  }).join("");
+}
+
+function renderJournalView() {
+  const tabsHTML = `
+    <button class="tab-btn ${journalTab === "verlauf" ? "active" : ""}" data-role="journal-tab" data-tab="verlauf">📅 Verlauf</button>
+    <button class="tab-btn ${journalTab === "rekorde" ? "active" : ""}" data-role="journal-tab" data-tab="rekorde">🏆 Rekorde</button>
+  `;
+  const bodyHTML = journalTab === "rekorde" ? journalRecordsHTML() : journalHistoryHTML();
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="journal-exit">✕ Schließen</button>
+      <span class="focusmode-progress">📔 Tagebuch</span>
+    </div>
+    <div class="tabs">${tabsHTML}</div>
+    <div class="focusmode-content">
+      ${bodyHTML}
+    </div>
+  `;
+}
+
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
+
+  if (journalViewActive) {
+    document.getElementById("app").innerHTML = renderJournalView();
+    return;
+  }
 
   if (focusModeActive) {
     document.getElementById("app").innerHTML = renderFocusMode();
@@ -1906,6 +2074,7 @@ function render() {
           <div class="header-sub">PPL Trainingstracker · v${APP_VERSION}</div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn" data-role="journal-enter" title="Tagebuch öffnen">📔 Tagebuch</button>
           <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
           <button class="icon-btn" data-role="textsize-toggle" title="Schriftgröße">${textSizeLabel(state.textSize || "normal")}</button>
           <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
@@ -1939,10 +2108,19 @@ function render() {
 function finishSession(dayId) {
   const daySets = state.sessions[dayId] || {};
   const today = new Date().toLocaleDateString("de-DE");
+  const journalExercises = [];
   EXERCISES[dayId].forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
-    const doneSets = sets.filter(s => (s.weight || s.reps) && !s.isWarmup);
+    const enteredSets = sets.filter(s => s.weight || s.reps);
+    if (enteredSets.length > 0) {
+      journalExercises.push({
+        exId: ex.id,
+        name: state.swaps[`${dayId}:${ex.id}`] || ex.name,
+        sets: enteredSets.map(s => ({ weight: s.weight, reps: s.reps, isWarmup: s.isWarmup, couldDoMore: s.couldDoMore })),
+      });
+    }
+    const doneSets = enteredSets.filter(s => !s.isWarmup);
     if (doneSets.length > 0) {
       const last = doneSets[doneSets.length - 1];
       setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
@@ -1953,6 +2131,18 @@ function finishSession(dayId) {
       setLastWeights(ex.id, sets.map(s => s.weight || ""));
     }
   });
+  if (journalExercises.length > 0) {
+    const dayMeta = DAYS.find(d => d.id === dayId);
+    addJournalEntry({
+      date: today,
+      timestamp: Date.now(),
+      planId: state.currentPlan,
+      dayId,
+      dayLabel: dayMeta ? dayMeta.label : dayId,
+      gymId: state.currentGymId || null,
+      exercises: journalExercises,
+    });
+  }
   state.lastCompletedDay = dayId;
   state.lastCompletedDate = today;
   const resetDay = {};
@@ -2010,6 +2200,7 @@ function importData(file) {
         currentGymId: incoming.currentGymId || null,
         gymLastWeights: incoming.gymLastWeights || {},
         gymHistory: incoming.gymHistory || {},
+        journal: incoming.journal || [],
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -2083,6 +2274,28 @@ document.addEventListener("click", (e) => {
   const focusInfoToggle = e.target.closest('[data-role="focus-info-toggle"]');
   if (focusInfoToggle) {
     focusInfoOpen = !focusInfoOpen;
+    render();
+    return;
+  }
+
+  const journalEnter = e.target.closest('[data-role="journal-enter"]');
+  if (journalEnter) {
+    focusModeActive = false;
+    journalViewActive = true;
+    render();
+    return;
+  }
+
+  const journalExit = e.target.closest('[data-role="journal-exit"]');
+  if (journalExit) {
+    journalViewActive = false;
+    render();
+    return;
+  }
+
+  const journalTabBtn = e.target.closest('[data-role="journal-tab"]');
+  if (journalTabBtn) {
+    journalTab = journalTabBtn.dataset.tab;
     render();
     return;
   }
