@@ -1,6 +1,6 @@
 # MEMORY.md
 
-Projektweite Fakten und Entscheidungen für "Fretze pumpt" (bis 2026-07-08 "Eisernes Log") — als Kontext-Referenz, ergänzend zu `CLAUDE.md` (Arbeitsanweisungen) und `PROJEKTLOG.md` (chronologischer Verlauf).
+Projektweite Fakten und Entscheidungen für "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09) — als Kontext-Referenz, ergänzend zu `CLAUDE.md` (Arbeitsanweisungen) und `PROJEKTLOG.md` (chronologischer Verlauf).
 
 ## Fakten
 

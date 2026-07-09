@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Fretze pumpt – Trainingsbuch</title>
+<title>Fretze – Trainingsbuch</title>
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#c1440e" />
+<meta name="theme-color" content="#a8461e" />
 <link rel="icon" href="icon-192.png" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -228,6 +228,7 @@
     font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; margin: 12px 0 5px; padding-left: 2px;
   }
+  .set-header-icon { text-align: center; }
   .set-row {
     display: grid; grid-template-columns: 22px 1fr 1fr 32px 32px 24px; gap: 8px;
     align-items: center; margin-bottom: 6px;
@@ -1363,8 +1364,8 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.13.0";
-const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
+const APP_VERSION = "1.14.0";
+const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 
@@ -2031,7 +2032,7 @@ function setsRowsHTML(day, ex, sets) {
 
   return `
     <div class="set-header">
-      <span>#</span><span>kg</span><span>Wdh.</span><span title="Aufwärmsatz markieren">🔥</span><span title="Mehr Wdh. möglich gewesen?">↑</span><span></span>
+      <span>#</span><span>kg</span><span>Wdh.</span><span class="set-header-icon" title="Aufwärmsatz markieren">🔥</span><span class="set-header-icon" title="Mehr Wdh. möglich gewesen?">↑</span><span></span>
     </div>
     ${rowsHTML}
   `;
@@ -2434,7 +2435,7 @@ function render() {
         <div style="min-width:0; flex:1;">
           <div class="header-title">
             <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
-            <h1>Fretze pumpt</h1>
+            <h1>Fretze</h1>
           </div>
           <div class="header-sub">${escapeAttr(headerSubtitleText())} · v${APP_VERSION}</div>
         </div>
@@ -2531,7 +2532,7 @@ function finishSession(dayId) {
 function exportData() {
   const payload = {
     exportedAt: new Date().toISOString(),
-    app: "fretze-pumpt",
+    app: "fretze",
     version: 1,
     state: state,
   };
@@ -2540,7 +2541,7 @@ function exportData() {
   const a = document.createElement("a");
   const dateStr = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `fretze-pumpt-backup-${dateStr}.json`;
+  a.download = `fretze-backup-${dateStr}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
