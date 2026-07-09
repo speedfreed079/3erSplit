@@ -2,6 +2,17 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.8.0 — 2026-07-09 (Teil 26): RIR raus, Aufwärmsatz-Markierung (Phase B von 4)
+
+- Direktes Nutzer-Feedback beim Live-Test im Gym (nach v1.7.0-Deploy): RIR-Chips verwirren, sollen weg; stattdessen Sätze als Aufwärm- vs. Arbeitssatz markierbar machen. Phase B von 4 aus `C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`.
+- Set-Zeilen-Feld `rir` komplett durch `isWarmup` (boolean) ersetzt — in `emptySets`/`buildInitialSets` sowie überall in `render()`/`finishSession()`/dem Klick-Handler. Kein Migrationsschritt nötig: `getSetsFor`/`ensureDaySets` prüfen nur die Array-Länge, nie die Feldform, alte `.rir`-Werte in bereits gespeicherten Sessions werden beim nächsten `finishSession`-Reset überschrieben.
+- Neuer 🔥-Toggle-Button pro Satzzeile (`data-role="set-warmup-toggle"`) ersetzt die RIR-Chip-Gruppe an derselben Stelle im Grid; Spaltenkopf zeigt jetzt 🔥 statt "RIR".
+- **`finishSession()` filtert Aufwärmsätze aus der "Letztes Mal"-Ermittlung heraus**, bevor der letzte Satz mit Daten übernommen wird — ein zuletzt eingetragener Aufwärmsatz verfälscht die Historie sonst nicht mehr.
+- Fortschrittszähler im Karten-Footer ("X/Y Arbeitssätze") und die Strichliste zählen jetzt nur noch nicht-Aufwärm-Sätze — echte Verhaltensänderung, nicht nur Kosmetik.
+- `howto.html` (Abschnitt "💪 Sätze eintragen") entsprechend umgeschrieben.
+- Verifiziert: `node --check` auf dem extrahierten Skriptblock; Node-Test-Harness bestätigt u.a., dass gerenderte Karten keine RIR-Reste mehr enthalten, der 🔥-Toggle pro Zeile erscheint, und `finishSession` einen als Aufwärmsatz markierten letzten Satz korrekt überspringt. Realer Gym-Test durch den Nutzer steht noch aus.
+- Beim Testen aufgefallen (nicht Teil dieser Änderung, nur notiert): `finishSession` zählt jeden Satz mit vorbefülltem, aber unangetastetem Gewicht als "Daten vorhanden" für die Historie — bei ungenutzten Restsätzen am Ende einer Übung kann das theoretisch das falsche "Letztes Mal" liefern. Vorbestehendes Verhalten, nicht durch diese Phase eingeführt; ggf. später anschauen.
+
 ## v1.7.0 — 2026-07-09 (Teil 25): Gym-Standorte (Phase A von 4)
 
 - Nutzer-Feedback: trainiert über Wellhub/Urban Sports Club wechselnd in verschiedenen Studios (z.B. MCFit, Fitness First) mit unterschiedlicher Ausstattung — die App kannte bisher nur ein globales Gewicht pro Übung, das sich zwischen Studios vermischt hätte. Ausführlich mit dem Nutzer sortiert und in vier unabhängig testbare Versionen aufgeteilt (Plan unter `C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`); dies ist Phase A von 4 (danach: RIR-Ersatz/Arbeitssatz-Markierung, Trainingsmodus/Fokus-Ansicht, Gewichtsprogression).

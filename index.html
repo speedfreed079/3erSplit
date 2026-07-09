@@ -232,13 +232,12 @@
     border: 1px solid var(--border); border-radius: 6px; color: var(--chalk);
     padding: 7px 8px; width: 100%;
   }
-  .rir-group { display: flex; gap: 3px; }
-  .rir-chip {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 4px 7px;
+  .warmup-toggle {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 4px 7px;
     border-radius: 5px; border: 1px solid var(--border); background: transparent;
-    color: var(--chalk-dim); cursor: pointer; min-width: 26px;
+    color: var(--chalk-dim); cursor: pointer; min-width: 26px; opacity: 0.5;
   }
-  .rir-chip.active { border-color: var(--rust); background: var(--rust); color: #fff; }
+  .warmup-toggle.active { border-color: var(--rust); background: var(--rust); color: #fff; opacity: 1; }
   .done-btn {
     width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
     background: transparent; display: flex; align-items: center; justify-content: center;
@@ -1226,13 +1225,13 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 
 function emptySets(n) {
-  return Array.from({ length: n }, () => ({ weight: "", reps: "", rir: "", done: false }));
+  return Array.from({ length: n }, () => ({ weight: "", reps: "", isWarmup: false, done: false }));
 }
 
 function buildInitialSets(exId, n) {
@@ -1240,7 +1239,7 @@ function buildInitialSets(exId, n) {
   return Array.from({ length: n }, (_, i) => ({
     weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
     reps: "",
-    rir: "",
+    isWarmup: false,
     done: false,
   }));
 }
@@ -1666,12 +1665,12 @@ function render() {
     const swapKey = `${day}:${ex.id}`;
     const displayName = state.swaps[swapKey] || ex.name;
     const sets = getSetsFor(day, ex);
-    const doneCount = sets.filter(s => s.done).length;
+    const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
     const hist = getHistoryEntry(ex.id);
     const note = state.notes[swapKey] || "";
 
     const historyHTML = hist ? `
-      <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}${hist.rir ? " @" + escapeAttr(hist.rir) + " RIR" : ""}</b> <span>(${escapeAttr(hist.date)})</span></div>
+      <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span></div>
     ` : "";
 
     const swapPanelHTML = swapOpenKey === swapKey ? `
@@ -1705,9 +1704,7 @@ function render() {
           value="${s.weight}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />
         <input class="set-input" type="number" inputmode="numeric" placeholder="0"
           value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />
-        <div class="rir-group">
-          ${["0","1","2","3+"].map(r => `<button class="rir-chip ${s.rir === r ? "active" : ""}" data-role="set-rir" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-rir="${r}">${r}</button>`).join("")}
-        </div>
+        <button class="warmup-toggle ${s.isWarmup ? "active" : ""}" data-role="set-warmup-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.isWarmup ? "Aufwärmsatz (antippen für Arbeitssatz)" : "Als Aufwärmsatz markieren"}">🔥</button>
         <button class="done-btn ${s.done ? "done" : ""}" data-role="set-done" data-day="${day}" data-exid="${ex.id}" data-idx="${i}">${s.done ? "✓" : ""}</button>
       </div>
     `).join("");
@@ -1732,12 +1729,12 @@ function render() {
         ${infoPanelHTML}
         ${swapPanelHTML}
         <div class="set-header">
-          <span>#</span><span>kg</span><span>Wdh.</span><span>RIR</span><span></span>
+          <span>#</span><span>kg</span><span>Wdh.</span><span title="Aufwärmsatz markieren">🔥</span><span></span>
         </div>
         ${setsHTML}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
-          <span class="set-count">${doneCount}/${ex.sets} Sätze</span>
+          <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
         </div>
         <textarea class="note-input" rows="1" placeholder="Notiz (Technik, Schmerzen, Griffweite …)"
           data-role="note" data-day="${day}" data-exid="${ex.id}">${note}</textarea>
@@ -1791,10 +1788,10 @@ function finishSession(dayId) {
   EXERCISES[dayId].forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
-    const doneSets = sets.filter(s => s.weight || s.reps);
+    const doneSets = sets.filter(s => (s.weight || s.reps) && !s.isWarmup);
     if (doneSets.length > 0) {
       const last = doneSets[doneSets.length - 1];
-      setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, rir: last.rir, date: today });
+      setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
     }
     // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind
     const hasAnyWeight = sets.some(s => s.weight);
@@ -2014,12 +2011,12 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  const rirChip = e.target.closest('[data-role="set-rir"]');
-  if (rirChip) {
-    const { day, exid, idx, rir } = rirChip.dataset;
+  const setWarmupToggle = e.target.closest('[data-role="set-warmup-toggle"]');
+  if (setWarmupToggle) {
+    const { day, exid, idx } = setWarmupToggle.dataset;
     const ex = EXERCISES[day].find(x => x.id === exid);
     const sets = ensureDaySets(day, ex);
-    sets[idx].rir = rir;
+    sets[idx].isWarmup = !sets[idx].isWarmup;
     persist();
     render();
     return;
