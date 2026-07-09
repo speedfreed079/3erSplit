@@ -347,6 +347,55 @@
   .sparkline { display: block; width: 100%; height: 48px; margin-top: 10px; }
   .sparkline-empty { margin-top: 10px; font-size: 12px; color: var(--chalk-dim); }
 
+  .home-continue-btn {
+    width: 100%; padding: 14px; border-radius: 9px; border: 1px solid var(--rust);
+    background: var(--rust); color: #fff; font-family: 'Oswald', sans-serif; font-size: 15px;
+    letter-spacing: 0.4px; text-transform: uppercase; cursor: pointer; margin-bottom: 18px;
+  }
+  .home-section-label {
+    font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .home-plan-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .home-plan-btn {
+    flex: 1; text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--chalk); font-size: 14px; cursor: pointer;
+  }
+  .home-plan-btn.active { border-color: var(--rust); }
+  .home-plan-delete {
+    background: transparent; border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px; color: var(--rust); cursor: pointer;
+  }
+  .home-create-btn {
+    width: 100%; margin-top: 10px; padding: 12px; border-radius: 9px; border: 1px dashed var(--border);
+    background: transparent; color: var(--chalk-dim); font-family: 'Oswald', sans-serif; font-size: 13px;
+    letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
+  }
+  .draft-plan-label {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--chalk); font-size: 16px; font-family: 'Oswald', sans-serif;
+    margin-bottom: 14px;
+  }
+  .draft-day { margin-bottom: 12px; }
+  .draft-day-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .draft-day-label {
+    flex: 1; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 14px;
+  }
+  .draft-ex-row { display: grid; grid-template-columns: 2fr 70px 90px 28px; gap: 6px; margin-bottom: 6px; }
+  .draft-ex-name, .draft-ex-sets, .draft-ex-reps {
+    padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 13px; width: 100%;
+  }
+  .draft-remove-btn {
+    background: transparent; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--rust); cursor: pointer;
+  }
+  .draft-add-btn {
+    width: 100%; padding: 9px; margin-top: 4px; border-radius: 7px; border: 1px dashed var(--border);
+    background: transparent; color: var(--chalk-dim); font-size: 12px; cursor: pointer;
+  }
+
   .rest-timer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
     background: var(--surface2); border-top: 1px solid var(--rust);
@@ -574,8 +623,14 @@ const PLANS = [
 let DAYS = PPL_DAYS;
 let EXERCISES = PPL_EXERCISES;
 
+// PLANS bleibt unveraendert (nur die 4 eingebauten Plaene) - eigene Plaene kommen aus
+// state.customPlans und werden hier nur zur Laufzeit angehaengt, nie in PLANS gemischt.
+function getAllPlans() {
+  return [...PLANS, ...state.customPlans];
+}
+
 function applyPlan(planId) {
-  const plan = PLANS.find(p => p.id === planId) || PLANS[0];
+  const plan = getAllPlans().find(p => p.id === planId) || PLANS[0];
   DAYS = plan.days;
   EXERCISES = plan.exercises;
 }
@@ -1297,7 +1352,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.10.0";
+const APP_VERSION = "1.11.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1427,6 +1482,88 @@ function sparklineSVG(points) {
   `;
 }
 
+// Eigene Plaene: state.planDraft ist bewusst persistiert (nicht ephemer wie die anderen
+// Views) - ein halb gebauter Plan mit mehreren Tagen/Uebungen ist echte Nutzereingabe,
+// die ein versehentliches Schliessen/Reload nicht verlieren soll.
+function newPlanDraft() {
+  return { label: "", days: [{ label: "Tag 1", exercises: [{ name: "", sets: 3, reps: "8-10" }] }] };
+}
+
+function draftAddDay() {
+  state.planDraft.days.push({ label: `Tag ${state.planDraft.days.length + 1}`, exercises: [{ name: "", sets: 3, reps: "8-10" }] });
+}
+
+function draftRemoveDay(dayIdx) {
+  state.planDraft.days.splice(dayIdx, 1);
+}
+
+function draftAddExercise(dayIdx) {
+  state.planDraft.days[dayIdx].exercises.push({ name: "", sets: 3, reps: "8-10" });
+}
+
+function draftRemoveExercise(dayIdx, exIdx) {
+  state.planDraft.days[dayIdx].exercises.splice(exIdx, 1);
+}
+
+function validatePlanDraft(draft) {
+  if (!draft.label.trim()) return false;
+  if (draft.days.length === 0) return false;
+  return draft.days.every(d => d.label.trim() && d.exercises.length > 0 && d.exercises.every(ex => ex.name.trim() && ex.sets > 0 && ex.reps.trim()));
+}
+
+// Zeitstempel-basierte IDs garantieren by construction keine Kollision mit den ~90 fest
+// eingebauten Uebungs-/Tag-IDs - EXERCISE_INFO/state.history/state.lastWeights/state.swaps/
+// state.notes sind global nach ex.id geschluesselt, es gibt keinen anderen Kollisionsschutz.
+function buildPlanFromDraft(draft) {
+  const planId = `custom_${Date.now()}`;
+  let exCounter = 0;
+  const days = draft.days.map((d, dayIdx) => ({ id: `${planId}_day${dayIdx + 1}`, label: d.label.trim(), sub: d.label.trim() }));
+  const exercises = {};
+  draft.days.forEach((d, dayIdx) => {
+    exercises[days[dayIdx].id] = d.exercises.map(ex => {
+      exCounter++;
+      return { id: `${planId}_ex${exCounter}`, name: ex.name.trim(), sets: Number(ex.sets) || 1, reps: ex.reps.trim(), alts: [], core: false };
+    });
+  });
+  return { id: planId, label: draft.label.trim(), days, exercises };
+}
+
+function savePlanDraft() {
+  if (!validatePlanDraft(state.planDraft)) {
+    showToast("Bitte Plan-Name, mindestens einen Tag und je Tag mindestens eine vollständige Übung angeben.");
+    return;
+  }
+  const plan = buildPlanFromDraft(state.planDraft);
+  state.customPlans.push(plan);
+  state.planDraft = null;
+  state.currentPlan = plan.id;
+  applyPlan(plan.id);
+  state.currentDay = DAYS[0].id;
+  planBuilderActive = false;
+  homeScreenActive = false;
+  persist();
+  render();
+  showToast("Plan gespeichert.");
+}
+
+function cancelPlanDraft() {
+  state.planDraft = null;
+  planBuilderActive = false;
+  persist();
+  render();
+}
+
+function deleteCustomPlan(planId) {
+  state.customPlans = state.customPlans.filter(p => p.id !== planId);
+  if (state.currentPlan === planId) {
+    state.currentPlan = PLANS[0].id;
+    applyPlan(state.currentPlan);
+    state.currentDay = DAYS[0].id;
+  }
+  persist();
+  render();
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1449,10 +1586,12 @@ function loadState() {
         gymLastWeights: parsed.gymLastWeights || {},
         gymHistory: parsed.gymHistory || {},
         journal: parsed.journal || [],
+        customPlans: parsed.customPlans || [],
+        planDraft: parsed.planDraft || null,
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [] };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null };
 }
 
 let state = loadState();
@@ -1476,6 +1615,12 @@ let focusInfoOpen = false;
 // Tagebuch-Ansicht: ebenfalls ephemer, gleiche Konvention wie der Trainingsmodus oben.
 let journalViewActive = false;
 let journalTab = "verlauf"; // "verlauf" | "rekorde"
+
+// Startbildschirm: bewusst initial true (nicht false wie die anderen ephemeren Views) -
+// erscheint dadurch automatisch beim allerersten render()-Aufruf nach dem Laden, ohne
+// dass eine Aktion noetig ist. Wird ueber den 🏠-Header-Button jederzeit erneut aktiviert.
+let homeScreenActive = true;
+let planBuilderActive = false;
 
 let saveTimer = null;
 
@@ -1763,12 +1908,16 @@ function getRecommendedDay() {
 
 function renderTodayBanner() {
   const today = new Date().toLocaleDateString("de-DE");
-  const trainedToday = state.lastCompletedDate === today;
+  const lastDayMeta = DAYS.find(d => d.id === state.lastCompletedDay);
+  // lastDayMeta kann fehlen, wenn zuletzt in einem anderen Plan trainiert wurde (der
+  // abgeschlossene Tag gehoert dann nicht zum gerade aktiven Plan) - dann gilt "heute
+  // schon trainiert" nicht fuer die aktuelle Rotation.
+  const trainedToday = state.lastCompletedDate === today && !!lastDayMeta;
   const recDay = getRecommendedDay();
   const recLabel = DAYS.find(d => d.id === recDay).label;
 
   if (trainedToday) {
-    const lastLabel = DAYS.find(d => d.id === state.lastCompletedDay).label;
+    const lastLabel = lastDayMeta.label;
     return `
       <div class="today-banner done-today">
         <div class="today-banner-text">✅ Heute schon trainiert: <b>${lastLabel}</b>. Nächstes Mal: <b>${recLabel}</b></div>
@@ -1982,11 +2131,101 @@ function renderJournalView() {
   `;
 }
 
+function renderHomeScreen() {
+  const recDay = getRecommendedDay();
+  const recDayMeta = DAYS.find(d => d.id === recDay);
+  const currentPlanMeta = getAllPlans().find(p => p.id === state.currentPlan);
+
+  const plansHTML = getAllPlans().map(p => {
+    const isCustom = p.id.startsWith("custom_");
+    return `
+      <div class="home-plan-row">
+        <button class="home-plan-btn ${p.id === state.currentPlan ? "active" : ""}" data-role="home-select-plan" data-planid="${escapeAttr(p.id)}">${escapeAttr(p.label)}</button>
+        ${isCustom ? `<button class="home-plan-delete" data-role="home-delete-plan" data-planid="${escapeAttr(p.id)}" title="Plan löschen">🗑</button>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="home-exit">✕ Schließen</button>
+      <span class="focusmode-progress">🏠 Start</span>
+    </div>
+    <div class="focusmode-content">
+      <button class="home-continue-btn" data-role="home-continue">▶ Weiter mit ${escapeAttr(currentPlanMeta ? currentPlanMeta.label : "")} – ${escapeAttr(recDayMeta ? recDayMeta.label : "")}</button>
+      <div class="home-section-label">Plan wählen</div>
+      ${plansHTML}
+      <button class="home-create-btn" data-role="plan-builder-enter">+ Neuen Plan erstellen</button>
+    </div>
+  `;
+}
+
+function planBuilderExerciseNamesDatalist() {
+  const names = new Set();
+  getAllPlans().forEach(p => {
+    Object.values(p.exercises).forEach(list => list.forEach(ex => names.add(ex.name)));
+  });
+  return `<datalist id="exercise-name-list">${[...names].map(n => `<option value="${escapeAttr(n)}"></option>`).join("")}</datalist>`;
+}
+
+function renderPlanBuilder() {
+  const draft = state.planDraft;
+  const daysHTML = draft.days.map((day, dayIdx) => {
+    const exercisesHTML = day.exercises.map((ex, exIdx) => `
+      <div class="draft-ex-row">
+        <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Übungsname"
+          value="${escapeAttr(ex.name)}" data-role="draft-ex-name" data-day="${dayIdx}" data-ex="${exIdx}" />
+        <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+          value="${ex.sets}" data-role="draft-ex-sets" data-day="${dayIdx}" data-ex="${exIdx}" />
+        <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
+          value="${escapeAttr(ex.reps)}" data-role="draft-ex-reps" data-day="${dayIdx}" data-ex="${exIdx}" />
+        <button class="draft-remove-btn" data-role="draft-remove-ex" data-day="${dayIdx}" data-ex="${exIdx}">✕</button>
+      </div>
+    `).join("");
+    return `
+      <div class="draft-day card">
+        <div class="draft-day-header">
+          <input class="draft-day-label" type="text" placeholder="Tag-Name"
+            value="${escapeAttr(day.label)}" data-role="draft-day-label" data-day="${dayIdx}" />
+          <button class="draft-remove-btn" data-role="draft-remove-day" data-day="${dayIdx}">✕ Tag</button>
+        </div>
+        ${exercisesHTML}
+        <button class="draft-add-btn" data-role="draft-add-ex" data-day="${dayIdx}">+ Übung hinzufügen</button>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="plan-draft-cancel">✕ Abbrechen</button>
+      <span class="focusmode-progress">Neuen Plan erstellen</span>
+    </div>
+    <div class="focusmode-content">
+      <input class="draft-plan-label" type="text" placeholder="Name des Plans"
+        value="${escapeAttr(draft.label)}" data-role="draft-label" />
+      ${daysHTML}
+      <button class="draft-add-btn" data-role="draft-add-day">+ Tag hinzufügen</button>
+      <button class="finish-btn" data-role="plan-draft-save">✓ Plan speichern</button>
+      ${planBuilderExerciseNamesDatalist()}
+    </div>
+  `;
+}
+
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
+
+  if (planBuilderActive) {
+    document.getElementById("app").innerHTML = renderPlanBuilder();
+    return;
+  }
+
+  if (homeScreenActive) {
+    document.getElementById("app").innerHTML = renderHomeScreen();
+    return;
+  }
 
   if (journalViewActive) {
     document.getElementById("app").innerHTML = renderJournalView();
@@ -2071,9 +2310,10 @@ function render() {
             <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
             <h1>Fretze pumpt</h1>
           </div>
-          <div class="header-sub">PPL Trainingstracker · v${APP_VERSION}</div>
+          <div class="header-sub">${escapeAttr((getAllPlans().find(p => p.id === state.currentPlan) || {}).label || "Trainingstracker")} · v${APP_VERSION}</div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn" data-role="home-enter" title="Startbildschirm öffnen">🏠 Start</button>
           <button class="icon-btn" data-role="journal-enter" title="Tagebuch öffnen">📔 Tagebuch</button>
           <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
           <button class="icon-btn" data-role="textsize-toggle" title="Schriftgröße">${textSizeLabel(state.textSize || "normal")}</button>
@@ -2087,7 +2327,7 @@ function render() {
     <div class="plan-row">
       <label class="plan-label" for="plan-select">Plan</label>
       <select id="plan-select" class="plan-select" data-role="plan-select">
-        ${PLANS.map(p => `<option value="${p.id}" ${p.id === state.currentPlan ? "selected" : ""}>${p.label}</option>`).join("")}
+        ${getAllPlans().map(p => `<option value="${escapeAttr(p.id)}" ${p.id === state.currentPlan ? "selected" : ""}>${escapeAttr(p.label)}</option>`).join("")}
       </select>
     </div>
     ${gymRowHTML()}
@@ -2201,6 +2441,8 @@ function importData(file) {
         gymLastWeights: incoming.gymLastWeights || {},
         gymHistory: incoming.gymHistory || {},
         journal: incoming.journal || [],
+        customPlans: incoming.customPlans || [],
+        planDraft: incoming.planDraft || null,
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -2297,6 +2539,105 @@ document.addEventListener("click", (e) => {
   if (journalTabBtn) {
     journalTab = journalTabBtn.dataset.tab;
     render();
+    return;
+  }
+
+  const homeEnter = e.target.closest('[data-role="home-enter"]');
+  if (homeEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    homeScreenActive = true;
+    render();
+    return;
+  }
+
+  const homeExit = e.target.closest('[data-role="home-exit"]');
+  if (homeExit) {
+    homeScreenActive = false;
+    render();
+    return;
+  }
+
+  const homeContinue = e.target.closest('[data-role="home-continue"]');
+  if (homeContinue) {
+    homeScreenActive = false;
+    render();
+    return;
+  }
+
+  const homeSelectPlan = e.target.closest('[data-role="home-select-plan"]');
+  if (homeSelectPlan) {
+    state.currentPlan = homeSelectPlan.dataset.planid;
+    applyPlan(state.currentPlan);
+    state.currentDay = DAYS[0].id;
+    swapOpenKey = null;
+    infoOpenKey = null;
+    warmupOpen = false;
+    stretchOpen = false;
+    homeScreenActive = false;
+    persist();
+    render();
+    return;
+  }
+
+  const homeDeletePlan = e.target.closest('[data-role="home-delete-plan"]');
+  if (homeDeletePlan) {
+    const plan = state.customPlans.find(p => p.id === homeDeletePlan.dataset.planid);
+    const ok = confirm(`Plan "${plan ? plan.label : ""}" wirklich löschen?`);
+    if (ok) deleteCustomPlan(homeDeletePlan.dataset.planid);
+    return;
+  }
+
+  const planBuilderEnter = e.target.closest('[data-role="plan-builder-enter"]');
+  if (planBuilderEnter) {
+    if (!state.planDraft) state.planDraft = newPlanDraft();
+    planBuilderActive = true;
+    persist();
+    render();
+    return;
+  }
+
+  const draftAddDayBtn = e.target.closest('[data-role="draft-add-day"]');
+  if (draftAddDayBtn) {
+    draftAddDay();
+    persist();
+    render();
+    return;
+  }
+
+  const draftRemoveDayBtn = e.target.closest('[data-role="draft-remove-day"]');
+  if (draftRemoveDayBtn) {
+    draftRemoveDay(Number(draftRemoveDayBtn.dataset.day));
+    persist();
+    render();
+    return;
+  }
+
+  const draftAddExBtn = e.target.closest('[data-role="draft-add-ex"]');
+  if (draftAddExBtn) {
+    draftAddExercise(Number(draftAddExBtn.dataset.day));
+    persist();
+    render();
+    return;
+  }
+
+  const draftRemoveExBtn = e.target.closest('[data-role="draft-remove-ex"]');
+  if (draftRemoveExBtn) {
+    draftRemoveExercise(Number(draftRemoveExBtn.dataset.day), Number(draftRemoveExBtn.dataset.ex));
+    persist();
+    render();
+    return;
+  }
+
+  const planDraftSave = e.target.closest('[data-role="plan-draft-save"]');
+  if (planDraftSave) {
+    savePlanDraft();
+    return;
+  }
+
+  const planDraftCancel = e.target.closest('[data-role="plan-draft-cancel"]');
+  if (planDraftCancel) {
+    cancelPlanDraft();
     return;
   }
 
@@ -2503,6 +2844,41 @@ document.addEventListener("input", (e) => {
   if (note) {
     const key = `${note.dataset.day}:${note.dataset.exid}`;
     state.notes[key] = note.value;
+    persist();
+    return;
+  }
+
+  const draftLabel = e.target.closest('[data-role="draft-label"]');
+  if (draftLabel) {
+    state.planDraft.label = draftLabel.value;
+    persist();
+    return;
+  }
+
+  const draftDayLabel = e.target.closest('[data-role="draft-day-label"]');
+  if (draftDayLabel) {
+    state.planDraft.days[Number(draftDayLabel.dataset.day)].label = draftDayLabel.value;
+    persist();
+    return;
+  }
+
+  const draftExName = e.target.closest('[data-role="draft-ex-name"]');
+  if (draftExName) {
+    state.planDraft.days[Number(draftExName.dataset.day)].exercises[Number(draftExName.dataset.ex)].name = draftExName.value;
+    persist();
+    return;
+  }
+
+  const draftExSets = e.target.closest('[data-role="draft-ex-sets"]');
+  if (draftExSets) {
+    state.planDraft.days[Number(draftExSets.dataset.day)].exercises[Number(draftExSets.dataset.ex)].sets = draftExSets.value;
+    persist();
+    return;
+  }
+
+  const draftExReps = e.target.closest('[data-role="draft-ex-reps"]');
+  if (draftExReps) {
+    state.planDraft.days[Number(draftExReps.dataset.day)].exercises[Number(draftExReps.dataset.ex)].reps = draftExReps.value;
     persist();
     return;
   }
