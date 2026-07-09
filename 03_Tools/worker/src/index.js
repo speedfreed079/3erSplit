@@ -26,7 +26,27 @@ Antworte AUSSCHLIESSLICH als valides JSON-Array in diesem Format, ohne weiteren 
 [{"name": "Übungsname", "reason": "kurze Begründung auf Deutsch, max. 15 Wörter"}]`;
 }
 
-async function callGemini(apiKey, promptText) {
+// 503 von Gemini heisst laut Google-Doku "UNAVAILABLE - model overloaded, spikes are usually
+// temporary" - genau dafuer lohnt sich ein einzelner automatischer Retry. 429 bewusst NICHT
+// hier drin: das kann auch eine echte Fehlkonfiguration (falsche/veraltete Modell-ID, Kontingent
+// 0) sein, siehe CLAUDE.md - da soll der Fehler sofort sichtbar werden, nicht verzoegert.
+function isRetryableStatus(status) {
+  return status === 503;
+}
+
+function friendlyGeminiError(status, rawText) {
+  if (isRetryableStatus(status)) {
+    return `Gemini ist gerade überlastet (${status}) – bitte in ein paar Sekunden erneut versuchen.`;
+  }
+  let message = rawText.slice(0, 300) || `HTTP ${status}`;
+  try {
+    const parsed = JSON.parse(rawText);
+    if (parsed?.error?.message) message = parsed.error.message;
+  } catch (e) { /* rawText war kein JSON, beim rohen Ausschnitt bleiben */ }
+  return `Gemini-API-Fehler (${status}): ${message}`;
+}
+
+async function callGeminiOnce(apiKey, promptText) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
@@ -39,7 +59,9 @@ async function callGemini(apiKey, promptText) {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`Gemini-API-Fehler (${res.status}): ${errText.slice(0, 300)}`);
+    const err = new Error(friendlyGeminiError(res.status, errText));
+    err.status = res.status;
+    throw err;
   }
 
   const data = await res.json();
@@ -58,6 +80,16 @@ async function callGemini(apiKey, promptText) {
     .filter((s) => s && typeof s.name === "string")
     .slice(0, 3)
     .map((s) => ({ name: s.name, reason: typeof s.reason === "string" ? s.reason : "" }));
+}
+
+async function callGemini(apiKey, promptText) {
+  try {
+    return await callGeminiOnce(apiKey, promptText);
+  } catch (e) {
+    if (!isRetryableStatus(e.status)) throw e;
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return await callGeminiOnce(apiKey, promptText);
+  }
 }
 
 export default {

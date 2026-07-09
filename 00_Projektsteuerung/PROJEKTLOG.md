@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-09 (Teil 27): KI-Übungstausch-Worker robuster gegen Gemini-Überlastung
+
+- Nutzer bekam beim Live-Test einen rohen Gemini-Fehler angezeigt: "Gemini-API-Fehler (503): { \"error\": ... \"UNAVAILABLE\" ... }" — laut Google-Doku ein temporäres Überlastungssignal des Modells, kein Bug in unserem Code.
+- `03_Tools/worker/src/index.js`: `callGemini` versucht bei **genau** Status 503 jetzt automatisch **einen** Retry (800ms Pause), bevor es aufgibt — Client-Timeout ist 25s, ein Gemini-Call dauert laut bisheriger Erfahrung ~10s, ein Retry passt also sicher rein.
+- **Bewusst nur 503, nicht 429**: 429 kann laut `CLAUDE.md` (Modell-Deprecation-Notiz) auch eine echte Fehlkonfiguration (falsche Modell-ID, Kontingent 0) sein — da soll der Fehler sofort sichtbar bleiben statt durch einen Retry verzögert zu werden.
+- Neue Funktion `friendlyGeminiError()`: bei 503 zeigt die App jetzt "Gemini ist gerade überlastet (503) – bitte in ein paar Sekunden erneut versuchen." statt der rohen Gemini-JSON-Fehlermeldung; bei anderen Fehlercodes wird weiterhin die echte Gemini-Fehlermeldung (aus `error.message`, falls JSON) durchgereicht, nur ohne den unnötigen Rohtext-Rest.
+- Kein Versions-Bump: reine Worker-Änderung, `index.html`/`sw.js` unverändert (Client-Code brauchte keine Anpassung, da er den Fehlertext des Workers bereits unverändert anzeigt).
+- Verifiziert: Node-Smoke-Test gegen die Worker-Handler-Funktion mit gemocktem `fetch` — (1) 503 gefolgt von Erfolg löst genau einen Retry aus und liefert die Vorschläge durch, (2) durchgehend 503 liefert nach genau 2 Versuchen die freundliche Überlast-Meldung ohne rohen JSON-Text, (3) 429 löst keinen Retry aus und die echte Gemini-Fehlermeldung bleibt sichtbar. Noch nicht deployed (`wrangler deploy` steht aus) und nicht live gegen echtes Gemini-Überlastungsszenario getestet.
+
 ## v1.8.0 — 2026-07-09 (Teil 26): RIR raus, Aufwärmsatz-Markierung (Phase B von 4)
 
 - Direktes Nutzer-Feedback beim Live-Test im Gym (nach v1.7.0-Deploy): RIR-Chips verwirren, sollen weg; stattdessen Sätze als Aufwärm- vs. Arbeitssatz markierbar machen. Phase B von 4 aus `C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`.
