@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Fretze pumpt – PPL Trainingstracker</title>
+<title>Fretze pumpt – Trainingsbuch</title>
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#c1440e" />
 <link rel="icon" href="icon-192.png" />
@@ -224,12 +224,12 @@
   .ai-opt-reason { display: block; font-size: 11px; color: var(--chalk-dim); margin-top: 2px; }
 
   .set-header {
-    display: grid; grid-template-columns: 22px 1fr 1fr auto auto 24px; gap: 8px;
+    display: grid; grid-template-columns: 22px 1fr 1fr 32px 32px 24px; gap: 8px;
     font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; margin: 12px 0 5px; padding-left: 2px;
   }
   .set-row {
-    display: grid; grid-template-columns: 22px 1fr 1fr auto auto 24px; gap: 8px;
+    display: grid; grid-template-columns: 22px 1fr 1fr 32px 32px 24px; gap: 8px;
     align-items: center; margin-bottom: 6px;
   }
   .set-idx { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim); }
@@ -361,6 +361,11 @@
   .home-section-label {
     font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .profile-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); margin-bottom: 8px; font-size: 13px; color: var(--chalk);
   }
   .home-plan-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .home-plan-btn {
@@ -1358,7 +1363,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.12.0";
+const APP_VERSION = "1.13.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1685,6 +1690,12 @@ let journalTab = "verlauf"; // "verlauf" | "rekorde"
 let homeScreenActive = true;
 let planBuilderActive = false;
 
+// Profil-Ansicht: sammelt Geraete-/Daten-Einstellungen (Theme, Schriftgroesse, Export,
+// Import), die vorher einzeln im Header lagen und dort auf schmalen Handys nicht mehr
+// alle in eine Zeile passten. Bewusst als eigene Ansicht statt weiterer Header-Icons -
+// zukuenftig auch der vorgesehene Ort fuer eine spaetere Login-Funktion.
+let profileActive = false;
+
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -1876,6 +1887,13 @@ function nextTextSize(size) {
 }
 function textSizeLabel(size) {
   return { normal: "Aa ●○○", gross: "Aa ●●○", xgross: "Aa ●●●" }[size] || "Aa ●○○";
+}
+
+// Platzhalter fuer die kuenftige Login-Funktion: sobald sich Nutzer anmelden koennen, soll
+// hier "${Vorname}s Trainingsbuch" (bzw. ohne zusaetzliches "s" bei Namen, die schon auf
+// s/x/z enden, z.B. "Tobias Trainingsbuch") stehen statt des generischen Textes.
+function headerSubtitleText() {
+  return "Trainingsbuch";
 }
 
 function gymRowHTML() {
@@ -2206,6 +2224,36 @@ function renderJournalView() {
   `;
 }
 
+function renderProfileView() {
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="profile-exit">✕ Schließen</button>
+      <span class="focusmode-progress">👤 Profil</span>
+    </div>
+    <div class="focusmode-content">
+      <div class="home-section-label">Darstellung</div>
+      <div class="profile-row">
+        <span>Theme</span>
+        <button class="icon-btn" data-role="theme-toggle">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
+      </div>
+      <div class="profile-row">
+        <span>Schriftgröße</span>
+        <button class="icon-btn" data-role="textsize-toggle">${textSizeLabel(state.textSize || "normal")}</button>
+      </div>
+      <div class="home-section-label" style="margin-top:18px;">Daten</div>
+      <div class="profile-row">
+        <span>Backup exportieren</span>
+        <button class="icon-btn" data-role="export">⭳ Export</button>
+      </div>
+      <div class="profile-row">
+        <span>Backup importieren</span>
+        <button class="icon-btn" data-role="import-trigger">⭱ Import</button>
+      </div>
+      <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
+    </div>
+  `;
+}
+
 function renderHomeScreen() {
   const recDay = getRecommendedDay();
   const recDayMeta = DAYS.find(d => d.id === recDay);
@@ -2297,6 +2345,11 @@ function render() {
     return;
   }
 
+  if (profileActive) {
+    document.getElementById("app").innerHTML = renderProfileView();
+    return;
+  }
+
   if (homeScreenActive) {
     document.getElementById("app").innerHTML = renderHomeScreen();
     return;
@@ -2383,17 +2436,13 @@ function render() {
             <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
             <h1>Fretze pumpt</h1>
           </div>
-          <div class="header-sub">${escapeAttr((getAllPlans().find(p => p.id === state.currentPlan) || {}).label || "Trainingstracker")} · v${APP_VERSION}</div>
+          <div class="header-sub">${escapeAttr(headerSubtitleText())} · v${APP_VERSION}</div>
         </div>
         <div class="header-actions">
           <button class="icon-btn" data-role="home-enter" title="Startbildschirm öffnen">🏠 Start</button>
           <button class="icon-btn" data-role="journal-enter" title="Tagebuch öffnen">📔 Tagebuch</button>
-          <button class="icon-btn" data-role="theme-toggle" title="Theme wechseln">${state.theme === "sepia" ? "🌙 Dunkel" : "☀ Sepia"}</button>
-          <button class="icon-btn" data-role="textsize-toggle" title="Schriftgröße">${textSizeLabel(state.textSize || "normal")}</button>
-          <button class="icon-btn" data-role="export" title="Backup als JSON exportieren">⭳ Export</button>
-          <button class="icon-btn" data-role="import-trigger" title="Backup aus JSON importieren">⭱ Import</button>
+          <button class="icon-btn" data-role="profile-enter" title="Profil öffnen">👤 Profil</button>
           <a class="icon-btn" href="howto.html" title="Anleitung öffnen">❓ Anleitung</a>
-          <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
         </div>
       </div>
     </div>
@@ -2609,6 +2658,8 @@ document.addEventListener("click", (e) => {
   const journalEnter = e.target.closest('[data-role="journal-enter"]');
   if (journalEnter) {
     focusModeActive = false;
+    homeScreenActive = false;
+    profileActive = false;
     journalViewActive = true;
     render();
     return;
@@ -2632,6 +2683,7 @@ document.addEventListener("click", (e) => {
   if (homeEnter) {
     focusModeActive = false;
     journalViewActive = false;
+    profileActive = false;
     homeScreenActive = true;
     render();
     return;
@@ -2640,6 +2692,23 @@ document.addEventListener("click", (e) => {
   const homeExit = e.target.closest('[data-role="home-exit"]');
   if (homeExit) {
     homeScreenActive = false;
+    render();
+    return;
+  }
+
+  const profileEnter = e.target.closest('[data-role="profile-enter"]');
+  if (profileEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    homeScreenActive = false;
+    profileActive = true;
+    render();
+    return;
+  }
+
+  const profileExit = e.target.closest('[data-role="profile-exit"]');
+  if (profileExit) {
+    profileActive = false;
     render();
     return;
   }
