@@ -218,12 +218,12 @@
   .ai-opt-reason { display: block; font-size: 11px; color: var(--chalk-dim); margin-top: 2px; }
 
   .set-header {
-    display: grid; grid-template-columns: 22px 1fr 1fr auto 24px; gap: 8px;
+    display: grid; grid-template-columns: 22px 1fr 1fr auto auto 24px; gap: 8px;
     font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; margin: 12px 0 5px; padding-left: 2px;
   }
   .set-row {
-    display: grid; grid-template-columns: 22px 1fr 1fr auto 24px; gap: 8px;
+    display: grid; grid-template-columns: 22px 1fr 1fr auto auto 24px; gap: 8px;
     align-items: center; margin-bottom: 6px;
   }
   .set-idx { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim); }
@@ -238,6 +238,12 @@
     color: var(--chalk-dim); cursor: pointer; min-width: 26px; opacity: 0.5;
   }
   .warmup-toggle.active { border-color: var(--rust); background: var(--rust); color: #fff; opacity: 1; }
+  .couldmore-toggle {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 4px 7px;
+    border-radius: 5px; border: 1px solid var(--border); background: transparent;
+    color: var(--chalk-dim); cursor: pointer; min-width: 26px; opacity: 0.5;
+  }
+  .couldmore-toggle.active { border-color: var(--olive); background: var(--olive); color: #fff; opacity: 1; }
   .done-btn {
     width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
     background: transparent; display: flex; align-items: center; justify-content: center;
@@ -274,6 +280,45 @@
     display: none;
   }
   .toast.show { display: block; }
+
+  .focusmode-enter-btn {
+    width: 100%; margin: 0 0 16px; padding: 12px; border-radius: 9px; border: 1px solid var(--rust);
+    background: transparent; color: var(--rust); font-family: 'Oswald', sans-serif; font-size: 14px;
+    letter-spacing: 0.4px; text-transform: uppercase; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .focusmode-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+  }
+  .focusmode-exit-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 10px; color: var(--chalk-dim); cursor: pointer; font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .focusmode-progress { font-size: 12px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; }
+  .focusmode-content { padding: 16px; }
+  .focusmode-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .focusmode-title {
+    font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 600; letter-spacing: 0.3px;
+    text-transform: uppercase; margin: 0;
+  }
+  .focusmode-target { font-size: 13px; color: var(--chalk-dim); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .focusmode-next {
+    margin-top: 16px; padding: 10px 14px; border-radius: 9px; border: 1px dashed var(--border);
+    font-size: 12px; color: var(--chalk-dim);
+  }
+  .focusmode-next b { color: var(--chalk); font-weight: 500; }
+  .focusmode-nav { display: flex; gap: 8px; margin-top: 16px; }
+  .focusmode-nav-btn {
+    flex: 1; padding: 12px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--chalk); font-family: 'Oswald', sans-serif;
+    font-size: 13px; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .focusmode-nav-btn:disabled { opacity: 0.4; cursor: default; }
+  .focusmode-nav-btn.primary { background: var(--rust); border-color: var(--rust); color: #fff; }
+  .focusmode-nav-btn.finish { background: var(--olive); border-color: var(--olive); color: #fff; }
 
   .rest-timer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
@@ -1225,13 +1270,13 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.9.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 
 function emptySets(n) {
-  return Array.from({ length: n }, () => ({ weight: "", reps: "", isWarmup: false, done: false }));
+  return Array.from({ length: n }, () => ({ weight: "", reps: "", isWarmup: false, couldDoMore: false, done: false }));
 }
 
 function buildInitialSets(exId, n) {
@@ -1240,6 +1285,7 @@ function buildInitialSets(exId, n) {
     weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
     reps: "",
     isWarmup: false,
+    couldDoMore: false,
     done: false,
   }));
 }
@@ -1340,6 +1386,15 @@ let infoOpenKey = null;
 let warmupOpen = false;
 let stretchOpen = false;
 let gymManageOpen = false;
+
+// Trainingsmodus (Fokus-Ansicht): bewusst ephemer, nicht in state/localStorage - gleiche
+// Konvention wie swapOpenKey/warmupOpen/restTimer. Ein Reload mitten im Trainingsmodus setzt
+// nur die Position zurueck auf die Kartenansicht, keine geloggten Satzdaten gehen verloren
+// (die liegen immer in state.sessions).
+let focusModeActive = false;
+let focusQueue = [];
+let focusPos = 0;
+let focusInfoOpen = false;
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -1647,11 +1702,133 @@ function renderTodayBanner() {
   `;
 }
 
+// Geteilt zwischen Kartenansicht und Fokusmodus, damit beide Ansichten nie auseinanderdriften.
+function setsRowsHTML(day, ex, sets) {
+  const rowsHTML = sets.map((s, i) => `
+    <div class="set-row">
+      <span class="set-idx">${i + 1}</span>
+      <input class="set-input" type="number" inputmode="decimal" placeholder="0"
+        value="${s.weight}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />
+      <input class="set-input" type="number" inputmode="numeric" placeholder="0"
+        value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />
+      <button class="warmup-toggle ${s.isWarmup ? "active" : ""}" data-role="set-warmup-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.isWarmup ? "Aufwärmsatz (antippen für Arbeitssatz)" : "Als Aufwärmsatz markieren"}">🔥</button>
+      <button class="couldmore-toggle ${s.couldDoMore ? "active" : ""}" data-role="set-couldmore-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.couldDoMore ? "Mehr Wdh. wären möglich gewesen (antippen zum Umschalten)" : "Wären mehr Wdh. möglich gewesen?"}">↑</button>
+      <button class="done-btn ${s.done ? "done" : ""}" data-role="set-done" data-day="${day}" data-exid="${ex.id}" data-idx="${i}">${s.done ? "✓" : ""}</button>
+    </div>
+  `).join("");
+
+  return `
+    <div class="set-header">
+      <span>#</span><span>kg</span><span>Wdh.</span><span title="Aufwärmsatz markieren">🔥</span><span title="Mehr Wdh. möglich gewesen?">↑</span><span></span>
+    </div>
+    ${rowsHTML}
+  `;
+}
+
+function exerciseInfoPanelHTML(ex) {
+  const info = EXERCISE_INFO[ex.id];
+  if (!info) return "";
+  return `
+    <div class="info-panel">
+      <div class="info-line"><b>Zielmuskulatur:</b> ${info.muscles.primary} <span class="info-dim">(primär)</span>, ${info.muscles.secondary} <span class="info-dim">(sekundär)</span></div>
+      <div class="info-sublabel">Ausführung</div>
+      <ol class="info-list">${info.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      <div class="info-sublabel">Häufigste Fehler</div>
+      <ul class="info-list">${info.mistakes.map(m => `<li>${m}</li>`).join("")}</ul>
+      <div class="info-safety">⚠ ${info.safety}</div>
+    </div>
+  `;
+}
+
+// "Wird zur uebernaechsten Uebung": Queue [A,B,C,D], Fokus auf A (focusPos=0), Skip von A
+// -> Ziel [B,C,A,D] - B wird sofort sichtbar, C bleibt "als Naechstes", A taucht danach
+// wieder auf. Bei nur noch 2 verbleibenden Uebungen landet die geskippte Uebung am Ende
+// (kein Platz fuer "uebernaechste").
+function skipCurrent() {
+  const [skipped] = focusQueue.splice(focusPos, 1);
+  const insertAt = Math.min(focusPos + 2, focusQueue.length);
+  focusQueue.splice(insertAt, 0, skipped);
+}
+
+function renderFocusMode() {
+  const day = state.currentDay;
+  const dayMeta = DAYS.find(d => d.id === day);
+  const exId = focusQueue[focusPos];
+  const ex = EXERCISES[day].find(x => x.id === exId);
+  const swapKey = `${day}:${ex.id}`;
+  const displayName = state.swaps[swapKey] || ex.name;
+  const sets = getSetsFor(day, ex);
+  const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
+  const hist = getHistoryEntry(ex.id);
+  const note = state.notes[swapKey] || "";
+  const info = EXERCISE_INFO[ex.id];
+  const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
+
+  const historyHTML = hist ? `
+    <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span></div>
+  ` : "";
+
+  const isLast = focusPos >= focusQueue.length - 1;
+  const nextEx = !isLast ? EXERCISES[day].find(x => x.id === focusQueue[focusPos + 1]) : null;
+  const nextDisplayName = nextEx ? (state.swaps[`${day}:${nextEx.id}`] || nextEx.name) : null;
+
+  const nextHTML = nextEx
+    ? `<div class="focusmode-next">Als Nächstes: <b>${escapeAttr(nextDisplayName)}</b></div>`
+    : `<div class="focusmode-next">Letzte Übung dieser Einheit</div>`;
+
+  const nextBtnHTML = isLast
+    ? `<button class="focusmode-nav-btn finish" data-role="finish" data-day="${day}">✓ Training abschließen</button>`
+    : `<button class="focusmode-nav-btn primary" data-role="focus-next">Weiter →</button>`;
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="focus-exit">✕ Verlassen</button>
+      <span class="focusmode-progress">${focusPos + 1}/${focusQueue.length} · ${dayMeta.label}</span>
+    </div>
+    <div class="focusmode-content">
+      <div class="card">
+        <div class="card-top">
+          <div style="flex:1;">
+            <div class="focusmode-title-row">
+              <h2 class="focusmode-title">${displayName}</h2>
+              ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
+              ${state.swaps[swapKey] ? `<span class="badge-swapped">statt ${ex.name}</span>` : ""}
+            </div>
+            <div class="focusmode-target">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
+            ${historyHTML}
+          </div>
+          ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
+        </div>
+        ${infoPanelHTML}
+        ${setsRowsHTML(day, ex, sets)}
+        <div class="set-footer">
+          ${tallyHTML(doneCount)}
+          <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
+        </div>
+        <textarea class="note-input" rows="1" placeholder="Notiz (Technik, Schmerzen, Griffweite …)"
+          data-role="note" data-day="${day}" data-exid="${ex.id}">${note}</textarea>
+      </div>
+      ${nextHTML}
+      <div class="focusmode-nav">
+        <button class="focusmode-nav-btn" data-role="focus-prev" ${focusPos === 0 ? "disabled" : ""}>← Zurück</button>
+        <button class="focusmode-nav-btn" data-role="focus-skip">Überspringen ⇥</button>
+        ${nextBtnHTML}
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+  `;
+}
+
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
+
+  if (focusModeActive) {
+    document.getElementById("app").innerHTML = renderFocusMode();
+    return;
+  }
 
   const day = state.currentDay;
   const dayMeta = DAYS.find(d => d.id === day);
@@ -1686,28 +1863,7 @@ function render() {
     ` : "";
 
     const info = EXERCISE_INFO[ex.id];
-    const infoPanelHTML = info && infoOpenKey === swapKey ? `
-      <div class="info-panel">
-        <div class="info-line"><b>Zielmuskulatur:</b> ${info.muscles.primary} <span class="info-dim">(primär)</span>, ${info.muscles.secondary} <span class="info-dim">(sekundär)</span></div>
-        <div class="info-sublabel">Ausführung</div>
-        <ol class="info-list">${info.steps.map(s => `<li>${s}</li>`).join("")}</ol>
-        <div class="info-sublabel">Häufigste Fehler</div>
-        <ul class="info-list">${info.mistakes.map(m => `<li>${m}</li>`).join("")}</ul>
-        <div class="info-safety">⚠ ${info.safety}</div>
-      </div>
-    ` : "";
-
-    const setsHTML = sets.map((s, i) => `
-      <div class="set-row">
-        <span class="set-idx">${i + 1}</span>
-        <input class="set-input" type="number" inputmode="decimal" placeholder="0"
-          value="${s.weight}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />
-        <input class="set-input" type="number" inputmode="numeric" placeholder="0"
-          value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />
-        <button class="warmup-toggle ${s.isWarmup ? "active" : ""}" data-role="set-warmup-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.isWarmup ? "Aufwärmsatz (antippen für Arbeitssatz)" : "Als Aufwärmsatz markieren"}">🔥</button>
-        <button class="done-btn ${s.done ? "done" : ""}" data-role="set-done" data-day="${day}" data-exid="${ex.id}" data-idx="${i}">${s.done ? "✓" : ""}</button>
-      </div>
-    `).join("");
+    const infoPanelHTML = info && infoOpenKey === swapKey ? exerciseInfoPanelHTML(ex) : "";
 
     return `
       <div class="card">
@@ -1728,10 +1884,7 @@ function render() {
         </div>
         ${infoPanelHTML}
         ${swapPanelHTML}
-        <div class="set-header">
-          <span>#</span><span>kg</span><span>Wdh.</span><span title="Aufwärmsatz markieren">🔥</span><span></span>
-        </div>
-        ${setsHTML}
+        ${setsRowsHTML(day, ex, sets)}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
           <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
@@ -1773,6 +1926,7 @@ function render() {
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
       <div class="focus-line">Fokus: <span>${dayMeta.sub}</span></div>
+      <button class="focusmode-enter-btn" data-role="focus-enter" data-day="${day}">▶ Trainingsmodus starten</button>
       ${warmupSectionHTML(dayMeta.type)}
       ${cardsHTML}
       ${stretchSectionHTML(dayMeta.type)}
@@ -1884,6 +2038,55 @@ function showToast(msg) {
 
 // ---------- EVENT DELEGATION ----------
 document.addEventListener("click", (e) => {
+  const focusEnter = e.target.closest('[data-role="focus-enter"]');
+  if (focusEnter) {
+    const day = focusEnter.dataset.day;
+    focusQueue = EXERCISES[day].map(ex => ex.id);
+    focusPos = 0;
+    focusInfoOpen = false;
+    focusModeActive = true;
+    render();
+    return;
+  }
+
+  const focusExit = e.target.closest('[data-role="focus-exit"]');
+  if (focusExit) {
+    focusModeActive = false;
+    render();
+    return;
+  }
+
+  const focusNext = e.target.closest('[data-role="focus-next"]');
+  if (focusNext) {
+    focusPos = Math.min(focusPos + 1, focusQueue.length - 1);
+    focusInfoOpen = false;
+    render();
+    return;
+  }
+
+  const focusPrev = e.target.closest('[data-role="focus-prev"]');
+  if (focusPrev) {
+    focusPos = Math.max(focusPos - 1, 0);
+    focusInfoOpen = false;
+    render();
+    return;
+  }
+
+  const focusSkip = e.target.closest('[data-role="focus-skip"]');
+  if (focusSkip) {
+    skipCurrent();
+    focusInfoOpen = false;
+    render();
+    return;
+  }
+
+  const focusInfoToggle = e.target.closest('[data-role="focus-info-toggle"]');
+  if (focusInfoToggle) {
+    focusInfoOpen = !focusInfoOpen;
+    render();
+    return;
+  }
+
   const themeToggle = e.target.closest('[data-role="theme-toggle"]');
   if (themeToggle) {
     state.theme = state.theme === "sepia" ? "dark" : "sepia";
@@ -2022,6 +2225,17 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  const setCouldMoreToggle = e.target.closest('[data-role="set-couldmore-toggle"]');
+  if (setCouldMoreToggle) {
+    const { day, exid, idx } = setCouldMoreToggle.dataset;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const sets = ensureDaySets(day, ex);
+    sets[idx].couldDoMore = !sets[idx].couldDoMore;
+    persist();
+    render();
+    return;
+  }
+
   const doneBtn = e.target.closest('[data-role="set-done"]');
   if (doneBtn) {
     const { day, exid, idx } = doneBtn.dataset;
@@ -2055,6 +2269,7 @@ document.addEventListener("click", (e) => {
 
   const finishBtn = e.target.closest('[data-role="finish"]');
   if (finishBtn) {
+    focusModeActive = false;
     finishSession(finishBtn.dataset.day);
     return;
   }
