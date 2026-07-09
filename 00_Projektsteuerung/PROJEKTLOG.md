@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-09 (Teil 38): Gemini-Modellwechsel (`gemini-2.5-flash-lite` → `gemini-3.1-flash-lite`)
+
+- Nutzer meldete einen Fehler beim KI-Übungstausch: `Gemini-API-Fehler (404): This model models/gemini-2.5-flash-lite is no longer available.` — dasselbe Muster wie beim `gemini-2.0-flash`-Abschalten in Teil 3, nur diesmal als `404` statt `429`/Quota-Fehler.
+- Erster Versuch: auf `gemini-2.5-flash` gewechselt (in Teil 3 als funktionierende, nur etwas langsamere Alternative verifiziert) und deployed — **ebenfalls tot**, gleicher 404-Fehler. Die gesamte `gemini-2.5-*`-Reihe ist offenbar inzwischen komplett abgeschaltet, nicht nur `flash-lite`.
+- Die automatisiert abgerufene Modell-Übersichtsseite (ai.google.dev/gemini-api/docs/models) listete `gemini-2.5-flash`/`gemini-2.5-flash-lite` fälschlich noch als "Stable" — **widersprach damit der echten Laufzeit-Fehlermeldung**. Nutzer hat daraufhin explizit entschieden, dem naheliegenderen Docs-Eintrag `gemini-3.1-flash-lite` ("Frontier-class performance... fraction of the cost") zu vertrauen statt ungeprüft weiterzuraten.
+- `GEMINI_MODEL` in `03_Tools/worker/src/index.js` final auf `gemini-3.1-flash-lite` gesetzt, deployed (`wrangler deploy`) und **live mit einer echten Anfrage verifiziert** (Bankdrücken → 3 sinnvolle Alternativvorschläge mit Begründung kamen zurück, keine Fehlermeldung mehr).
+- Reiner Worker-Fix, kein `index.html`/`sw.js`-Änderung nötig, daher kein `APP_VERSION`/`CACHE_NAME`-Bump (gleiche Einstufung wie der ursprüngliche Modellwechsel in Teil 3).
+- `CLAUDE.md` ("Gemini model choice") aktualisiert: Lehre daraus — bei einer per Docs-Fetch abgerufenen Modellübersicht im Zweifel immer die echte Live-Antwort der API prüfen, nicht der Doku-Zusammenfassung vertrauen, die veraltet/inkonsistent sein kann.
+
 ## v1.18.0 — 2026-07-09 (Teil 37): Wochenvolumen-Dashboard
 
 - Nach dem gründlichen Lesen zweier neuer Deep-Research-Dokumente (`Trainingswissenschaft-Volumen-Frequenz-Splits.md`, `Trainingswissenschaft-Uebungsauswahl.md`, umbenannt/verschoben nach `01_Recherchen/01_Trainingsplaene/`) wurde eine der beiden daraus vorgeschlagenen, noch nicht gebauten Ideen umgesetzt: ein Dashboard, das die trainierten Sätze pro Muskelgruppe und Woche zeigt, verglichen mit dem in der Forschung genannten Richtwert von 12–20 Sätzen/Muskelgruppe/Woche für trainierte Sportler.
