@@ -2,6 +2,18 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze pumpt" (bis 2026-07-08 "Eisernes Log"). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.7.0 — 2026-07-09 (Teil 25): Gym-Standorte (Phase A von 4)
+
+- Nutzer-Feedback: trainiert über Wellhub/Urban Sports Club wechselnd in verschiedenen Studios (z.B. MCFit, Fitness First) mit unterschiedlicher Ausstattung — die App kannte bisher nur ein globales Gewicht pro Übung, das sich zwischen Studios vermischt hätte. Ausführlich mit dem Nutzer sortiert und in vier unabhängig testbare Versionen aufgeteilt (Plan unter `C:\Users\Frederik Rühmann\.claude\plans\snug-floating-acorn.md`); dies ist Phase A von 4 (danach: RIR-Ersatz/Arbeitssatz-Markierung, Trainingsmodus/Fokus-Ansicht, Gewichtsprogression).
+- **Bewusst manuelle Gym-Auswahl, kein GPS** (Nutzerentscheidung) — neue Gyms werden per `prompt()` angelegt/umbenannt, analog zum bestehenden Import-Dialog-Muster, kein neues Formular gebaut.
+- Neue `state`-Felder: `gyms` (Liste), `currentGymId` (`null` = "Kein Gym"), `gymLastWeights`, `gymHistory` — rein additiv, in `loadState()` **und** `importData()` mit Default versehen (beide Stellen müssen laut CLAUDE.md-Regel synchron bleiben). Bestehende Nutzer, die das Feature nie anfassen, sehen exakt das bisherige Verhalten: `currentGymId` bleibt `null`, alles läuft weiter über die unveränderten flachen `state.lastWeights`/`state.history`.
+- Sowohl Gewichts-Vorbefüllung als auch die "Letztes Mal"-Anzeige sind gym-gescoped (nicht nur die Vorbefüllung) — neue Accessor-Funktionen `getLastWeights`/`setLastWeights`/`getHistoryEntry`/`setHistoryEntry` kapseln das Verzweigen zwischen Gym-Bucket und Flat-Bucket, damit `buildInitialSets`/`finishSession`/`render` nicht direkt auf `state.lastWeights`/`state.history` zugreifen müssen.
+- **Bewusst kein Fallback** auf das alte Gewicht beim ersten Besuch eines neuen Gyms — erste Session an einem neuen Studio startet mit leeren Feldern statt einem potenziell falschen Wert aus einem anderen Gym; das ist genau der Verwechslungsfall, den das Feature verhindern soll.
+- Neue UI-Zeile unter dem Plan-Dropdown: Gym-Select + ⚙-Verwalten-Panel (Umbenennen/Löschen). Komplett ausgeblendet bis auf einen dezenten "+ Standort hinzufügen"-Link, solange `state.gyms.length === 0` — Nutzer ohne Gym-Bedarf sehen keine neue UI.
+- Löschen eines Gyms entfernt es nur aus `state.gyms`; `gymLastWeights[id]`/`gymHistory[id]` bleiben verwaist stehen (kein destruktiver Datenverlust in einer Single-User-App).
+- `howto.html` (neuer Abschnitt "🏋 Gym wählen") aktualisiert.
+- Verifiziert: `node --check` auf den extrahierten Skriptblock (Syntaxprüfung); manueller Test im Gym durch den Nutzer steht noch aus.
+
 ## 2026-07-08 (Teil 24): Notiz zum Schriftgrößen-Default für nächste Session
 
 - Nutzer hat nach v1.6.0 die 3 Schriftgrößen-Stufen ausprobiert und fand die größte Stufe ("sehr groß") am angenehmsten zu lesen — aktueller Default bleibt aber `"normal"`, das war noch keine finale Entscheidung, nur eine Beobachtung zum Merken für die nächste Session.

@@ -1226,7 +1226,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1236,13 +1236,74 @@ function emptySets(n) {
 }
 
 function buildInitialSets(exId, n) {
-  const weights = state.lastWeights[exId] || [];
+  const weights = getLastWeights(exId);
   return Array.from({ length: n }, (_, i) => ({
     weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
     reps: "",
     rir: "",
     done: false,
   }));
+}
+
+// Gym-Standorte: state.currentGymId === null bedeutet "kein Gym" und nutzt weiterhin die
+// flachen state.lastWeights/state.history-Objekte unverändert (kein Fallback zwischen Gyms,
+// bewusst sauber getrennt, damit sich Gewichte verschiedener Studios nicht vermischen).
+function getLastWeights(exId) {
+  if (state.currentGymId) {
+    const gymData = state.gymLastWeights[state.currentGymId];
+    return (gymData && gymData[exId]) || [];
+  }
+  return state.lastWeights[exId] || [];
+}
+
+function setLastWeights(exId, arr) {
+  if (state.currentGymId) {
+    if (!state.gymLastWeights[state.currentGymId]) state.gymLastWeights[state.currentGymId] = {};
+    state.gymLastWeights[state.currentGymId][exId] = arr;
+  } else {
+    state.lastWeights[exId] = arr;
+  }
+}
+
+function getHistoryEntry(exId) {
+  if (state.currentGymId) {
+    const gymData = state.gymHistory[state.currentGymId];
+    return gymData ? gymData[exId] : undefined;
+  }
+  return state.history[exId];
+}
+
+function setHistoryEntry(exId, entry) {
+  if (state.currentGymId) {
+    if (!state.gymHistory[state.currentGymId]) state.gymHistory[state.currentGymId] = {};
+    state.gymHistory[state.currentGymId][exId] = entry;
+  } else {
+    state.history[exId] = entry;
+  }
+}
+
+function addGym(name) {
+  const trimmed = (name || "").trim();
+  if (!trimmed) return;
+  state.gyms.push({ id: "gym_" + Date.now(), name: trimmed });
+  persist();
+  render();
+}
+
+function renameGym(id, name) {
+  const trimmed = (name || "").trim();
+  if (!trimmed) return;
+  const gym = state.gyms.find(g => g.id === id);
+  if (gym) gym.name = trimmed;
+  persist();
+  render();
+}
+
+function deleteGym(id) {
+  state.gyms = state.gyms.filter(g => g.id !== id);
+  if (state.currentGymId === id) state.currentGymId = null;
+  persist();
+  render();
 }
 
 function loadState() {
@@ -1262,10 +1323,14 @@ function loadState() {
         theme: parsed.theme || "sepia",
         currentPlan: parsed.currentPlan || "ppl",
         textSize: parsed.textSize || "normal",
+        gyms: parsed.gyms || [],
+        currentGymId: parsed.currentGymId || null,
+        gymLastWeights: parsed.gymLastWeights || {},
+        gymHistory: parsed.gymHistory || {},
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal" };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {} };
 }
 
 let state = loadState();
@@ -1275,6 +1340,7 @@ let swapOpenKey = null;
 let infoOpenKey = null;
 let warmupOpen = false;
 let stretchOpen = false;
+let gymManageOpen = false;
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -1468,6 +1534,43 @@ function textSizeLabel(size) {
   return { normal: "Aa ●○○", gross: "Aa ●●○", xgross: "Aa ●●●" }[size] || "Aa ●○○";
 }
 
+function gymRowHTML() {
+  const hasGyms = state.gyms.length > 0;
+
+  const selectRow = hasGyms ? `
+    <div class="plan-row">
+      <label class="plan-label" for="gym-select">Gym</label>
+      <select id="gym-select" class="plan-select" data-role="gym-select">
+        <option value="" ${!state.currentGymId ? "selected" : ""}>Kein Gym</option>
+        ${state.gyms.map(g => `<option value="${escapeAttr(g.id)}" ${g.id === state.currentGymId ? "selected" : ""}>${escapeAttr(g.name)}</option>`).join("")}
+      </select>
+      <button class="swap-btn" title="Gyms verwalten" data-role="gym-manage-toggle">⚙</button>
+    </div>
+  ` : `
+    <div class="plan-row">
+      <button class="icon-btn" data-role="gym-manage-toggle" title="Standorte verwalten">+ Standort hinzufügen</button>
+    </div>
+  `;
+
+  const managePanelHTML = gymManageOpen ? `
+    <div class="swap-panel" style="margin:8px 16px 0;">
+      <div class="swap-panel-label">Gyms verwalten</div>
+      <div class="swap-options">
+        ${state.gyms.map(g => `
+          <span class="swap-opt-btn" style="display:inline-flex; align-items:center; gap:6px;">
+            ${escapeAttr(g.name)}
+            <button data-role="gym-rename" data-gymid="${escapeAttr(g.id)}" title="Umbenennen" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;">✎</button>
+            <button data-role="gym-delete" data-gymid="${escapeAttr(g.id)}" title="Löschen" style="background:none;border:none;color:var(--rust);cursor:pointer;padding:0;">✕</button>
+          </span>
+        `).join("")}
+        <button class="swap-opt-btn" data-role="gym-add">+ Neues Gym</button>
+      </div>
+    </div>
+  ` : "";
+
+  return selectRow + managePanelHTML;
+}
+
 function warmupSectionHTML(type) {
   const w = WARMUP[type];
   if (!w) return "";
@@ -1564,7 +1667,7 @@ function render() {
     const displayName = state.swaps[swapKey] || ex.name;
     const sets = getSetsFor(day, ex);
     const doneCount = sets.filter(s => s.done).length;
-    const hist = state.history[ex.id];
+    const hist = getHistoryEntry(ex.id);
     const note = state.notes[swapKey] || "";
 
     const historyHTML = hist ? `
@@ -1668,6 +1771,7 @@ function render() {
         ${PLANS.map(p => `<option value="${p.id}" ${p.id === state.currentPlan ? "selected" : ""}>${p.label}</option>`).join("")}
       </select>
     </div>
+    ${gymRowHTML()}
     ${renderTodayBanner()}
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
@@ -1690,12 +1794,12 @@ function finishSession(dayId) {
     const doneSets = sets.filter(s => s.weight || s.reps);
     if (doneSets.length > 0) {
       const last = doneSets[doneSets.length - 1];
-      state.history[ex.id] = { weight: last.weight, reps: last.reps, rir: last.rir, date: today };
+      setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, rir: last.rir, date: today });
     }
     // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind
     const hasAnyWeight = sets.some(s => s.weight);
     if (hasAnyWeight) {
-      state.lastWeights[ex.id] = sets.map(s => s.weight || "");
+      setLastWeights(ex.id, sets.map(s => s.weight || ""));
     }
   });
   state.lastCompletedDay = dayId;
@@ -1751,6 +1855,10 @@ function importData(file) {
         theme: incoming.theme || "sepia",
         currentPlan: incoming.currentPlan || "ppl",
         textSize: incoming.textSize || "normal",
+        gyms: incoming.gyms || [],
+        currentGymId: incoming.currentGymId || null,
+        gymLastWeights: incoming.gymLastWeights || {},
+        gymHistory: incoming.gymHistory || {},
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -1847,6 +1955,36 @@ document.addEventListener("click", (e) => {
   if (stretchToggle) {
     stretchOpen = !stretchOpen;
     render();
+    return;
+  }
+
+  const gymManageToggle = e.target.closest('[data-role="gym-manage-toggle"]');
+  if (gymManageToggle) {
+    gymManageOpen = !gymManageOpen;
+    render();
+    return;
+  }
+
+  const gymAdd = e.target.closest('[data-role="gym-add"]');
+  if (gymAdd) {
+    const name = prompt("Name des neuen Gyms (z.B. \"MCFit Köln\"):");
+    if (name) addGym(name);
+    return;
+  }
+
+  const gymRename = e.target.closest('[data-role="gym-rename"]');
+  if (gymRename) {
+    const gym = state.gyms.find(g => g.id === gymRename.dataset.gymid);
+    const name = prompt("Neuer Name:", gym ? gym.name : "");
+    if (name) renameGym(gymRename.dataset.gymid, name);
+    return;
+  }
+
+  const gymDelete = e.target.closest('[data-role="gym-delete"]');
+  if (gymDelete) {
+    const gym = state.gyms.find(g => g.id === gymDelete.dataset.gymid);
+    const ok = confirm(`Gym "${gym ? gym.name : ""}" wirklich aus der Liste löschen?`);
+    if (ok) deleteGym(gymDelete.dataset.gymid);
     return;
   }
 
@@ -1961,6 +2099,13 @@ document.addEventListener("change", (e) => {
     infoOpenKey = null;
     warmupOpen = false;
     stretchOpen = false;
+    persist();
+    render();
+  }
+
+  const gymSelect = e.target.closest('[data-role="gym-select"]');
+  if (gymSelect) {
+    state.currentGymId = gymSelect.value || null;
     persist();
     render();
   }
