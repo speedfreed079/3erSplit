@@ -818,5 +818,746 @@
     ],
     "safety": "Sobald die Hüfte nicht mehr stabil in einer geraden Linie gehalten werden kann, die Übung beenden, um den unteren Rücken vor Fehlbelastung zu schonen.",
     "image": null
+  },
+  "flachbankdruecken-mit-der-langhantel": {
+    "name": "Flachbankdrücken mit der Langhantel",
+    "muscles": {
+      "primary": "Großer Brustmuskel (mittlerer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Dreiköpfiger Armstrecker (Trizeps)"
+    },
+    "steps": [
+      "Flach auf den Rücken auf die Bank legen, die Füße fest auf dem Boden platzieren und die Schulterblätter aktiv nach hinten-unten zusammenziehen.",
+      "Die Langhantel im Obergriff etwas mehr als schulterbreit greifen und die Stange kontrolliert aus der Halterung heben, bis sie sich senkrecht über den Schultern befindet.",
+      "Die Stange langsam und kontrolliert zur unteren Brust absenken, wobei die Ellbogen in einem Winkel von etwa 75 Grad zum Oberkörper geführt werden.",
+      "Die Hantel kraftvoll nach oben drücken, ohne die Ellbogen im obersten Punkt vollständig durchzustrecken."
+    ],
+    "mistakes": [
+      "Die Ellbogen stehen im 90-Grad-Winkel nach außen, was die Gelenke und das vordere Schulterdach massiv überlastet.",
+      "Extremes Hohlkreuz mit unkontrolliertem Abheben des Gesäßes von der Flachbank.",
+      "Unkontrolliertes Herablassen der Stange ohne Muskelspannung (Abfedern auf der Brust)."
+    ],
+    "safety": "Die Daumen stets fest um die Stange schließen (kein \"Suicide Grip\"), um ein unkontrolliertes Abrutschen der Hantel auf den Brustkorb zu verhindern.",
+    "image": null
+  },
+  "schraegbankdruecken-mit-kurzhanteln": {
+    "name": "Schrägbankdrücken mit Kurzhanteln",
+    "muscles": {
+      "primary": "Großer Brustmuskel (oberer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Dreiköpfiger Armstrecker (Trizeps)"
+    },
+    "steps": [
+      "Auf eine Schrägbank mit einem Neigungswinkel von 30 bis 45 Grad setzen und die Füße stabil und flach auf dem Boden aufstellen.",
+      "Die Kurzhanteln auf Schulterhöhe bringen, wobei die Handflächen nach vorne zeigen und die Schulterblätter fest in das Polster gedrückt werden.",
+      "Die Gewichte kontrolliert senkrecht nach oben und leicht zueinander führen, bis die Arme fast vollständig gestreckt sind.",
+      "Die Hanteln langsam wieder absenken, bis eine deutliche Dehnung im oberen Brustbereich spürbar ist."
+    ],
+    "mistakes": [
+      "Ein zu steiler Neigungswinkel der Bank (über 45 Grad), wodurch die Belastung primär auf den vorderen Schultermuskel verlagert wird.",
+      "Zusammenstoßen der Kurzhanteln am obersten Punkt, was die kontinuierliche mechanische Spannung auf der Brustmuskulatur unterbricht.",
+      "Einknicken der Handgelenke nach hinten unter dem Gewicht der Hanteln."
+    ],
+    "safety": "Am Ende des Satzes die Hanteln kontrolliert auf die Oberschenkel sinken lassen, statt sie seitlich auf den Boden fallen zu lassen.",
+    "image": null
+  },
+  "fliegende-bewegung-mit-kurzhanteln-auf-der-flachbank": {
+    "name": "Fliegende Bewegung mit Kurzhanteln auf der Flachbank",
+    "muscles": {
+      "primary": "Großer Brustmuskel",
+      "secondary": "Vorderer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Flach auf den Rücken auf die Bank legen, die Füße fest auf dem Boden positionieren und die Kurzhanteln mit leicht gebeugten Ellbogen senkrecht über der Brust halten.",
+      "Die Arme in einem weiten Bogen langsam seitlich absenken, bis eine Dehnung in der Brustmuskulatur spürbar ist, wobei der Winkel in den Ellbogen absolut starr bleibt.",
+      "Die Bewegung unter bewusster Anspannung der Brustmuskulatur umkehren und die Hanteln im gleichen weiten Bogen wieder nach oben führen.",
+      "Die Bewegung knapp vor dem vertikalen Stand der Arme stoppen, um die mechanische Last auf der Brustmuskulatur aufrechtzuerhalten."
+    ],
+    "mistakes": [
+      "Progressives Beugen der Ellbogen während der exzentrischen Phase, wodurch die Übung zu einer Drückbewegung abgewandelt wird.",
+      "Zu tiefes Absenken der Gewichte weit über das anatomisch sichere Maß der Schultermobilität hinaus.",
+      "Schwungvolles Zusammenführen der Hanteln am obersten Punkt mit gegenseitigem Anschlagen."
+    ],
+    "safety": "Die Ellbogen während der gesamten Ausführung minimal gebeugt halten, um die Gelenkstrukturen und die Bizepssehne vor übermäßigen Zugkräften zu bewahren.",
+    "image": null
+  },
+  "fliegende-bewegung-am-kabelzug": {
+    "name": "Fliegende Bewegung am Kabelzug",
+    "muscles": {
+      "primary": "Großer Brustmuskel",
+      "secondary": "Vorderer Schultermuskel"
+    },
+    "steps": [
+      "Mittig zwischen zwei Kabelzugtürmen aufstellen, die Griffe im neutralen Griff fassen und einen stabilen Ausfallschritt nach vorne machen.",
+      "Den Oberkörper leicht nach vorne neigen, die Schulterblätter hinten-unten fixieren und die Ellbogen minimal anwinkeln.",
+      "Die Griffe in einem weiten, bogenförmigen Pfad vor dem Körper kontrolliert zusammenführen, bis sich die Hände auf Herzhöhe berühren.",
+      "Die Muskelkontraktion am Endpunkt kurz halten und die Arme anschließend langsam in die gedehnte Ausgangsposition zurückführen."
+    ],
+    "mistakes": [
+      "Generierung von Bewegungsmomentum durch Vor- und Zurückschwingen des gesamten Oberkörpers.",
+      "Veränderung des Ellbogenwinkels während der Kontraktionsphase zur Kompensation eines zu hohen Arbeitsgewichts.",
+      "Vernachlässigung der exzentrischen Phase durch unkontrolliertes Zurückschnellenlassen der Griffe."
+    ],
+    "safety": "Den Bewegungsumfang in der Dehnungsphase nur so weit wählen, wie es die Schulterflexibilität schmerzfrei erlaubt, um Risse im Brustmuskelansatz zu vermeiden.",
+    "image": null
+  },
+  "dips-am-barren": {
+    "name": "Dips am Barren",
+    "muscles": {
+      "primary": "Großer Brustmuskel (unterer Anteil)",
+      "secondary": "Dreiköpfiger Armstrecker (Trizeps), Vorderer Schultermuskel"
+    },
+    "steps": [
+      "Im aufrechten Stütz an den Barrenholmen positionieren, die Arme fast vollständig gestreckt und die Schultern aktiv nach unten gedrückt.",
+      "Den Oberkörper leicht nach vorne neigen, die Beine anwinkeln und im Rumpf eine feste Vorspannung aufbauen.",
+      "Den Körper kontrolliert absenken, indem die Ellbogen nach hinten-außen geführt werden, bis die Oberarme etwa parallel zum Boden stehen.",
+      "Aus der Brust- und Armstrecker-Kraft den Körper wieder nach oben drücken, bis die Arme fast vollständig gestreckt sind."
+    ],
+    "mistakes": [
+      "Aufrechterhaltung einer komplett vertikalen Oberkörperposition, wodurch die Last fast ausschließlich auf den Trizeps verlagert wird.",
+      "Zu tiefes Absenken des Körpers, was zu extremem mechanischem Stress auf die vordere Schultergelenkkapsel führt.",
+      "Schwingen oder Kicken der Beine, um die Aufwärtsbewegung zu unterstützen."
+    ],
+    "safety": "Bei bestehenden Schulter- oder Ellbogenbeschwerden die Übung durch eine stabilere, geführte Drückvariante ersetzen oder den Bewegungsumfang einschränken.",
+    "image": null
+  },
+  "schulterdruecken-mit-der-langhantel-stehend": {
+    "name": "Schulterdrücken mit der Langhantel stehend",
+    "muscles": {
+      "primary": "Vorderer Schultermuskel",
+      "secondary": "Mittlerer Schultermuskel, Dreiköpfiger Armstrecker (Trizeps)"
+    },
+    "steps": [
+      "Einen schulterbreiten, stabilen Stand einnehmen und die Langhantel im Obergriff knapp außerhalb der Schulterbreite auf der vorderen Schultermuskulatur ablegen.",
+      "Den Rumpf und das Gesäß maximal anspannen, um eine stabile Basis zu schaffen und die Lendenwirbelsäule zu sichern.",
+      "Die Hantel kontrolliert senkrecht nach oben drücken, dabei den Kopf leicht nach hinten neigen, um die Flugbahn der Stange nicht zu blockieren.",
+      "Sobald die Stange den Kopf passiert hat, die Arme über dem Kopf vollständig ausstrecken, ohne die Gelenke einzurasten."
+    ],
+    "mistakes": [
+      "Ausweichen in ein extremes Hohlkreuz durch mangelnde Rumpfspannung, was die Lendenwirbelsäule stark belastet.",
+      "Abfedern der Bewegung aus den Knien (Nutzung von Beinkraft).",
+      "Unvollständiger Bewegungsumfang ohne vollständiges Absenken der Stange bis auf Schlüsselbeinhöhe."
+    ],
+    "safety": "Eine kompromisslose Vorspannung der Bauch- und Gesäßmuskulatur schützt die Wirbelsäule effektiv vor schädlicher Hyperlordose unter axialer Last.",
+    "image": null
+  },
+  "schulterdruecken-mit-kurzhanteln": {
+    "name": "Schulterdrücken mit Kurzhanteln",
+    "muscles": {
+      "primary": "Vorderer Schultermuskel",
+      "secondary": "Mittlerer Schultermuskel, Dreiköpfiger Armstrecker (Trizeps)"
+    },
+    "steps": [
+      "Aufrecht auf eine Bank mit fast senkrechter Rückenlehne setzen und die Füße flach und breit auf dem Boden aufstellen.",
+      "Die Kurzhanteln auf Schulterhöhe anheben, wobei die Handflächen leicht zueinander zeigen (Scapular-Ebene) und die Schulterblätter fixiert sind.",
+      "Die Gewichte in einer kontrollierten Bewegung senkrecht nach oben führen, bis die Arme nahezu gestreckt sind.",
+      "Die Kurzhanteln langsam und gleichmäßig wieder absenken, bis sie sich auf Ohrhöhe befinden."
+    ],
+    "mistakes": [
+      "Ausstellen der Ellbogen im 90-Grad-Winkel direkt nach außen, was ein Schulter-Impingement-Syndrom begünstigen kann.",
+      "Starkes Durchstrecken der Arme mit Zusammenstoßen der Hanteln am obersten Punkt.",
+      "Nach vorne Rutschen des Gesäßes auf der Sitzfläche, was die Lendenwirbelsäule belastet."
+    ],
+    "safety": "Die Ellbogen während der Ausführung stets circa 30 Grad nach vorne geneigt halten, um die natürliche Bewegungsebene des Schulterblatts zu respektieren.",
+    "image": null
+  },
+  "klimmzuege-im-ristgriff": {
+    "name": "Klimmzüge im Ristgriff",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Unterer und mittlerer Trapezmuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Die Klimmzugstange im Obergriff (Ristgriff) etwas weiter als schulterbreit greifen und im vollständigen Hang mit leicht aktivierten Schulterblättern starten.",
+      "Die Schulterblätter aktiv nach unten und hinten ziehen (Depression und Retraktion), um die Rückenmuskulatur vorzuspannen.",
+      "Den Körper kontrolliert nach oben ziehen, indem die Ellbogen aktiv in Richtung der Rippenbögen geführt werden, bis das Kinn die Stange passiert hat.",
+      "Den Körper langsam und unter konstanter Muskelspannung wieder absenken, bis die Arme fast vollständig gestreckt sind."
+    ],
+    "mistakes": [
+      "Nutzung von Schwungbewegungen aus den Beinen oder der Hüfte (Kipping), um die Aufwärtsbewegung zu erzwingen.",
+      "Unvollständiger Bewegungsumfang durch Vermeidung der vollen Dehnung im unteren Drittel der Bewegung.",
+      "Kollabieren der Schultern nach vorne und oben am höchsten Punkt der Bewegung."
+    ],
+    "safety": "Den Körper im tiefsten Punkt stets kontrolliert abfangen und ein passives, ruckartiges Hängen in den Schultergelenkbändern vermeiden.",
+    "image": null
+  },
+  "klimmzuege-im-untergriff": {
+    "name": "Klimmzüge im Untergriff",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Zweiköpfiger Armbeuger (Bizeps), Trapezmuskel"
+    },
+    "steps": [
+      "Die Klimmzugstange im Untergriff (Kammgriff) etwa schulterbreit fassen und kontrolliert aushängen lassen.",
+      "Die Schultern aktivieren und den Körper durch das Herunterziehen der Ellbogen nach oben bewegen, während die Brust leicht angehoben wird.",
+      "Den Körper so weit nach oben ziehen, bis sich die obere Brust knapp unterhalb der Stange befindet.",
+      "Den Körper kontrolliert und langsam wieder in die Ausgangsposition absenken, ohne die Spannung in der Rückenmuskulatur zu verlieren."
+    ],
+    "mistakes": [
+      "Verkrampfen des Nackens durch unkontrolliertes Hochziehen der Schultern zu den Ohren während der Zugphase.",
+      "Abrupte Umkehr der Bewegung am tiefsten Punkt, was hohe Zugkräfte auf die Bizepssehne ausübt.",
+      "Unzureichende Einbindung der Rückenmuskulatur durch ausschließliches Ziehen aus den Armen."
+    ],
+    "safety": "Die Ellbogen am tiefsten Punkt nicht vollständig einrasten lassen, um die Ellenbogengelenke und die Sehnenansätze des Bizeps vor Überlastung zu schützen.",
+    "image": null
+  },
+  "rudern-am-kabelzug-im-breiten-parallelgriff": {
+    "name": "Rudern am Kabelzug im breiten Parallelgriff",
+    "muscles": {
+      "primary": "Trapezmuskel (mittlerer und unterer Anteil)",
+      "secondary": "Breiter Rückenmuskel, Hinterer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Aufrecht hinsetzen, die Füße stabil auf den Plattformen positionieren und die Kniegelenke leicht gebeugt halten.",
+      "Den breiten Parallelgriff fassen, den Oberkörper exakt senkrecht positionieren und die Schulterblätter bewusst nach unten-hinten ziehen.",
+      "Den Griff kontrolliert zum oberen Bauchbereich ziehen, während die Ellbogen weit nach außen-oben geführt werden.",
+      "Die Schulterblätter am Endpunkt der Bewegung maximal zusammenpressen, kurz halten und das Gewicht kontrolliert wieder nach vorne führen."
+    ],
+    "mistakes": [
+      "Generierung von Momentum durch starkes Vor- und Zurückschwingen des Oberkörpers aus dem unteren Rücken.",
+      "Hochziehen der Schultern während der Zugphase, wodurch der obere Trapezmuskel die Arbeit übernimmt.",
+      "Unvollständige Bewegung der Schulterblätter, was den Trainingseffekt auf die mittlere Rückenmuskulatur stark reduziert."
+    ],
+    "safety": "Der Oberkörper muss während der gesamten Ausführung stabil und nahezu vertikal bleiben, um asymmetrische Scherkräfte auf die Lendenwirbelsäule zu verhindern.",
+    "image": null
+  },
+  "rudern-am-kabelzug-im-engen-parallelgriff": {
+    "name": "Rudern am Kabelzug im engen Parallelgriff",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Trapezmuskel, Hinterer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Aufrecht auf die Sitzfläche setzen, die Füße fest aufstützen, Knie leicht gebeugt halten und den engen Parallelgriff fassen.",
+      "Den Rücken vollständig gerade ausrichten, die Arme strecken und die Schultern nach vorne dehnen lassen.",
+      "Den Griff kontrolliert zum unteren Bauch ziehen, während die Ellbogen eng am Rippenbogen vorbeigeführt werden.",
+      "Die Schulterblätter am Endpunkt aktiv zusammenziehen, die Brust stolz herausstrecken und das Gewicht kontrolliert wieder zurücklassen."
+    ],
+    "mistakes": [
+      "Starkes Abrunden des Rückens (Kyphose) in der Dehnungsphase unter Last.",
+      "Nutzung des Hüftbeugers zur Initiierung der Bewegung durch ruckartiges Zurückwerfen des Oberkörpers.",
+      "Abspreizen der Ellbogen nach außen, was den Fokus vom breiten Rückenmuskel wegbewegt."
+    ],
+    "safety": "Eine kontinuierliche Rumpfspannung ist zwingend erforderlich, um die Lendenwirbelsäule in ihrer neutralen Doppel-S-Kurve zu stabilisieren.",
+    "image": null
+  },
+  "kurzhantel-rudern": {
+    "name": "Kurzhantel-Rudern",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Trapezmuskel, Hinterer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Ein Knie und die gleichseitige Hand stabil auf einer Flachbank positionieren, das andere Bein fest und leicht abgewinkelt auf dem Boden aufstellen.",
+      "Die Kurzhantel mit der freien Hand im neutralen Griff halten, den Rücken vollkommen parallel zur Bank ausrichten und den Nacken neutral halten.",
+      "Die Hantel in einem leichten Bogen nach hinten-oben in Richtung des Beckenkamms ziehen, wobei der Ellbogen eng am Körper vorbeigeführt wird.",
+      "Am höchsten Punkt die Rückenmuskulatur kurz kontrahieren und die Hantel anschließend kontrolliert wieder in die Ausgangsposition absenken."
+    ],
+    "mistakes": [
+      "Rotation der Wirbelsäule und Aufdrehen der Schulter am obersten Punkt zur Erleichterung der Zugbewegung.",
+      "Ziehen der Kurzhantel senkrecht nach oben zur Brust statt bogenförmig zur Hüfte, was die vordere Schulter überlastet.",
+      "Abrunden der Lendenwirbelsäule während des gesamten Satzes."
+    ],
+    "safety": "Den Rücken konsequent gerade halten, um asymmetrische Torsionskräfte auf die Bandscheiben der Lendenwirbelsäule zu vermeiden.",
+    "image": null
+  },
+  "kurzhantel-rudern-auf-der-schraegbank": {
+    "name": "Kurzhantel-Rudern auf der Schrägbank",
+    "muscles": {
+      "primary": "Trapezmuskel (mittlerer und unterer Anteil)",
+      "secondary": "Breiter Rückenmuskel, Hinterer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Bauchlings auf eine Schrägbank (Neigungswinkel ca. 30 bis maximal 45 Grad) legen, wobei der Kopf frei über das obere Ende des Polsters ragt.",
+      "Die Kurzhanteln im neutralen Griff halten und die Arme zu Beginn der Bewegung vollständig senkrecht nach unten hängen lassen.",
+      "Die Schulterblätter aktiv zusammenziehen und die Hanteln kontrolliert nach oben führen, während die Ellbogen eng am Körper vorbeiziehen.",
+      "Am obersten Punkt der Bewegung den Rücken maximal anspannen und die Gewichte danach langsam und kontrolliert wieder absenken."
+    ],
+    "mistakes": [
+      "Abheben des Brustkorbs vom Bankpolster durch extremes Überstrecken der Wirbelsäule in der Kontraktionsphase.",
+      "Überstrecken des Nackens durch den Blick nach vorne, was die Halswirbelsäule unnötig komprimiert.",
+      "Schnelles Fallenlassen der Hanteln ohne muskuläre Abbremsung in der Exzentrik."
+    ],
+    "safety": "Den Kopf stets in neutraler Verlängerung der Wirbelsäule belassen, um akute Verspannungen oder Zerrungen der Nackenmuskulatur zu vermeiden.",
+    "image": null
+  },
+  "langhantelrudern-vorgebeugt": {
+    "name": "Langhantelrudern vorgebeugt",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Trapezmuskel, Hinterer Schultermuskel, Rückenstrecker"
+    },
+    "steps": [
+      "Einen schulterbreiten Stand einnehmen, die Langhantel im Obergriff greifen und mit leicht gebeugten Knien den Oberkörper stabil nach vorne neigen (ca. 45-60 Grad).",
+      "Die Wirbelsäule vollständig gerade halten, die Schulterblätter fixieren und die Arme senkrecht nach unten hängen lassen.",
+      "Die Stange kontrolliert entlang der Oberschenkel zum oberen Bauch bzw. unteren Rippenbogen ziehen, wobei die Ellbogen die Bewegung anführen.",
+      "Am höchsten Punkt die Schulterblätter aktiv zusammenkneifen und die Stange im Anschluss langsam und kontrolliert absenken."
+    ],
+    "mistakes": [
+      "Progressives Aufrichten des Oberkörpers im Verlauf des Satzes, wodurch die Übung zu einem aufrechten Rudern mutiert.",
+      "Einrunden des unteren Rückens unter Last, was zu extremen Bandscheibenbelastungen führt.",
+      "Generierung von Schwung aus den Knien durch dynamisches Wippen."
+    ],
+    "safety": "Bei Schmerzen im Lendenwirbelbereich die Übung sofort beenden und auf eine Variante mit abgestütztem Oberkörper ausweichen.",
+    "image": null
+  },
+  "latzug-an-der-maschine": {
+    "name": "Latzug an der Maschine",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Trapezmuskel (unterer Anteil), Hinterer Schultermuskel, Zweiköpfiger Armbeuger (Bizeps)"
+    },
+    "steps": [
+      "Das Oberschenkelpolster der Maschine so einstellen, dass die Beine fest fixiert sind, und die breite Zugstange im Obergriff greifen.",
+      "Sich aufrecht hinsetzen, das Becken stabilisieren, den Blick leicht nach oben richten und die Schulterblätter nach unten ziehen.",
+      "Die Stange kontrolliert und gleichmäßig nach unten zur oberen Brust führen, während der Oberkörper minimal nach hinten geneigt wird.",
+      "Am tiefsten Punkt kurz pausieren, um die Muskelkontraktion zu spüren, und die Stange danach langsam wieder nach oben in den vollen Stretch führen."
+    ],
+    "mistakes": [
+      "Ziehen der Stange hinter den Kopf in den Nacken, was das Schultergelenk biomechanisch ungünstig belastet.",
+      "Extremes Zurücklehnen des Oberkörpers, wodurch die Übung zu einem horizontalen Rudern umfunktioniert wird.",
+      "Unkontrolliertes Aufsteigenlassen des Gewichtsblocks ohne exzentrische Muskelkontrolle."
+    ],
+    "safety": "Die Stange ausnahmslos vor dem Gesicht zur oberen Brust führen, um das Schulterdach und die Halswirbelsäule vor Mikrotraumen zu schützen.",
+    "image": null
+  },
+  "latzug-im-engen-untergriff": {
+    "name": "Latzug im engen Untergriff",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel",
+      "secondary": "Zweiköpfiger Armbeuger (Bizeps), Trapezmuskel"
+    },
+    "steps": [
+      "Die Oberschenkel stabil unter dem Polster fixieren und die enge Zugstange im Untergriff (ca. schulterbreit) fassen.",
+      "Den Oberkörper minimal nach hinten neigen, die Arme vollstrecken und die Schultern aktiv dehnen lassen.",
+      "Die Stange kontrolliert zur unteren Brust führen, wobei die Ellbogen eng am Körper vorbeigezogen werden.",
+      "Die Zielmuskulatur am Kontraktionspunkt anspannen und das Gewicht danach langsam und gleichmäßig wieder nach oben führen."
+    ],
+    "mistakes": [
+      "Abweichen der Ellbogen nach außen, was den Hebelarm für den breiten Rückenmuskel verschlechtert und das Handgelenk überlastet.",
+      "Nutzung von starkem Hüftschwung zur Überwindung des Anfangswiderstandes.",
+      "Vermeidung der vollen Dehnung am obersten Punkt der Bewegung."
+    ],
+    "safety": "Die Ellbogen während des gesamten Bewegungsablaufs konsequent eng führen, um Gelenkbelastungen im Hand- und Ellenbogenbereich zu minimieren.",
+    "image": null
+  },
+  "kurzhantel-ueberzuege": {
+    "name": "Kurzhantel-Überzüge",
+    "muscles": {
+      "primary": "Großer Brustmuskel (sternocostaler Anteil)",
+      "secondary": "Breiter Rückenmuskel, Dreiköpfiger Armstrecker (langer Kopf des Trizeps)"
+    },
+    "steps": [
+      "Flach mit dem Rücken auf eine Flachbank legen, die Füße fest und flach auf dem Boden aufstellen und die Kurzhantel mit beiden Händen im Diamantgriff senkrecht über der Brust halten.",
+      "Mit minimal angewinkelten Ellbogen die Hantel in einem weiten, kontrollierten Bogen hinter den Kopf absenken, bis die Oberarme etwa auf Ohrenhöhe sind und ein starker Stretch spürbar ist.",
+      "Die Hantel über denselben bogenförmigen Pfad kraftvoll wieder zurück nach oben in die Ausgangsposition über die Brust führen.",
+      "Die Bewegung kurz vor der vollständigen Senkrechten stoppen, um die mechanische Last auf der Brustmuskulatur aufrechtzuerhalten."
+    ],
+    "mistakes": [
+      "Starkes Beugen und Strecken der Ellbogen während der Bewegung, wodurch die Belastung auf den Trizeps verlagert wird.",
+      "Überstrecken des unteren Rückens in ein extremes Hohlkreuz, um eine mangelnde Schultermobilität auszugleichen.",
+      "Zu schnelles Absenken der Hantel ohne konstante Muskelspannung in der Exzentrik."
+    ],
+    "safety": "Den Bewegungsumfang präzise an die individuelle Schultermobilität anpassen, um das Schultergelenk vor Kapselverletzungen zu schützen.",
+    "image": null
+  },
+  "face-pulls-am-kabelzug": {
+    "name": "Face Pulls am Kabelzug",
+    "muscles": {
+      "primary": "Hinterer Schultermuskel",
+      "secondary": "Trapezmuskel (mittlerer und oberer Anteil), Rotatorenmanschette"
+    },
+    "steps": [
+      "Das Seil am oberen Kabelzug befestigen, im neutralen Griff (Daumen zeigen zum Körper) fassen und einige Schritte zurücktreten, bis das Gewicht schwebt.",
+      "Einen stabilen Stand einnehmen (vorzugsweise im Ausfallschritt) und die Arme vollständig in Richtung des Kabelzugs ausstrecken.",
+      "Das Seil kontrolliert in Richtung des Gesichts ziehen, während die Hände aktiv nach außen und hinter die Ohren geführt werden (Außenrotation).",
+      "Am Endpunkt die Schulterblätter maximal zusammenziehen, kurz halten und kontrolliert zurückführen."
+    ],
+    "mistakes": [
+      "Reines Ziehen aus den Armen ohne bewusste Retraktion der Schulterblätter und ohne Außenrotation im Schultergelenk.",
+      "Verwendung eines zu hohen Arbeitsgewichts, was zu ruckartigen Ausweichbewegungen des gesamten Oberkörpers führt.",
+      "Führen der Hände unterhalb der Ellbogenlinie, wodurch die Außenrotatoren nicht effektiv trainiert werden."
+    ],
+    "safety": "Die Bewegung kontrolliert und ohne Schwung ausführen, um die empfindlichen Muskeln der Rotatorenmanschette vor Reizungen zu schützen.",
+    "image": null
+  },
+  "seitheben-am-kabelzug": {
+    "name": "Seitheben am Kabelzug",
+    "muscles": {
+      "primary": "Mittlerer Schultermuskel",
+      "secondary": "Vorderer Schultermuskel, Hinterer Schultermuskel"
+    },
+    "steps": [
+      "Seitlich zum Kabelzug (untere Rolle eingestellt) aufstellen, die Füße hüftbreit positionieren und den Einzelgriff mit der fernen Hand im Obergriff greifen.",
+      "Den Stand stabilisieren, den Arm im Ellbogen minimal beugen und das Kabel leicht vor dem Körper positionieren.",
+      "Den Arm kontrolliert seitlich nach oben führen, bis sich die Hand etwa auf Schulterhöhe befindet, wobei der Ellbogen stets der höchste Punkt ist.",
+      "Das Gewicht langsam und unter spürbarer Muskelspannung im Kabel wieder in die Ausgangsposition absenken, ohne das Gewicht ganz abzusetzen."
+    ],
+    "mistakes": [
+      "Hochziehen des Schultergürtels während der Bewegung, wodurch der obere Trapezmuskel die Last übernimmt.",
+      "Einsetzen von Schwung aus den Knien und der Hüfte, um das Gewicht zu bewegen.",
+      "Das Handgelenk wird höher geführt als der Ellbogen, was zu einer unphysiologischen Innenrotation führt."
+    ],
+    "safety": "Die Bewegung strikt im Ellenbogengelenk einfrieren, um das Schultergelenk vor asymmetrischen Scherkräften zu schonen.",
+    "image": null
+  },
+  "seitheben-mit-kurzhanteln": {
+    "name": "Seitheben mit Kurzhanteln",
+    "muscles": {
+      "primary": "Mittlerer Schultermuskel",
+      "secondary": "Vorderer Schultermuskel, Oberer Trapezmuskel"
+    },
+    "steps": [
+      "Aufrecht stehen, die Kurzhanteln seitlich am Körper im neutralen Griff halten und die Schultern aktiv nach unten-hinten ziehen.",
+      "Die Ellbogen minimal beugen und diese Beugung während der gesamten Ausführung absolut starr beibehalten.",
+      "Die Hanteln kontrolliert in einer bogenförmigen Bewegung seitlich nach oben führen, bis die Oberarme parallel zum Boden stehen.",
+      "Die Gewichte langsam und unter voller Kontrolle wieder absenken, um die exzentrische Phase optimal zu nutzen."
+    ],
+    "mistakes": [
+      "Starkes Schwingen des Oberkörpers nach vorne und hinten zur Überwindung des mechanischen Totpunkts.",
+      "Abknicken der Handgelenke nach unten, was die Sehnen des Unterarms überlastet.",
+      "Führen der Hände weit über Ellbogenhöhe am obersten Punkt der Bewegung."
+    ],
+    "safety": "Die Bewegung minimal vor der Scapular-Ebene (ca. 15 Grad nach vorne geneigt) ausführen, um das Schulterdach vor einem mechanischen Impingement zu schützen.",
+    "image": null
+  },
+  "incline-dumbbell-curls": {
+    "name": "Incline Dumbbell Curls",
+    "muscles": {
+      "primary": "Zweiköpfiger Armbeuger (Bizeps, langer Kopf)",
+      "secondary": "Brachialis, Oberarmspeichenmuskel (Brachioradialis)"
+    },
+    "steps": [
+      "Auf eine Schrägbank mit einem Neigungswinkel von ca. 45 bis 60 Grad setzen, den Rücken flach anlehnen und die Arme senkrecht nach unten hängen lassen.",
+      "Die Kurzhanteln im neutralen Griff (Handflächen zeigen zum Körper) halten, wobei die Schultern komplett passiv gedehnt sind.",
+      "Die Hanteln kontrolliert nach oben curlen, dabei die Unterarme ab der Bewegungshälfte progressiv nach außen eindrehen (Supination).",
+      "Am höchsten Punkt den Bizeps maximal anspannen und die Gewichte danach langsam und kontrolliert wieder in den vollen Stretch absenken."
+    ],
+    "mistakes": [
+      "Vorschieben der Ellbogen nach vorne während der Bewegung, wodurch der vordere Schultermuskel die Last übernimmt.",
+      "Ein zu steiler oder zu flacher Neigungswinkel der Bank, was die Dehnung der langen Bizepssehne ungünstig beeinflusst.",
+      "Ausführung ohne vollständige Ellbogenstreckung im tiefsten Punkt."
+    ],
+    "safety": "Das Ellenbogengelenk am tiefsten Punkt der exzentrischen Phase nicht ruckartig überstrecken, um Sehnenreizungen an den Sehnenansätzen zu vermeiden.",
+    "image": null
+  },
+  "preacher-curls-an-der-maschine": {
+    "name": "Preacher Curls an der Maschine",
+    "muscles": {
+      "primary": "Zweiköpfiger Armbeuger (Bizeps, kurzer Kopf)",
+      "secondary": "Brachialis, Oberarmspeichenmuskel (Brachioradialis)"
+    },
+    "steps": [
+      "Den Sitz der Maschine so einstellen, dass die Achselhöhlen bündig und fest auf der oberen Kante des Armpolsters aufliegen.",
+      "Die Griffe im Untergriff fassen und die Ellbogen parallel sowie stabil auf dem Polster positionieren.",
+      "Die Griffe kontrolliert nach oben in Richtung des Gesichts ziehen, während die Oberarme fest auf dem Polster fixiert bleiben.",
+      "Das Gewicht langsam und gleichmäßig absenken, bis die Arme fast vollständig gestreckt sind, ohne die Spannung komplett zu verlieren."
+    ],
+    "mistakes": [
+      "Abheben des Ellbogens oder der Oberarme vom Polster während der maximalen Kontraktionsphase.",
+      "Vollständiges, passives Einrasten der Ellbogen unter maximaler Last im tiefsten Punkt.",
+      "Hochziehen der Schultern während der Zugphase."
+    ],
+    "safety": "Die Ellbogen im tiefsten Punkt der Bewegung niemals komplett durchstrecken, da hier die ungünstigsten Hebelkräfte direkt auf die Bizepssehne einwirken.",
+    "image": null
+  },
+  "preacher-curls-am-kabelzug": {
+    "name": "Preacher Curls am Kabelzug",
+    "muscles": {
+      "primary": "Zweiköpfiger Armbeuger (Bizeps, kurzer Kopf)",
+      "secondary": "Brachialis, Oberarmspeichenmuskel (Brachioradialis)"
+    },
+    "steps": [
+      "Eine Curlpult-Bank stabil vor einem Kabelzug (untere Rolle) positionieren und die gerade Stange oder SZ-Stange greifen.",
+      "Die Oberarme flach und parallel auf dem Polster ablegen, die Achseln fest anpressen und die Stange im Untergriff fassen.",
+      "Die Stange kontrolliert in einem bogenförmigen Pfad nach oben ziehen, während die Ellenbogen unbeweglich auf dem Polster verbleiben.",
+      "Am obersten Punkt den Bizeps intensiv anspannen und das Gewicht unter konstanter Kabelführung langsam wieder absenken."
+    ],
+    "mistakes": [
+      "Abheben des Gesäßes vom Sitz, um das eigene Körpergewicht als Hebel zu nutzen.",
+      "Kollabieren der Handgelenke nach hinten während der Aufwärtsbewegung.",
+      "Hektisches und unkontrolliertes Absenken der Stange."
+    ],
+    "safety": "Die Handgelenke während des gesamten Bewegungsablaufs konsequent gerade und stabil in einer Linie mit den Unterarmen halten.",
+    "image": null
+  },
+  "overhead-trizepsdruecken-am-kabelzug-mit-seil": {
+    "name": "Overhead-Trizepsdrücken am Kabelzug mit Seil",
+    "muscles": {
+      "primary": "Dreiköpfiger Armstrecker (Trizeps, langer Kopf)",
+      "secondary": "Ellbogenmuskel"
+    },
+    "steps": [
+      "Das Seil an einem unteren oder mittleren Kabelzug befestigen, dem Zugturm den Rücken kehren und das Seil im neutralen Griff über den Kopf führen.",
+      "Einen stabilen Ausfallschritt einnehmen, den Oberkörper leicht nach vorne neigen und den Rumpf fest anspannen.",
+      "Die Ellbogen eng am Kopf fixieren, so dass sie senkrecht nach oben zeigen.",
+      "Die Arme kontrolliert nach vorne-oben strecken, wobei die Enden des Seils am Ende der Bewegung aktiv auseinandergezogen werden.",
+      "Die Arme langsam wieder beugen, bis ein intensiver Stretch im Trizeps spürbar ist, während die Ellbogen unbeweglich bleiben."
+    ],
+    "mistakes": [
+      "Ausweichen der Ellbogen weit nach außen, was den Fokus vom langen Trizepskopf nimmt.",
+      "Mitschwingen der Oberarme aus dem Schultergelenk während der Streckbewegung.",
+      "Mangelnde Rumpfspannung, die zu einem schädlichen Ausweichen in ein Hohlkreuz führt."
+    ],
+    "safety": "Die Ellbogen während des gesamten Satzes eng und stabil am Kopf fixiert halten, um Scherkräfte im Ellenbogengelenk zu minimieren.",
+    "image": null
+  },
+  "trizepsdruecken-am-kabelzug-mit-gerader-stange": {
+    "name": "Trizepsdrücken am Kabelzug mit gerader Stange",
+    "muscles": {
+      "primary": "Dreiköpfiger Armstrecker (Trizeps, medialer und lateraler Kopf)",
+      "secondary": "Ellbogenmuskel"
+    },
+    "steps": [
+      "Aufrecht vor einem hohen Kabelzug aufstellen, die gerade Stange im Obergriff fassen und die Schultern nach unten ziehen.",
+      "Die Ellbogen eng an den Rippenbogen pressen und den Oberkörper minimal aus der Hüfte nach vorne neigen.",
+      "Die Stange kontrolliert nach unten drücken, bis die Arme vollständig gestreckt sind und der Trizeps maximal kontrahiert ist.",
+      "Die Stange langsam wieder nach oben führen, bis die Unterarme etwa parallel zum Boden stehen, ohne dass sich die Ellbogen vor- oder zurückbewegen."
+    ],
+    "mistakes": [
+      "Vorschieben der Schultern nach vorne und Nutzung des Körpergewichts, um die Stange nach unten zu pressen.",
+      "Abspreizen der Ellbogen vom Körper weg während der Belastungsphase.",
+      "Unvollständige Ellbogenstreckung im tiefsten Punkt der Bewegung."
+    ],
+    "safety": "Die Schultern während der gesamten Bewegung tief halten und die Ausführung rein aus dem Ellenbogengelenk vollziehen.",
+    "image": null
+  },
+  "kniebeugen-mit-der-langhantel": {
+    "name": "Kniebeugen mit der Langhantel",
+    "muscles": {
+      "primary": "Vorderer Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings), Rückenstrecker"
+    },
+    "steps": [
+      "Die Langhantel stabil auf der oberen Trapezmuskulatur (High-Bar) platzieren, ausheben und einen schulterbreiten Stand einnehmen.",
+      "Die Fußspitzen leicht nach außen drehen, den Rumpf maximal anspannen (Bracing) und das Gesäß kontrolliert nach hinten-unten absenken.",
+      "Die Knie aktiv in Richtung der Fußspitzen schieben, während das Gesäß so weit nach unten geführt wird, bis die Hüftfalte unter der Knieoberkante liegt.",
+      "Den Körper über den gesamten Fuß kraftvoll nach oben drücken, bis die Ausgangsposition erreicht ist, ohne die Knie vollständig einzurasten."
+    ],
+    "mistakes": [
+      "Einbrechen der Knie nach innen (Valgus-Stellung) während der konzentrischen Phase.",
+      "Abrunden des unteren Rückens im tiefsten Punkt der Kniebeuge (sogenannter \"Butt Wink\").",
+      "Abheben der Fersen vom Boden durch mangelnde Sprunggelenksmobilität."
+    ],
+    "safety": "Bei schweren Arbeitssätzen stets in einem Powerrack mit präzise eingestellten Sicherheitsablagen (Safety Pins) trainieren.",
+    "image": null
+  },
+  "hackenschmidt-kniebeuge": {
+    "name": "Hackenschmidt-Kniebeuge",
+    "muscles": {
+      "primary": "Vorderer Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Wadenmuskulatur"
+    },
+    "steps": [
+      "Mit dem Rücken flach an das Polster der Hackenschmidt-Maschine lehnen, die Schultern unter die dafür vorgesehenen Polster positionieren.",
+      "Die Füße im mittleren bis tiefen Bereich der Plattform platzieren, um den Fokus biomechanisch auf den Quadrizeps zu lenken.",
+      "Die mechanische Sicherung lösen und den Schlitten langsam absenken, bis die Knie einen Winkel von mindestens 90 Grad erreichen.",
+      "Den Schlitten kraftvoll und gleichmäßig über die Fersen nach oben schieben, ohne die Knie am obersten Punkt ganz durchzustrecken."
+    ],
+    "mistakes": [
+      "Abheben des Gesäßes oder der Lendenwirbelsäule vom Rückenpolster während der tiefen Kniebeugung.",
+      "Nach-innen-Kippen der Knie unter Last.",
+      "Platzierung der Füße zu hoch auf der Plattform, was den Trainingsfokus auf das Gesäß verlagert."
+    ],
+    "safety": "Das Gesäß muss während der gesamten Bewegung fest an das Polster gepresst bleiben, um die Lendenwirbelsäule vor gefährlichen Scherkräften zu schützen.",
+    "image": null
+  },
+  "beinpresse-45-grad": {
+    "name": "Beinpresse 45 Grad",
+    "muscles": {
+      "primary": "Vorderer Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings)"
+    },
+    "steps": [
+      "Fest in den Sitz der Beinpresse setzen, das Gesäß tief in die Sitzfläche drücken und die Griffe seitlich fest umgreifen.",
+      "Die Füße hüft- bis schulterbreit im mittleren Bereich der Plattform positionieren.",
+      "Die Sicherung entriegeln und die Plattform langsam absenken, bis die Knie einen Winkel von etwa 90 Grad bilden, während das Becken stabil bleibt.",
+      "Die Plattform kraftvoll über die gesamte Fußfläche nach oben drücken, knapp vor der vollständigen Gelenkstreckung stoppen."
+    ],
+    "mistakes": [
+      "Vollständiges Durchstrecken (Hyperextension) der Kniegelenke am obersten Punkt der Bewegung.",
+      "Einrollen des Beckens im tiefsten Punkt, was extremen Druck auf die Bandscheiben ausübt.",
+      "Abheben der Fersen von der Plattform während der exzentrischen Phase."
+    ],
+    "safety": "Die Knie am Ende der Bewegung niemals komplett einrasten lassen, um schwere Gelenkschäden zu verhindern.",
+    "image": null
+  },
+  "beinstrecker-maschine": {
+    "name": "Beinstrecker-Maschine",
+    "muscles": {
+      "primary": "Vorderer Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Schienbeinmuskel"
+    },
+    "steps": [
+      "Aufrecht in die Maschine setzen, den Rücken fest an die Rückenlehne pressen und die Griffe seitlich fest greifen, um den Körper zu fixieren.",
+      "Das Schienbeinpolster knapp oberhalb des Fußgelenks positionieren und den Kniewinkel auf ca. 90 Grad einstellen.",
+      "Die Beine kontrolliert nach oben strecken, bis die Oberschenkelmuskulatur voll kontrahiert ist.",
+      "Das Gewicht langsam und unter ständiger Muskelspannung wieder in die Ausgangsposition absenken."
+    ],
+    "mistakes": [
+      "Schwungvolles Kicken des Gewichts, was die Gelenke belastet und die Muskelspannung minimiert.",
+      "Abheben des Gesäßes vom Sitzpolster während der maximalen Streckung.",
+      "Falsche Achseneinstellung der Maschine im Verhältnis zum biologischen Kniegelenksdrehpunkt."
+    ],
+    "safety": "Der Drehpunkt der Maschine muss exakt auf Höhe der Kniegelenksachse eingestellt sein, um unphysiologische Druckkräfte auf die Kniescheibe zu verhindern.",
+    "image": null
+  },
+  "ausfallschritte-mit-kurzhanteln": {
+    "name": "Ausfallschritte mit Kurzhanteln",
+    "muscles": {
+      "primary": "Vorderer Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings)"
+    },
+    "steps": [
+      "Aufrecht stehen, in jeder Hand eine Kurzhantel im neutralen Griff halten und die Schultern nach unten-hinten ziehen.",
+      "Einen großen, kontrollierten Schritt nach vorne machen.",
+      "Das hintere Knie langsam und senkrecht in Richtung Boden absenken, bis das vordere Knie einen präzisen 90-Grad-Winkel bildet.",
+      "Über die Ferse des vorderen Fußes kraftvoll wieder nach oben und zurück in den aufrechten Stand drücken."
+    ],
+    "mistakes": [
+      "Ein zu kurzer Schritt nach vorne, wodurch das Knie zu weit über die Fußspitze hinausragt.",
+      "Instabilität und Wackeln im vorderen Sprung- und Kniegelenk.",
+      "Nach-vorne-Kippen des Oberkörpers unter Belastung."
+    ],
+    "safety": "Das vordere Knie stets stabil in einer Linie mit der Fußspitze halten und ein Abweichen nach innen konsequent vermeiden.",
+    "image": null
+  },
+  "rumaenisches-kreuzheben-mit-der-langhantel": {
+    "name": "Rumänisches Kreuzheben mit der Langhantel",
+    "muscles": {
+      "primary": "Beinbeuger (Hamstrings)",
+      "secondary": "Großer Gesäßmuskel, Rückenstrecker"
+    },
+    "steps": [
+      "Einen hüftbreiten Stand einnehmen, die Langhantel im Obergriff greifen, aufrecht stehen und die Schultern hinten-unten fixieren.",
+      "Knie minimal beugen (ca. 15 Grad) und diesen Kniewinkel während der gesamten Bewegung absolut starr beibehalten.",
+      "Die Hüfte kontrolliert so weit wie möglich nach hinten schieben, während die Stange eng an den Oberschenkeln nach unten gleitet.",
+      "Den Oberkörper mit geradem Rücken absenken, bis eine maximale Dehnung in den Hamstrings spürbar ist, dann über die Hüftstreckung wieder aufrichten."
+    ],
+    "mistakes": [
+      "Abrunden der Wirbelsäule, um eine größere Bewegungstiefe vorzutäuschen.",
+      "Progressives Beugen der Knie während des Absenkens, was die Übung in eine Kniebeuge verwandelt.",
+      "Führen der Langhantel weit weg vom Körper."
+    ],
+    "safety": "Die Wirbelsäule muss während des gesamten Bewegungsablaufs absolut neutral bleiben, um schädliche Scherkräfte im Lendenwirbelbereich zu vermeiden.",
+    "image": null
+  },
+  "kreuzheben-mit-der-langhantel": {
+    "name": "Kreuzheben mit der Langhantel",
+    "muscles": {
+      "primary": "Rückenstrecker",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings), Trapezmuskel"
+    },
+    "steps": [
+      "Schulterbreit vor der Langhantel aufstellen, so dass sich die Stange direkt über der Mitte der Füße befindet.",
+      "In die Knie gehen, die Stange im Obergriff schulterbreit fassen, den Rücken gerade ausrichten und die Schienbeine an die Stange führen.",
+      "Den Rumpf maximal anspannen (Bracing), die Schultern leicht vor der Stange positionieren und das Gewicht durch Streckung von Beinen und Hüfte kontrolliert nach oben ziehen.",
+      "Die Stange eng am Körper nach oben führen, bis der aufrechte Stand erreicht ist."
+    ],
+    "mistakes": [
+      "Abrunden des Rückens beim Initiieren des Zugs vom Boden weg.",
+      "Führen der Stange in einem Bogen um die Knie herum, weil die Hüfte zu früh ansteigt.",
+      "Überstrecken der Lendenwirbelsäule im aufrechten Stand nach hinten."
+    ],
+    "safety": "Vor jedem Anheben des Gewichts eine maximale Rumpfspannung aufbauen, um die Wirbelsäule unter axialer Kompression zu schützen.",
+    "image": null
+  },
+  "sitzender-beinbeuger": {
+    "name": "Sitzender Beinbeuger",
+    "muscles": {
+      "primary": "Beinbeuger (Hamstrings)",
+      "secondary": "Zwillingswadenmuskel"
+    },
+    "steps": [
+      "In die Maschine setzen, den Rücken flach an die Rückenlehne pressen und das Oberschenkelpolster fest von oben arretieren.",
+      "Die Fersen auf das Rollenpolster auflegen, so dass es sich knapp unterhalb der Wadenmuskulatur befindet.",
+      "Die Unterschenkel kontrolliert und kraftvoll so weit wie möglich nach hinten-unten ziehen (Flexion im Kniegelenk).",
+      "Am Punkt der maximalen Kontraktion kurz verharren und das Gewicht langsam und gleichmäßig wieder nach oben führen."
+    ],
+    "mistakes": [
+      "Abheben des Gesäßes oder des unteren Rückens vom Sitzpolster während der Kontraktionsphase.",
+      "Unkontrolliertes Zurückschnellenlassen des Gewichts in der Exzentrik.",
+      "Falsche Achseneinstellung der Maschine im Verhältnis zum biologischen Kniegelenk."
+    ],
+    "safety": "Den Drehpunkt der Maschine exakt auf Höhe des Kniegelenks einstellen, um unphysiologische Kniegelenksbelastungen zu vermeiden.",
+    "image": null
+  },
+  "wadenheben-stehend-an-der-maschine": {
+    "name": "Wadenheben stehend an der Maschine",
+    "muscles": {
+      "primary": "Zwillingswadenmuskel",
+      "secondary": "Schollenmuskel"
+    },
+    "steps": [
+      "Mit den Fußballen auf die Kante der Plattform stellen, die Schultern stabil unter die Polster positionieren und die Knie fast vollständig strecken.",
+      "Die Fersen langsam und kontrolliert so weit wie möglich absenken, um eine maximale Dehnung in der Wadenmuskulatur zu erzielen.",
+      "Die Fersen kraftvoll nach oben drücken, bis der maximale Zehenspitzenstand erreicht ist.",
+      "Am obersten Punkt kurz verweilen und die Fersen anschließend kontrolliert wieder absenken."
+    ],
+    "mistakes": [
+      "Hektisches Abfedern im tiefsten Punkt der Bewegung unter Ausnutzung des Dehnungs-Verkürzungs-Zyklus der Achillessehne.",
+      "Beugen und Strecken der Knie während des Satzes.",
+      "Unvollständiger Bewegungsumfang sowohl in der Dehnung als auch in der Kontraktion."
+    ],
+    "safety": "Jede Wiederholung im tiefsten Dehnpunkt für mindestens eine Sekunde pausieren, um die Elastizität der Achillessehne auszuschalten.",
+    "image": null
+  },
+  "wadenheben-sitzend-an-der-maschine": {
+    "name": "Wadenheben sitzend an der Maschine",
+    "muscles": {
+      "primary": "Schollenmuskel",
+      "secondary": "Zwillingswadenmuskel"
+    },
+    "steps": [
+      "In die Maschine setzen, die Fußballen auf der Plattform positionieren und das Oberschenkelpolster fest knapp oberhalb der Knie arretieren.",
+      "Die Fersen langsam und kontrolliert absenken, bis eine intensive Dehnung in der Wadenrückseite spürbar ist.",
+      "Die Fersen kraftvoll nach oben drücken, bis die Wadenmuskulatur maximal kontrahiert ist.",
+      "Die Fersen kontrolliert und langsam wieder absenken."
+    ],
+    "mistakes": [
+      "Schnelles, unkontrolliertes Auf- und Abwippen ohne gezielte Muskelkontraktion.",
+      "Das Oberschenkelpolster ist zu locker eingestellt, so dass sich die Oberschenkel aktiv nach oben bewegen.",
+      "Zu hohe Gewichte, die den Bewegungsumfang auf ein Minimum reduzieren."
+    ],
+    "safety": "Das Oberschenkelpolster fest fixieren, damit die Krafteinleitung ausschließlich über das Sprunggelenk erfolgt.",
+    "image": null
+  },
+  "cable-crunches": {
+    "name": "Cable Crunches",
+    "muscles": {
+      "primary": "Gerader Bauchmuskel",
+      "secondary": "Schräge Bauchmuskeln"
+    },
+    "steps": [
+      "Vor dem hohen Kabelzug niederknien, das Seil fassen und die Hände stabil neben den Schläfen oder am oberen Brustkorb fixieren.",
+      "Die Hüfte leicht nach hinten geschoben in einer fixen Position arretieren und diese Position nicht verändern.",
+      "Den Oberkörper kontrolliert nach unten einrollen, indem die Rippenbögen aktiv in Richtung des Beckens gezogen werden (Wirbelsäulenflexion).",
+      "Die Ellbogen in Richtung der Oberschenkel führen, die Bauchmuskeln am tiefsten Punkt maximal anspannen und langsam wieder aufrollen."
+    ],
+    "mistakes": [
+      "Aktives Bewegen der Hüfte nach hinten und unten (reine Hüftbeugung statt Rumpfflexion).",
+      "Beibehaltung eines völlig geraden Rückens, was das Einrollen verhindert.",
+      "Generierung von Zugkraft aus den Armen und dem Trizeps statt aus dem Bauch."
+    ],
+    "safety": "Die Hüftgelenksbewegung komplett einfrieren, um die Belastung gezielt auf die gerade Bauchmuskulatur zu lenken.",
+    "image": null
+  },
+  "beinheben-haengend": {
+    "name": "Beinheben hängend",
+    "muscles": {
+      "primary": "Gerader Bauchmuskel",
+      "secondary": "Hüftbeuger, Schräge Bauchmuskeln"
+    },
+    "steps": [
+      "Im Obergriff an einer Klimmzugstange hängen, den Körper vollständig strecken und die Schultern leicht aktivieren.",
+      "Den Rumpf anspannen und die Beine kontrolliert nach oben führen, bis sie mindestens parallel zum Boden stehen.",
+      "Das Becken am obersten Punkt der Bewegung aktiv mit nach oben-hinten einrollen, um eine maximale Kontraktion der Bauchmuskeln zu erzielen.",
+      "Die Beine langsam und unter voller Kontrolle wieder absenken, um ein Schwingen des Körpers zu verhindern."
+    ],
+    "mistakes": [
+      "Nutzen von Schwung (Pendelbewegung) aus der Hüfte.",
+      "Unkontrolliertes Fallenlassen der Beine in der exzentrischen Phase.",
+      "Reine Hüftbeugung ohne das notwendige Einrollen des Beckens."
+    ],
+    "safety": "Die Schulterblätter während des gesamten Satzes aktiv nach unten und hinten gezogen halten, um das Schultergelenk im freien Hang vor Überlastung zu schützen.",
+    "image": null
   }
 }
