@@ -134,8 +134,14 @@
   }
   .badge-swapped { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--chalk-dim); }
   .target-line { font-size: 12px; color: var(--chalk-dim); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
-  .history-line { font-size: 12px; color: var(--chalk-dim); margin-top: 4px; }
+  .history-line { font-size: 12px; color: var(--chalk-dim); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
   .history-line b { color: var(--chalk); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+  .weight-suggestion { color: var(--olive); display: inline-flex; align-items: center; gap: 6px; }
+  .weight-suggestion b { color: var(--olive); }
+  .suggestion-accept-btn {
+    font-size: 11px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--olive);
+    background: transparent; color: var(--olive); cursor: pointer;
+  }
 
   .swap-btn {
     background: transparent; border: 1px solid var(--border); border-radius: 7px;
@@ -440,7 +446,7 @@ const PPL_DAYS = [
 
 const PPL_EXERCISES = {
   pushA: [
-    { id: "pa1", name: "Flachbankdrücken Kurzhantel", sets: 4, reps: "6-8", alts: ["Flachbankdrücken Langhantel", "Machine Chest Press"] },
+    { id: "pa1", name: "Flachbankdrücken Kurzhantel", sets: 4, reps: "6-8", alts: ["Flachbankdrücken Langhantel", "Machine Chest Press"], compound: true },
     { id: "pa2", name: "Schrägbankdrücken Kurzhantel", sets: 3, reps: "8-10", alts: ["Schrägbankdrücken Langhantel", "Incline Machine Press"] },
     { id: "pa3", name: "Dips (Brust-Lean)", sets: 3, reps: "8-12", alts: ["Dip-Maschine", "Cable Fly tief-hoch"] },
     { id: "pa4", name: "Kabel-Crossover (tief→hoch)", sets: 3, reps: "12-15", alts: ["Pec Deck", "Kurzhantel Fly"] },
@@ -449,7 +455,7 @@ const PPL_EXERCISES = {
     { id: "pa7", name: "Pallof Press", sets: 3, reps: "12/Seite", alts: ["Suitcase Carry"], core: true },
   ],
   pullA: [
-    { id: "pl1", name: "Klimmzüge weit", sets: 4, reps: "6-10", alts: ["Latzug weit", "Assisted Pull-up Maschine"] },
+    { id: "pl1", name: "Klimmzüge weit", sets: 4, reps: "6-10", alts: ["Latzug weit", "Assisted Pull-up Maschine"], compound: true },
     { id: "pl2", name: "Chest-Supported Row", sets: 4, reps: "8-10", alts: ["T-Bar Row", "Maschinen-Rudern"] },
     { id: "pl3", name: "Kabelrudern eng, sitzend", sets: 3, reps: "10-12", alts: ["Maschinenrudern eng"] },
     { id: "pl4", name: "Face Pulls", sets: 3, reps: "15-20", alts: ["Reverse Pec Deck"] },
@@ -467,7 +473,7 @@ const PPL_EXERCISES = {
     { id: "la7", name: "Dead Bug", sets: 3, reps: "10/Seite", alts: ["Bird Dog"], core: true },
   ],
   pushB: [
-    { id: "pb1", name: "Schulterdrücken Lang-/Kurzhantel", sets: 4, reps: "6-8", alts: ["Machine Shoulder Press"] },
+    { id: "pb1", name: "Schulterdrücken Lang-/Kurzhantel", sets: 4, reps: "6-8", alts: ["Machine Shoulder Press"], compound: true },
     { id: "pb2", name: "Schrägbankdrücken Maschine", sets: 3, reps: "10", alts: ["Schrägbankdrücken Kurzhantel"] },
     { id: "pb3", name: "Seitheben Kabel", sets: 4, reps: "15-20", alts: ["Seitheben Kurzhantel"] },
     { id: "pb4", name: "Butterfly / Pec Deck", sets: 3, reps: "12-15", alts: ["Kabel-Crossover"] },
@@ -505,8 +511,8 @@ const UL_DAYS = [
 
 const UL_EXERCISES = {
   ulUpperA: [
-    { id: "uua1", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
-    { id: "uua2", name: "Klimmzüge im Ristgriff", sets: 3, reps: "8-10", alts: [] },
+    { id: "uua1", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [], compound: true },
+    { id: "uua2", name: "Klimmzüge im Ristgriff", sets: 3, reps: "8-10", alts: [], compound: true },
     { id: "uua3", name: "Schrägbankdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
     { id: "uua4", name: "Rudern am Kabelzug im breiten Parallelgriff", sets: 3, reps: "10-12", alts: [] },
     { id: "uua5", name: "Seitheben am Kabelzug", sets: 3, reps: "12-15", alts: [] },
@@ -514,7 +520,7 @@ const UL_EXERCISES = {
     { id: "uua7", name: "Overhead-Trizepsdrücken am Kabelzug mit Seil", sets: 3, reps: "10-12", alts: [] },
   ],
   ulLowerA: [
-    { id: "ula1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "ula1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [], compound: true },
     { id: "ula2", name: "Sitzender Beinbeuger", sets: 3, reps: "8-10", alts: [] },
     { id: "ula3", name: "Beinpresse 45 Grad", sets: 3, reps: "10-12", alts: [] },
     { id: "ula4", name: "Wadenheben stehend an der Maschine", sets: 4, reps: "8-10", alts: [] },
@@ -522,7 +528,7 @@ const UL_EXERCISES = {
   ],
   ulUpperB: [
     { id: "uub1", name: "Kurzhantel-Rudern", sets: 3, reps: "6-8", alts: [] },
-    { id: "uub2", name: "Schulterdrücken mit der Langhantel stehend", sets: 3, reps: "6-8", alts: [] },
+    { id: "uub2", name: "Schulterdrücken mit der Langhantel stehend", sets: 3, reps: "6-8", alts: [], compound: true },
     { id: "uub3", name: "Fliegende Bewegung mit Kurzhanteln auf der Flachbank", sets: 3, reps: "10-12", alts: [] },
     { id: "uub4", name: "Latzug an der Maschine", sets: 3, reps: "10-12", alts: [] },
     { id: "uub5", name: "Seitheben mit Kurzhanteln", sets: 3, reps: "12-15", alts: [] },
@@ -530,7 +536,7 @@ const UL_EXERCISES = {
     { id: "uub7", name: "Trizepsdrücken am Kabelzug mit gerader Stange", sets: 3, reps: "10-12", alts: [] },
   ],
   ulLowerB: [
-    { id: "ulb1", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
+    { id: "ulb1", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "6-8", alts: [], compound: true },
     { id: "ulb2", name: "Beinstrecker-Maschine", sets: 3, reps: "10-12", alts: [] },
     { id: "ulb3", name: "Ausfallschritte mit Kurzhanteln", sets: 3, reps: "10-12", alts: [] },
     { id: "ulb4", name: "Wadenheben sitzend an der Maschine", sets: 4, reps: "12-15", alts: [] },
@@ -546,16 +552,16 @@ const FB_DAYS = [
 
 const FB_EXERCISES = {
   fbA: [
-    { id: "fba1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
-    { id: "fba2", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [] },
-    { id: "fba3", name: "Klimmzüge im Untergriff", sets: 3, reps: "8-10", alts: [] },
+    { id: "fba1", name: "Kniebeugen mit der Langhantel", sets: 3, reps: "6-8", alts: [], compound: true },
+    { id: "fba2", name: "Flachbankdrücken mit der Langhantel", sets: 3, reps: "6-8", alts: [], compound: true },
+    { id: "fba3", name: "Klimmzüge im Untergriff", sets: 3, reps: "8-10", alts: [], compound: true },
     { id: "fba4", name: "Sitzender Beinbeuger", sets: 3, reps: "10-12", alts: [] },
     { id: "fba5", name: "Seitheben mit Kurzhanteln", sets: 3, reps: "12-15", alts: [] },
     { id: "fba6", name: "Overhead-Trizepsdrücken am Kabelzug mit Seil", sets: 3, reps: "10-12", alts: [] },
   ],
   fbB: [
-    { id: "fbb1", name: "Kreuzheben mit der Langhantel", sets: 3, reps: "5", alts: [] },
-    { id: "fbb2", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
+    { id: "fbb1", name: "Kreuzheben mit der Langhantel", sets: 3, reps: "5", alts: [], compound: true },
+    { id: "fbb2", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [], compound: true },
     { id: "fbb3", name: "Kurzhantel-Rudern auf der Schrägbank", sets: 3, reps: "8-10", alts: [] },
     { id: "fbb4", name: "Beinstrecker-Maschine", sets: 3, reps: "10-12", alts: [] },
     { id: "fbb5", name: "Incline Dumbbell Curls", sets: 3, reps: "10-12", alts: [] },
@@ -581,28 +587,28 @@ const BRO_DAYS = [
 
 const BRO_EXERCISES = {
   broChest: [
-    { id: "brc1", name: "Flachbankdrücken mit der Langhantel", sets: 4, reps: "6-8", alts: [] },
+    { id: "brc1", name: "Flachbankdrücken mit der Langhantel", sets: 4, reps: "6-8", alts: [], compound: true },
     { id: "brc2", name: "Schrägbankdrücken mit Kurzhanteln", sets: 3, reps: "8-10", alts: [] },
     { id: "brc3", name: "Dips am Barren", sets: 3, reps: "8-10", alts: [] },
     { id: "brc4", name: "Fliegende Bewegung am Kabelzug", sets: 3, reps: "12-15", alts: [] },
   ],
   broBack: [
-    { id: "brb1", name: "Klimmzüge im Ristgriff", sets: 4, reps: "max", alts: [] },
-    { id: "brb2", name: "Langhantelrudern vorgebeugt", sets: 3, reps: "6-8", alts: [] },
+    { id: "brb1", name: "Klimmzüge im Ristgriff", sets: 4, reps: "max", alts: [], compound: true },
+    { id: "brb2", name: "Langhantelrudern vorgebeugt", sets: 3, reps: "6-8", alts: [], compound: true },
     { id: "brb3", name: "Latzug im engen Untergriff", sets: 3, reps: "10-12", alts: [] },
     { id: "brb4", name: "Kurzhantel-Überzüge", sets: 3, reps: "12-15", alts: [] },
   ],
   broLegs: [
-    { id: "brl1", name: "Kniebeugen mit der Langhantel", sets: 4, reps: "6-8", alts: [] },
-    { id: "brl2", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "8-10", alts: [] },
+    { id: "brl1", name: "Kniebeugen mit der Langhantel", sets: 4, reps: "6-8", alts: [], compound: true },
+    { id: "brl2", name: "Rumänisches Kreuzheben mit der Langhantel", sets: 3, reps: "8-10", alts: [], compound: true },
     { id: "brl3", name: "Hackenschmidt-Kniebeuge", sets: 3, reps: "10-12", alts: [] },
     { id: "brl4", name: "Sitzender Beinbeuger", sets: 3, reps: "12-15", alts: [] },
     { id: "brl5", name: "Wadenheben stehend an der Maschine", sets: 4, reps: "10-12", alts: [] },
   ],
   broShoulders: [
-    { id: "brs1", name: "Schulterdrücken mit der Langhantel stehend", sets: 4, reps: "6-8", alts: [] },
+    { id: "brs1", name: "Schulterdrücken mit der Langhantel stehend", sets: 4, reps: "6-8", alts: [], compound: true },
     { id: "brs2", name: "Seitheben am Kabelzug", sets: 3, reps: "10-12", alts: [] },
-    { id: "brs3", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "10-12", alts: [] },
+    { id: "brs3", name: "Schulterdrücken mit Kurzhanteln", sets: 3, reps: "10-12", alts: [], compound: true },
     { id: "brs4", name: "Face Pulls am Kabelzug", sets: 3, reps: "12-15", alts: [] },
   ],
   broArms: [
@@ -1352,7 +1358,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.11.0";
+const APP_VERSION = "1.12.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit Umbenennung zu "Fretze pumpt" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1564,6 +1570,61 @@ function deleteCustomPlan(planId) {
   render();
 }
 
+// Gewichtsprogression: Vorschlaege sind gym-gescoped wie lastWeights/history (ein Gewicht,
+// das bei einem Gym passt, muss bei einem anderen nicht passen), aber nicht-destruktiv -
+// ein Vorschlag wird nie automatisch uebernommen, nur als Chip angezeigt.
+function getWeightSuggestion(exId) {
+  if (state.currentGymId) {
+    const gymData = state.gymWeightSuggestions[state.currentGymId];
+    return gymData ? gymData[exId] : undefined;
+  }
+  return state.weightSuggestions[exId];
+}
+
+function setWeightSuggestion(exId, entry) {
+  if (state.currentGymId) {
+    if (!state.gymWeightSuggestions[state.currentGymId]) state.gymWeightSuggestions[state.currentGymId] = {};
+    state.gymWeightSuggestions[state.currentGymId][exId] = entry;
+  } else {
+    state.weightSuggestions[exId] = entry;
+  }
+}
+
+function clearWeightSuggestion(exId) {
+  if (state.currentGymId) {
+    if (state.gymWeightSuggestions[state.currentGymId]) delete state.gymWeightSuggestions[state.currentGymId][exId];
+  } else {
+    delete state.weightSuggestions[exId];
+  }
+}
+
+// Erkennt nur eindeutige Zahlen-Wiederholungsspannen ("6-8" -> {min:6,max:8}, "10" -> {min:10,max:10}).
+// Alles andere (Freitext wie "12/Seite", "max", Zeit-/Distanzangaben wie "30-45s"/"30-40m")
+// liefert bewusst null statt zu raten - die Frage wird fuer solche Uebungen einfach nicht gestellt.
+function parseRepRange(str) {
+  const match = /^(\d+)(?:-(\d+))?$/.exec(String(str || "").trim());
+  if (!match) return null;
+  const min = Number(match[1]);
+  const max = match[2] !== undefined ? Number(match[2]) : min;
+  return { min, max };
+}
+
+// Prozentual statt fester kg-Schritte (skaliert automatisch mit dem Gewicht, ohne dass
+// Uebungen nach Geraetetyp klassifiziert werden muessen), gerundet auf 0,5 kg. Garantiert
+// mindestens +0,5 kg, damit der Vorschlag bei leichten Gewichten nie wirkungslos verpufft.
+// Schwere Grunduebungen (ex.compound: true - die klassischen "Big Lifts": Kniebeuge,
+// Kreuzheben, Bankdruecken, Schulterdruecken, Klimmzuege, Langhantelrudern) bekommen 5%
+// statt 2,5%, da sie typischerweise groessere Progressionsschritte vertragen.
+const PROGRESSION_PCT_DEFAULT = 0.025;
+const PROGRESSION_PCT_COMPOUND = 0.05;
+function computeSuggestedWeight(weight, isCompound) {
+  const pct = isCompound ? PROGRESSION_PCT_COMPOUND : PROGRESSION_PCT_DEFAULT;
+  const raw = weight * (1 + pct);
+  let rounded = Math.round(raw / 0.5) * 0.5;
+  if (rounded <= weight) rounded = weight + 0.5;
+  return rounded;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1588,10 +1649,12 @@ function loadState() {
         journal: parsed.journal || [],
         customPlans: parsed.customPlans || [],
         planDraft: parsed.planDraft || null,
+        weightSuggestions: parsed.weightSuggestions || {},
+        gymWeightSuggestions: parsed.gymWeightSuggestions || {},
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {} };
 }
 
 let state = loadState();
@@ -1971,6 +2034,20 @@ function exerciseInfoPanelHTML(ex) {
   `;
 }
 
+// Geteilt zwischen Kartenansicht und Fokusmodus (wie setsRowsHTML/exerciseInfoPanelHTML),
+// damit "Letztes Mal" und der Gewichtsvorschlag-Chip in beiden Ansichten identisch sind.
+function historyLineHTML(exId, hist) {
+  const historyPart = hist
+    ? `Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span>`
+    : "";
+  const suggestion = getWeightSuggestion(exId);
+  const suggestionPart = suggestion
+    ? `<span class="weight-suggestion">💡 Vorschlag: <b>${escapeAttr(String(suggestion.weight))}kg</b> <button class="suggestion-accept-btn" data-role="suggestion-accept" data-exid="${escapeAttr(exId)}">Übernehmen</button></span>`
+    : "";
+  if (!historyPart && !suggestionPart) return "";
+  return `<div class="history-line">${historyPart}${suggestionPart}</div>`;
+}
+
 // "Wird zur uebernaechsten Uebung": Queue [A,B,C,D], Fokus auf A (focusPos=0), Skip von A
 // -> Ziel [B,C,A,D] - B wird sofort sichtbar, C bleibt "als Naechstes", A taucht danach
 // wieder auf. Bei nur noch 2 verbleibenden Uebungen landet die geskippte Uebung am Ende
@@ -1995,9 +2072,7 @@ function renderFocusMode() {
   const info = EXERCISE_INFO[ex.id];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
 
-  const historyHTML = hist ? `
-    <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span></div>
-  ` : "";
+  const historyHTML = historyLineHTML(ex.id, hist);
 
   const isLast = focusPos >= focusQueue.length - 1;
   const nextEx = !isLast ? EXERCISES[day].find(x => x.id === focusQueue[focusPos + 1]) : null;
@@ -2253,9 +2328,7 @@ function render() {
     const hist = getHistoryEntry(ex.id);
     const note = state.notes[swapKey] || "";
 
-    const historyHTML = hist ? `
-      <div class="history-line">Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span></div>
-    ` : "";
+    const historyHTML = historyLineHTML(ex.id, hist);
 
     const swapPanelHTML = swapOpenKey === swapKey ? `
       <div class="swap-panel">
@@ -2364,6 +2437,17 @@ function finishSession(dayId) {
     if (doneSets.length > 0) {
       const last = doneSets[doneSets.length - 1];
       setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
+
+      // Gewichtsprogression: nur der letzte Arbeitssatz zaehlt (gleiches Prinzip wie oben
+      // bei der History), Aufwaermsaetze sind bereits durch doneSets ausgeschlossen.
+      const range = parseRepRange(ex.reps);
+      const lastWeightNum = parseFloat(last.weight);
+      const lastRepsNum = parseFloat(last.reps);
+      if (range && last.couldDoMore && Number.isFinite(lastWeightNum) && Number.isFinite(lastRepsNum) && lastRepsNum >= range.max) {
+        setWeightSuggestion(ex.id, { weight: computeSuggestedWeight(lastWeightNum, !!ex.compound), basedOnDate: today });
+      } else {
+        clearWeightSuggestion(ex.id);
+      }
     }
     // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind
     const hasAnyWeight = sets.some(s => s.weight);
@@ -2443,6 +2527,8 @@ function importData(file) {
         journal: incoming.journal || [],
         customPlans: incoming.customPlans || [],
         planDraft: incoming.planDraft || null,
+        weightSuggestions: incoming.weightSuggestions || {},
+        gymWeightSuggestions: incoming.gymWeightSuggestions || {},
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -2785,6 +2871,22 @@ document.addEventListener("click", (e) => {
     const ex = EXERCISES[day].find(x => x.id === exid);
     const sets = ensureDaySets(day, ex);
     sets[idx].couldDoMore = !sets[idx].couldDoMore;
+    persist();
+    render();
+    return;
+  }
+
+  const suggestionAccept = e.target.closest('[data-role="suggestion-accept"]');
+  if (suggestionAccept) {
+    const exid = suggestionAccept.dataset.exid;
+    const day = state.currentDay;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const suggestion = getWeightSuggestion(exid);
+    if (ex && suggestion) {
+      const sets = ensureDaySets(day, ex);
+      sets.forEach(s => { s.weight = String(suggestion.weight); });
+      clearWeightSuggestion(exid);
+    }
     persist();
     render();
     return;

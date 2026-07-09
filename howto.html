@@ -101,6 +101,7 @@
       <a href="#trainingsmodus">Trainingsmodus</a>
       <a href="#aufwaermen">Aufwärmen</a>
       <a href="#saetze">Sätze eintragen</a>
+      <a href="#gewichtsvorschlag">Gewichtsvorschlag</a>
       <a href="#erklaerung">Übungserklärung</a>
       <a href="#tauschen">Übung tauschen</a>
       <a href="#timer">Satzpause</a>
@@ -176,8 +177,18 @@
 
     <div class="card" id="saetze">
       <h2>💪 Sätze eintragen</h2>
-      <p>Pro Übung siehst du eine Zeile je Satz: Gewicht (kg) und Wiederholungen. Das 🔥-Symbol markiert einen Satz als <b>Aufwärmsatz</b> (antippen zum Umschalten) — praktisch, wenn du z.B. mit einem leichteren Satz reinstartest, bevor du dein Arbeitsgewicht nimmst. Das ↑-Symbol markiert, ob <b>mehr Wiederholungen möglich gewesen wären</b> — ein einfacher Hinweis für dich (und später für automatische Gewichtsvorschläge), ohne dass du dir eine genaue Zahl merken musst. Häkchen rechts markiert den Satz als erledigt.</p>
+      <p>Pro Übung siehst du eine Zeile je Satz: Gewicht (kg) und Wiederholungen. Das 🔥-Symbol markiert einen Satz als <b>Aufwärmsatz</b> (antippen zum Umschalten) — praktisch, wenn du z.B. mit einem leichteren Satz reinstartest, bevor du dein Arbeitsgewicht nimmst. Das ↑-Symbol markiert, ob <b>mehr Wiederholungen möglich gewesen wären</b> — daraus berechnet die App bei Bedarf einen Gewichtsvorschlag fürs nächste Mal (siehe unten). Häkchen rechts markiert den Satz als erledigt.</p>
       <p class="dim">"Letztes Mal: ..." unter dem Übungsnamen zeigt dein Ergebnis aus der letzten Einheit, und das Gewichtsfeld ist schon mit deinem letzten Wert vorbefüllt. Aufwärmsätze zählen dabei nicht mit — "Letztes Mal" und der Fortschrittszähler ("X/Y Arbeitssätze") beziehen sich nur auf deine markierten Arbeitssätze.</p>
+    </div>
+
+    <div class="card" id="gewichtsvorschlag">
+      <h2>💡 Gewichtsvorschlag</h2>
+      <p>Schließt du eine Übung ab, bei der du beim letzten Arbeitssatz die Obergrenze deiner Ziel-Wiederholungen erreicht/überschritten <b>und</b> das ↑-Symbol ("mehr möglich") aktiviert hast, schlägt dir die App beim nächsten Mal ein höheres Gewicht vor: ein "💡 Vorschlag: ...kg"-Hinweis neben "Letztes Mal", mit einem "Übernehmen"-Button, der alle Sätze der Übung auf den vorgeschlagenen Wert setzt.</p>
+      <ul>
+        <li>Bei schweren Grundübungen (Kniebeuge, Kreuzheben, Bankdrücken, Schulterdrücken, Klimmzüge, Langhantelrudern) sind es <b>+5 %</b>, sonst <b>+2,5 %</b> — gerundet auf 0,5 kg.</li>
+        <li>Nichts passiert automatisch — der Vorschlag ist nur ein Hinweis, den du bewusst übernimmst oder ignorierst.</li>
+        <li>Bei Übungen ohne klare Zahlen-Wiederholungsspanne (z.B. "12/Seite", "max") gibt es keinen Vorschlag.</li>
+      </ul>
     </div>
 
     <div class="card" id="erklaerung">
