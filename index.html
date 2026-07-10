@@ -862,7 +862,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.22.0";
+const APP_VERSION = "1.23.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2331,7 +2331,10 @@ function render() {
         <div style="min-width:0; flex:1;">
           <div class="header-title">
             <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
-            <h1>Fretze</h1>
+            <!-- Auf Nutzerwunsch (v1.23.0) zeigt nur dieser sichtbare Header wieder "Fretze pumpt" -
+                 <title>/Seitentitel und der App-Name in howto.html bleiben bewusst beim kurzen
+                 "Fretze" (2026-07-09). Kein Versehen, nicht "zurueckkorrigieren". -->
+            <h1>Fretze pumpt</h1>
           </div>
           <div class="header-sub">${escapeAttr(headerSubtitleText())} · v${APP_VERSION}</div>
         </div>
@@ -3166,6 +3169,25 @@ document.addEventListener("change", (e) => {
     state.currentGymId = gymSelect.value || null;
     persist();
     render();
+  }
+
+  // Seit v1.23.0: Wiederholungen eingetragen (Feld verlassen/bestaetigt) -> Satz automatisch
+  // als erledigt markieren, Haekchen gruen faerben, Pausen-Timer starten - erspart den
+  // zusaetzlichen Tipp auf das Haekchen. Nur bei der ersten Eintragung (noch nicht erledigt),
+  // damit ein spaeteres Korrigieren der Wiederholungen den Timer nicht erneut auslöst; manuelles
+  // Abhaken/Zuruecknehmen ueber das Haekchen bleibt unveraendert moeglich.
+  const repsField = e.target.closest('[data-role="set-field"][data-field="reps"]');
+  if (repsField) {
+    const { day, exid, idx } = repsField.dataset;
+    const ex = EXERCISES[day].find(x => x.id === exid);
+    const sets = ex ? ensureDaySets(day, ex) : null;
+    const s = sets ? sets[idx] : null;
+    if (s && !s.done && String(s.reps).trim() !== "") {
+      s.done = true;
+      persist();
+      render();
+      startRestTimer();
+    }
   }
 });
 

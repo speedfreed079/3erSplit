@@ -2,6 +2,19 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.23.0 — 2026-07-10 (Teil 47): Satz-Auto-Erledigt bei Wiederholungseingabe + Header-Name
+
+- Nutzer-Feedback nach dem Live-Test von v1.22.0: (1) beim Eintragen der Wiederholungen soll der Satz gleich automatisch als erledigt markiert werden (Häkchen grün, Pausen-Timer startet) statt zusätzlich das Häkchen antippen zu müssen; (2) der sichtbare Header soll wieder "Fretze pumpt" zeigen statt "Fretze" — explizit nur der Header, nicht der Seitentitel/App-Name (per Rückfrage geklärt).
+- **Auto-Erledigt**: neuer Zweig im bestehenden delegierten `change`-Listener (nicht `input`, damit es erst beim Verlassen/Bestätigen des Wiederholungsfelds auslöst, nicht bei jedem Tastendruck) auf `data-role="set-field"][data-field="reps"]`. Markiert den Satz nur dann automatisch als erledigt, wenn er es noch nicht war (verhindert, dass ein späteres Korrigieren der Wiederholungszahl den Pausen-Timer erneut startet) und ein Wert eingetragen wurde. Manuelles Abhaken/Zurücknehmen über das Häkchen bleibt unverändert möglich (z.B. um einen Satz ohne Wiederholungszahl abzuhaken).
+- **Header-Name**: `<h1>` im Kartenansicht-Header zeigt wieder "Fretze pumpt" (war seit der Kürzung am 2026-07-09 nur "Fretze"). Bewusst **nur** dort — Seitentitel (`<title>Fretze – Trainingsbuch</title>`), `STORAGE_KEY`, Worker-Name und die Prosa in `howto.html` bleiben unverändert beim kurzen "Fretze". Kommentar im Code ergänzt, damit das nicht in einer künftigen Session als vergessene Umbenennung "korrigiert" wird.
+- `howto.html` (Abschnitt "💪 Sätze eintragen") um die Auto-Erledigt-Beschreibung ergänzt.
+- Verifiziert: `node --check` auf beiden Inline-Script-Blöcken.
+
+## v1.22.0 — 2026-07-10 (Teil 46): Live verifiziert (Firestore-Sync)
+
+- Nutzer hat nach dem Veröffentlichen der Security Rules in der Firebase Console alle Kernszenarien manuell getestet: Login auf zwei Browsern mit demselben Konto, Tagebuch-Merge (Session auf Gerät B geloggt, auf Gerät A ohne Datenverlust übernommen) — **funktioniert**. Offline-Test (Session offline geloggt, blieb lokal erhalten, synchronisierte nach Wiederverbindung) — **funktioniert**.
+- Damit ist v1.22.0 vollständig verifiziert, inkl. Produktivbetrieb. Kein Code geändert, daher kein separater Versions-Bump für die Verifikation selbst (siehe aber v1.23.0 direkt im Anschluss für die daraus entstandenen Folgeänderungen).
+
 ## v1.22.0 — 2026-07-10 (Teil 45): Firestore-Sync (Login Phase B)
 
 - Nach eigener Planungsrunde (Explore + Plan-Agent, vom Nutzer freigegeben) umgesetzt: eingeloggte Nutzer bekommen jetzt echten Datensync statt nur reiner Anmeldung (Phase A, v1.19.0/v1.20.0). Nicht eingeloggte Nutzung bleibt unverändert rein lokal.
