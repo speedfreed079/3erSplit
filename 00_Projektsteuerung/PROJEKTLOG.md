@@ -2,6 +2,11 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-10 (Teil 53): v1.26.0 live verifiziert (Tap-Targets)
+
+- Nutzer hat auf dem echten Gerät (Fitness-First-Gym-Kontext, Screenshots geteilt) die Kartenansicht für "Pull A" getestet: 🔥/↑-Toggles und Done-Häkchen antippen fühlt sich spürbar besser/sicherer an als vorher. Damit ist der von Claude+Gemini priorisierte Tap-Target-Punkt aus v1.26.0 bestätigt.
+- Kein Code geändert, daher kein Versions-Bump.
+
 ## v1.26.0 — 2026-07-10 (Teil 52): Tap-Targets vergrößert
 
 - Nutzer hat sowohl Claude (Rollenspiel, bereits in `MEMORY.md` dokumentiert) als auch Gemini nach Optik/Bedienbarkeit gefragt — beide unabhängig zum selben Hauptbefund gekommen: die Tap-Targets in der Satzzeile (Aufwärm-/Mehr-Toggle, Done-Häkchen) sind für den Trainingskontext (oft einhändig, schwitzige/zittrige Finger) zu klein. Nutzer hat das als ersten Umsetzungspunkt priorisiert.
