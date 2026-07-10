@@ -2,6 +2,40 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.33.0 — 2026-07-10 (Teil 63): Wohlbefinden-Tracking (Phase 4, Teil 3 — Phase 4 komplett)
+
+- Letzter Punkt aus Phase 4. Vorab per Rückfrage geklärt: Erfassung beim Trainingsabschluss (optional, überspringbar), ein einziges Gesamt-Rating pro Einheit (nicht pro Körperbereich/Übung — deutlich kleinerer Scope als ursprünglich von Gemini als Beispiel genannt).
+- **Neue Modal-Variante `kind: "choice"`**: `openChoiceModal({ title, message, options, onConfirm })` — dritte Variante neben `prompt`/`confirm` (seit v1.27.0). Zeigt mehrere Options-Buttons plus einen "Überspringen"-Button. Wichtiger Unterschied zu `modal-cancel`: der neue `modal-skip`-Handler ruft `onConfirm(null)` auf statt die Aktion ganz abzubrechen — beim Trainingsabschluss soll "Überspringen" das Training trotzdem speichern, nur ohne Rating (anders als z.B. "Abbrechen" bei einer Lösch-Bestätigung).
+- **`finishSession(dayId, wellbeing)`** um einen zweiten Parameter erweitert, landet als `wellbeing`-Feld (`"good"|"ok"|"bad"|null`) in jedem `state.journal`-Eintrag. Der `finish`-Klick-Handler zeigt jetzt erst das Choice-Modal (😊/😐/😖 + Überspringen), bevor `finishSession()` mit dem gewählten Wert (oder `null`) aufgerufen wird.
+- `journalHistoryHTML()` zeigt das Emoji jetzt neben Tag/Gym im Verlauf-Eintrag-Header.
+- Bewusst **keine** Korrelationsauswertung in dieser Version (z.B. "Rücken-Status vs. Kniebeugen-Frequenz") — nur Erfassung + Anzeige, Auswertung wäre ein eigener, deutlich größerer Schritt.
+- `howto.html` (Abschluss-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: Modal erscheint beim Abschluss, Auswahl landet korrekt im Tagebuch-Eintrag und wird dort anzeigt, Überspringen speichert das Training trotzdem (ohne Rating). Ein Playwright-spezifisches Timing-Artefakt beim Klick auf den (sehr weit unten liegenden) Abschluss-Button wurde untersucht und als reines Test-Tooling-Problem identifiziert, nicht als App-Bug (per direktem JS-Klick bestätigt).
+- **Damit ist Phase 4 komplett.** Offen bleibt der "Rest der langen Wunschliste" (Wochenvolumen-Trend, Kalender/Streak, Notizen pro Einheit, konfigurierbarer Timer, KI-Dialog statt Einbahnstraße) — noch nicht im Detail bewertet/priorisiert, siehe `MEMORY.md`. Parallel weiterhin offen: Calisthenics-Übungsdatenbank (wartet auf Nutzer-Recherche), Admin-Panel-Funktionalität.
+
+## v1.32.0 — 2026-07-10 (Teil 62): KI-Übungstausch auch im Trainingsmodus (Phase 4, Teil 2)
+
+- Zweiter Punkt aus Phase 4: Übungstausch (⟲, inkl. KI-Vorschläge) war im Trainingsmodus v1 bewusst nicht verfügbar — musste dafür kurz die Kartenansicht wechseln.
+- **`swapPanelHTML(day, ex, swapKey)`** aus der Kartenansicht extrahiert (gleiches Prinzip wie `setsRowsHTML`/`exerciseInfoPanelHTML`/`historyLineHTML`) — jetzt von Kartenansicht UND Trainingsmodus genutzt, keine doppelte Panel-Logik. Die AI-Vorschläge (`aiSuggestions`-Map, `fetchAiSuggestions()`) sind ohnehin schon über den geteilten `swapKey` (`${day}:${ex.id}`) verknüpft, funktionieren also automatisch in beiden Ansichten identisch/geteilt.
+- Neue ephemere `focusSwapOpen`-Variable (eigenständig, nicht `swapOpenKey` wiederverwendet — gleiche Konvention wie `focusInfoOpen`, jede Ansicht hat ihr eigenes Toggle-Flag statt geteilter Keys über Ansichten hinweg). Gegenseitig exklusiv mit `focusInfoOpen` (öffnet man das eine, schließt sich das andere), wird bei jedem Übungswechsel (`focus-next`/`focus-prev`/`focus-skip`/`focus-enter`) zurückgesetzt.
+- Neuer `data-role="focus-swap-toggle"`-Button (⟲) neben dem bestehenden ℹ-Button im Trainingsmodus-Header.
+- **Bug beim ersten Test gefunden und behoben**: `swap-select`/`swap-clear` setzten bisher nur `swapOpenKey = null` zurück — das schließt zwar das Panel in der Kartenansicht, hätte aber im Trainingsmodus (der `focusSwapOpen` prüft, nicht `swapOpenKey`) das Panel offen gelassen, obwohl die Auswahl schon übernommen war. Beide Handler setzen jetzt zusätzlich `focusSwapOpen = false`.
+- **Zweiter, echter Layout-Bug gefunden und behoben** (durch manuelles Visuelles Testen, nicht durch die reine `scrollWidth`-Prüfung): der größere Trainingsmodus-Titel (32px seit v1.30.0) plus der neue zweite Button (⟲) führten dazu, dass lange Übungsnamen (z.B. "Flachbankdrücken Kurzhantel") sich mit den Buttons überlappten statt umzubrechen — `scrollWidth === clientWidth` allein hatte das nicht aufgedeckt, da die Seite selbst nicht breiter wurde, der Text aber visuell über seine Spalte hinausragte (klassisches Flexbox-`min-width:auto`-Problem bei verschachtelten Flex-Containern). Behoben: `min-width:0` auf den äußeren Titel-Wrapper, `.focusmode-title-row` und `.focusmode-title` selbst, plus `overflow-wrap: break-word` auf `.focusmode-title` als letzte Absicherung für einzelne, sehr lange Wörter.
+- `howto.html` (Trainingsmodus-Abschnitt) aktualisiert — der Hinweis "⟲ nicht verfügbar" ist jetzt falsch und wurde ersetzt.
+- Verifiziert per Playwright: ℹ/⟲ im Trainingsmodus gegenseitig exklusiv; Übung-Auswahl funktioniert und schließt das Panel; kein horizontaler Seiten-Überlauf mehr; Titel bricht bei langen Namen sauber um statt zu überlappen.
+- **Nächster Schritt**: letzter Punkt aus Phase 4 — Wohlbefinden-Tracking (braucht noch Design-Entscheidungen zu Datenform/Erfassungs-UX, siehe `MEMORY.md`).
+
+## v1.31.0 — 2026-07-10 (Teil 61): PR-Modell auf geschätztes 1RM umgestellt (Phase 4, Teil 1)
+
+- Erster Punkt aus Phase 4: `computePersonalRecords()` definierte einen PR bisher als reines Maximalgewicht (unabhängig von Wiederholungen) — bewusst so simpel gebaut, damit die Definition später ohne Migration änderbar ist (siehe CLAUDE.md). Jetzt geändert.
+- **Neue `estimateOneRepMax(weight, reps)`**: Epley-Formel (`weight × (1 + reps/30)`), bewusst statt Brzycki gewählt (Brzycki wird bei ≥37 Wiederholungen negativ/undefiniert, für hochrepetitive Isolationsübungen in dieser App ein reales Risiko). Nicht-numerische `reps` (z.B. "12/Seite") liefern das reine Gewicht zurück — graceful, gleiche Konvention wie `parseRepRange()`.
+- `computePersonalRecords()` vergleicht jetzt nach höchstem geschätztem 1RM statt höchstem Rohgewicht — ein leichteres Gewicht mit mehr Wiederholungen kann jetzt einen schwereren Satz mit weniger Wiederholungen übertreffen (verifiziert: 80kg×10 ≈106,7kg 1RM schlägt 100kg×1 ≈103,3kg 1RM).
+- `journalPointsFor()` plottet jetzt ebenfalls das geschätzte 1RM statt des rohen Satzgewichts, damit die Sparkline echte Kraftfortschritte zeigt statt zufälliger Gewichtsschwankungen je nach Wiederholungszahl — `sparklineSVG()` selbst brauchte keine Änderung (liest weiterhin nur `p.weight`).
+- `journalRecordsHTML()`: Anzeige jetzt "≈106,7kg 1RM (Datum)" als Hauptwert, "aus 80kg × 10" als Detail-Zeile darunter.
+- `howto.html` (Rekorde-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: PR-Auswahl-Logik mit drei simulierten Tagebuch-Einträgen bestätigt die erwartete Rangfolge; UI zeigt "≈106.7kg 1RM"/"aus 80kg × 10" korrekt; Sparkline zeigt den e1RM-Verlauf.
+- **Nächster Schritt**: Rest von Phase 4 (KI-Tausch im Trainingsmodus, Wohlbefinden-Tracking) — siehe `MEMORY.md`.
+
 ## v1.30.0 — 2026-07-10 (Teil 60): Phase 3 der UI/UX-Liste — Kartenlayout, Screen-Übergänge, Trainingsmodus
 
 - Umsetzung von Phase 3 der gemeinsam erstellten Reihenfolge (siehe `MEMORY.md`): visueller Feinschliff, kein Datenmodell betroffen.

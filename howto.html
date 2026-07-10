@@ -178,7 +178,7 @@
         <li><b>"Überspringen"</b> schiebt die aktuelle Übung auf den übernächsten Platz — praktisch, wenn z.B. gerade eine Maschine belegt ist. Sie taucht danach automatisch wieder auf, nichts geht verloren.</li>
         <li><b>"Zurück"</b> und <b>"Weiter"</b> navigieren zwischen den Übungen des Tages; bei der letzten Übung wird aus "Weiter" der Abschluss-Button.</li>
       </ul>
-      <p class="dim">Übung tauschen (⟲) ist im Trainingsmodus bewusst nicht verfügbar — dafür kurz zur Kartenansicht wechseln. Sätze eintragen, Aufwärmsatz/"mehr möglich"-Toggle, Erklärung (ℹ) und der Satzpausen-Timer funktionieren wie gewohnt.</p>
+      <p class="dim">Übung tauschen (⟲, inkl. KI-Vorschläge) funktioniert jetzt auch direkt im Trainingsmodus, genau wie in der Kartenansicht. Sätze eintragen, Aufwärmsatz/"mehr möglich"-Toggle, Erklärung (ℹ) und der Satzpausen-Timer funktionieren ebenfalls wie gewohnt.</p>
     </div>
 
     <div class="card" id="aufwaermen">
@@ -227,6 +227,7 @@
     <div class="card" id="abschluss">
       <h2>✅ Training abschließen</h2>
       <p>Der Button unten schließt die Einheit ab: deine Gewichte werden für nächstes Mal gemerkt, die Sätze werden zurückgesetzt, und die App merkt sich, dass du heute trainiert hast (für die Tagesempfehlung oben). Gleichzeitig landet die Einheit im Tagebuch.</p>
+      <p class="dim">Davor fragt die App kurz, wie sich das Training angefühlt hat (😊/😐/😖) — komplett optional, "Überspringen" schließt genauso ab. Das Rating erscheint danach neben dem Tagebuch-Eintrag im Verlauf.</p>
     </div>
 
     <div class="card" id="tagebuch">
@@ -234,7 +235,7 @@
       <p>Der "📔 Tagebuch"-Button im Header öffnet dein Trainings-Log, mit drei Reitern:</p>
       <ul>
         <li><b>📅 Verlauf</b> — alle abgeschlossenen Einheiten, neueste zuerst: Datum, Tag, Gym (falls gewählt) und was du je Übung gemacht hast. Aufwärmsätze werden dabei kursiv angezeigt.</li>
-        <li><b>🏆 Rekorde</b> — pro Übung dein bisher schwerstes Gewicht (mit Datum) sowie ein kleiner Verlaufs-Chart der letzten Einheiten.</li>
+        <li><b>🏆 Rekorde</b> — pro Übung dein geschätztes Einer-Wiederholungs-Maximum (1RM, nach der gängigen Epley-Formel aus Gewicht × Wiederholungen berechnet), mit dem Satz, aus dem es stammt, und einem kleinen Verlaufs-Chart der letzten Einheiten. So zählt z.B. ein leichteres Gewicht für viele Wiederholungen auch dann als neuer Rekord, wenn es unter deinem bisher schwersten Einzelgewicht liegt — die geschätzte Kraftleistung dahinter ist trotzdem höher.</li>
         <li><b>📊 Wochenvolumen</b> — wie viele Sätze du diese Woche (Montag–Sonntag) pro Muskelgruppe trainiert hast, verglichen mit dem Richtwert von 12–20 Sätzen/Woche für trainierte Sportler (heller Bereich im Balken). So siehst du auf einen Blick, ob eine Muskelgruppe zu kurz kommt oder schon gut abgedeckt ist.</li>
       </ul>
       <p class="dim">Ein Eintrag landet nur im Tagebuch, wenn du beim Abschließen tatsächlich etwas eingetragen hast — komplett leere Einheiten werden nicht geloggt.</p>

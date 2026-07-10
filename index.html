@@ -323,6 +323,13 @@
   .modal-btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--chalk-dim); }
   .modal-btn-confirm { background: var(--olive); border: 1px solid var(--olive); color: #fff; }
   .modal-btn-danger { background: var(--rust); border: 1px solid var(--rust); color: #fff; }
+  .modal-choice-options { display: flex; gap: 8px; margin-bottom: 14px; }
+  .modal-choice-btn {
+    flex: 1; padding: 14px 8px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; min-height: 44px;
+  }
+  .modal-choice-btn:active { border-color: var(--olive); }
 
   .gym-icon-btn {
     background: none; border: none; cursor: pointer; color: inherit;
@@ -348,10 +355,11 @@
   }
   .focusmode-progress { font-size: 12px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; }
   .focusmode-content { padding: 16px; }
-  .focusmode-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .focusmode-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .focusmode-title {
     font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 600; letter-spacing: 0.3px;
-    text-transform: uppercase; margin: 0; line-height: 1.15;
+    text-transform: uppercase; margin: 0; line-height: 1.15; min-width: 0; max-width: 100%;
+    overflow-wrap: break-word;
   }
   .focusmode-target { font-size: 13px; color: var(--chalk-dim); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
   .focusmode-next {
@@ -397,6 +405,7 @@
     font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--rust);
   }
   .journal-record-date { color: var(--chalk-dim); }
+  .journal-record-detail { font-size: 11px; color: var(--chalk-dim); margin-top: 2px; }
   .sparkline { display: block; width: 100%; height: 48px; margin-top: 10px; }
   .sparkline-empty { margin-top: 10px; font-size: 12px; color: var(--chalk-dim); }
 
@@ -962,7 +971,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.30.0";
+const APP_VERSION = "1.33.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1060,6 +1069,22 @@ function addJournalEntry(entry) {
   state.journal.push(entry);
 }
 
+// Geschaetztes Einer-Wiederholungs-Maximum nach Epley (seit v1.31.0, ersetzt reines
+// Maximalgewicht als PR-Definition) - bewusst Epley statt Brzycki gewaehlt, da Brzycki bei
+// Wiederholungszahlen >= 37 negativ/undefiniert wird (in dieser App realistisch bei sehr
+// hochrepetitiven Isolationsuebungen), waehrend Epley fuer beliebige Wiederholungszahlen
+// stabil bleibt. Nicht-numerische reps (z.B. "12/Seite") liefern das reine Gewicht zurueck -
+// graceful, kein Absturz, gleiche Konvention wie parseRepRange().
+function estimateOneRepMax(weight, reps) {
+  const repsNum = parseFloat(reps);
+  if (!Number.isFinite(repsNum) || repsNum <= 0) return weight;
+  return weight * (1 + repsNum / 30);
+}
+
+// PR-Definition seit v1.31.0: hoechstes geschaetztes 1RM statt reines Maximalgewicht - ein
+// leichteres Gewicht fuer mehr Wiederholungen kann jetzt einen schwereren Satz mit weniger
+// Wiederholungen als "staerkere" Leistung uebertreffen. Weiterhin abgeleitet, nicht gespeichert
+// (siehe CLAUDE.md) - die Definition konnte deshalb ohne Migration geaendert werden.
 function computePersonalRecords() {
   const records = {};
   state.journal.forEach(entry => {
@@ -1068,9 +1093,10 @@ function computePersonalRecords() {
         if (s.isWarmup) return;
         const weight = parseFloat(s.weight);
         if (!Number.isFinite(weight)) return;
+        const e1rm = estimateOneRepMax(weight, s.reps);
         const current = records[ex.exId];
-        if (!current || weight > current.weight) {
-          records[ex.exId] = { exId: ex.exId, name: ex.name, weight, reps: s.reps, date: entry.date, timestamp: entry.timestamp };
+        if (!current || e1rm > current.e1rm) {
+          records[ex.exId] = { exId: ex.exId, name: ex.name, weight, reps: s.reps, date: entry.date, timestamp: entry.timestamp, e1rm };
         }
       });
     });
@@ -1396,6 +1422,11 @@ let focusModeActive = false;
 let focusQueue = [];
 let focusPos = 0;
 let focusInfoOpen = false;
+// Seit v1.32.0: KI-Uebungstausch ist jetzt auch im Trainingsmodus verfuegbar (vorher bewusst
+// nur Kartenansicht). Eigene, unabhaengige Variable statt Wiederverwendung von swapOpenKey -
+// gleiche Konvention wie focusInfoOpen (jede Ansicht hat ihr eigenes ephemeres Toggle-Flag statt
+// geteilter Keys ueber Ansichten hinweg). Gegenseitig exklusiv mit focusInfoOpen.
+let focusSwapOpen = false;
 
 // Tagebuch-Ansicht: ebenfalls ephemer, gleiche Konvention wie der Trainingsmodus oben.
 let journalViewActive = false;
@@ -1476,7 +1507,7 @@ let saveTimer = null;
 // gefundene #toast-Bug fuer die Begruendung dieses Musters). Bewusst kein Enter/Escape-Tastatur-
 // Handling (haette einen vierten globalen Event-Listener-Typ gebraucht, zusaetzlich zu
 // click/input/change - fuer zwei Buttons nicht verhaeltnismaessig).
-let modal = null; // { kind: "prompt" | "confirm", title, message, defaultValue, confirmLabel, danger, onConfirm }
+let modal = null; // { kind: "prompt" | "confirm" | "choice", title, message, defaultValue, confirmLabel, danger, options, onConfirm }
 
 // Google-Drive-Backup (seit v1.28.0): komplett unabhaengig vom Firebase-Login (kein Bezug zu
 // currentUser/window.FretzeCloud) - eigener OAuth-Fluss nur fuer diese eine Funktion. Token ist
@@ -1495,6 +1526,15 @@ function openConfirmModal({ title, message = "", confirmLabel = "Löschen", onCo
   renderModal();
 }
 
+// Seit v1.33.0 (Wohlbefinden-Tracking): Auswahl aus mehreren Optionen statt Text/Bestaetigung.
+// "Ueberspringen" ruft onConfirm(null) auf statt die Aktion abzubrechen wie modal-cancel bei
+// prompt/confirm - der Skip-Fall soll die dahinterliegende Aktion (z.B. Training abschliessen)
+// trotzdem ausfuehren, nur ohne gewaehlten Wert.
+function openChoiceModal({ title, message = "", options, onConfirm }) {
+  modal = { kind: "choice", title, message, options, onConfirm };
+  renderModal();
+}
+
 function closeModal() {
   modal = null;
   renderModal();
@@ -1504,6 +1544,21 @@ function renderModal() {
   const el = document.getElementById("modal-overlay");
   if (!el) return;
   if (!modal) { el.innerHTML = ""; return; }
+  if (modal.kind === "choice") {
+    el.innerHTML = `
+      <div class="modal-box">
+        <h3 class="modal-title">${escapeAttr(modal.title)}</h3>
+        ${modal.message ? `<p class="modal-message">${escapeAttr(modal.message)}</p>` : ""}
+        <div class="modal-choice-options">
+          ${modal.options.map(o => `<button class="modal-choice-btn" data-role="modal-choice-select" data-value="${escapeAttr(o.value)}">${escapeAttr(o.label)}</button>`).join("")}
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" data-role="modal-skip">Überspringen</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
   el.innerHTML = `
     <div class="modal-box">
       <h3 class="modal-title">${escapeAttr(modal.title)}</h3>
@@ -1966,6 +2021,23 @@ function exerciseInfoPanelHTML(ex) {
   `;
 }
 
+// Geteilt zwischen Kartenansicht und Trainingsmodus (seit v1.32.0, gleiches Extraktions-Prinzip
+// wie setsRowsHTML/exerciseInfoPanelHTML/historyLineHTML) - vorher nur in der Kartenansicht
+// vorhanden, KI-Uebungstausch war im Trainingsmodus v1 bewusst nicht verfuegbar.
+function swapPanelHTML(day, ex, swapKey) {
+  return `
+    <div class="swap-panel">
+      <div class="swap-panel-label">Alternative wählen</div>
+      <div class="swap-options">
+        ${ex.alts.length === 0 ? '<span style="font-size:12px;color:var(--chalk-dim);">Keine Standard-Alternativen hinterlegt.</span>' : ""}
+        ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
+        ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
+      </div>
+      ${aiSuggestHTML(day, ex, swapKey)}
+    </div>
+  `;
+}
+
 // Baender-Kombinations-Rechner (seit v1.29.0): das SmartWorkout-Elite-Set hat genau diese 7
 // Baender (2x 25kg, 2x 20kg, je 1x 15/10/5kg). Findet per Brute-Force (nur 2^7=128 Teilmengen,
 // trivial schnell) die Kombination, deren Summe dem Zielgewicht am naechsten kommt - bei
@@ -2032,6 +2104,7 @@ function renderFocusMode() {
   const note = state.notes[swapKey] || "";
   const info = exerciseLibrary[ex.libraryId];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
+  const swapPanelContent = focusSwapOpen ? swapPanelHTML(day, ex, swapKey) : "";
 
   const historyHTML = historyLineHTML(ex.id, hist);
 
@@ -2055,7 +2128,7 @@ function renderFocusMode() {
     <div class="focusmode-content">
       <div class="card">
         <div class="card-top">
-          <div style="flex:1;">
+          <div style="flex:1; min-width:0;">
             <div class="focusmode-title-row">
               <h2 class="focusmode-title">${displayName}</h2>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
@@ -2064,9 +2137,13 @@ function renderFocusMode() {
             <div class="focusmode-target">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
           </div>
-          ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
+            <button class="swap-btn" title="Übung tauschen" data-role="focus-swap-toggle">⟲</button>
+          </div>
         </div>
         ${infoPanelHTML}
+        ${swapPanelContent}
         ${setsRowsHTML(day, ex, sets)}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
@@ -2085,6 +2162,9 @@ function renderFocusMode() {
   `;
 }
 
+// Seit v1.31.0: plottet das geschaetzte 1RM statt des rohen Satzgewichts, damit ein leichterer
+// Satz mit mehr Wiederholungen nicht faelschlich wie ein Rueckschritt aussieht. sparklineSVG()
+// liest weiterhin nur p.weight - Feldname bewusst unveraendert gelassen, keine Aenderung dort noetig.
 function journalPointsFor(exId) {
   const points = [];
   state.journal.forEach(entry => {
@@ -2094,7 +2174,7 @@ function journalPointsFor(exId) {
         if (s.isWarmup) return;
         const weight = parseFloat(s.weight);
         if (!Number.isFinite(weight)) return;
-        points.push({ weight, timestamp: entry.timestamp });
+        points.push({ weight: estimateOneRepMax(weight, s.reps), timestamp: entry.timestamp });
       });
     });
   });
@@ -2115,11 +2195,12 @@ function journalHistoryHTML() {
       }).join(", ");
       return `<div class="journal-ex-line"><b>${escapeAttr(ex.name)}:</b> ${setsText}</div>`;
     }).join("");
+    const wellbeingEmoji = { good: "😊", ok: "😐", bad: "😖" }[entry.wellbeing] || "";
     return `
       <div class="card">
         <div class="journal-entry-header">
           <span class="journal-entry-date">${escapeAttr(entry.date)}</span>
-          <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}</span>
+          <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}${wellbeingEmoji ? ` ${wellbeingEmoji}` : ""}</span>
         </div>
         ${exercisesHTML}
       </div>
@@ -2135,12 +2216,14 @@ function journalRecordsHTML() {
   }
   return exIds.map(exId => {
     const rec = records[exId];
+    const e1rmRounded = Math.round(rec.e1rm * 10) / 10;
     return `
       <div class="card">
         <div class="journal-record-header">
           <h3>${escapeAttr(rec.name)}</h3>
-          <span class="journal-record-pr">${escapeAttr(String(rec.weight))}kg × ${escapeAttr(rec.reps || "–")} <span class="journal-record-date">(${escapeAttr(rec.date)})</span></span>
+          <span class="journal-record-pr">≈${escapeAttr(String(e1rmRounded))}kg 1RM <span class="journal-record-date">(${escapeAttr(rec.date)})</span></span>
         </div>
+        <div class="journal-record-detail">aus ${escapeAttr(String(rec.weight))}kg × ${escapeAttr(rec.reps || "–")}</div>
         ${sparklineSVG(journalPointsFor(exId))}
       </div>
     `;
@@ -2543,17 +2626,7 @@ function render() {
 
     const historyHTML = historyLineHTML(ex.id, hist);
 
-    const swapPanelHTML = swapOpenKey === swapKey ? `
-      <div class="swap-panel">
-        <div class="swap-panel-label">Alternative wählen</div>
-        <div class="swap-options">
-          ${ex.alts.length === 0 ? '<span style="font-size:12px;color:var(--chalk-dim);">Keine Standard-Alternativen hinterlegt.</span>' : ""}
-          ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
-          ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
-        </div>
-        ${aiSuggestHTML(day, ex, swapKey)}
-      </div>
-    ` : "";
+    const swapPanelContent = swapOpenKey === swapKey ? swapPanelHTML(day, ex, swapKey) : "";
 
     const info = exerciseLibrary[ex.libraryId];
     const infoPanelHTML = info && infoOpenKey === swapKey ? exerciseInfoPanelHTML(ex) : "";
@@ -2576,7 +2649,7 @@ function render() {
           </div>
         </div>
         ${infoPanelHTML}
-        ${swapPanelHTML}
+        ${swapPanelContent}
         ${setsRowsHTML(day, ex, sets)}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
@@ -2629,7 +2702,7 @@ function render() {
   `);
 }
 
-function finishSession(dayId) {
+function finishSession(dayId, wellbeing) {
   const daySets = state.sessions[dayId] || {};
   const today = new Date().toLocaleDateString("de-DE");
   const journalExercises = [];
@@ -2676,6 +2749,7 @@ function finishSession(dayId) {
       dayLabel: dayMeta ? dayMeta.label : dayId,
       gymId: state.currentGymId || null,
       exercises: journalExercises,
+      wellbeing: wellbeing || null,
     });
   }
   state.lastCompletedDay = dayId;
@@ -2882,6 +2956,23 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  const modalSkip = e.target.closest('[data-role="modal-skip"]');
+  if (modalSkip) {
+    const current = modal;
+    closeModal();
+    if (current && current.onConfirm) current.onConfirm(null);
+    return;
+  }
+
+  const modalChoiceSelect = e.target.closest('[data-role="modal-choice-select"]');
+  if (modalChoiceSelect) {
+    const current = modal;
+    const value = modalChoiceSelect.dataset.value;
+    closeModal();
+    if (current && current.onConfirm) current.onConfirm(value);
+    return;
+  }
+
   const modalConfirm = e.target.closest('[data-role="modal-confirm"]');
   if (modalConfirm) {
     const current = modal;
@@ -2897,6 +2988,7 @@ document.addEventListener("click", (e) => {
     focusQueue = EXERCISES[day].map(ex => ex.id);
     focusPos = 0;
     focusInfoOpen = false;
+    focusSwapOpen = false;
     focusModeActive = true;
     render();
     return;
@@ -2913,6 +3005,7 @@ document.addEventListener("click", (e) => {
   if (focusNext) {
     focusPos = Math.min(focusPos + 1, focusQueue.length - 1);
     focusInfoOpen = false;
+    focusSwapOpen = false;
     render();
     return;
   }
@@ -2921,6 +3014,7 @@ document.addEventListener("click", (e) => {
   if (focusPrev) {
     focusPos = Math.max(focusPos - 1, 0);
     focusInfoOpen = false;
+    focusSwapOpen = false;
     render();
     return;
   }
@@ -2929,6 +3023,7 @@ document.addEventListener("click", (e) => {
   if (focusSkip) {
     skipCurrent();
     focusInfoOpen = false;
+    focusSwapOpen = false;
     render();
     return;
   }
@@ -2936,6 +3031,15 @@ document.addEventListener("click", (e) => {
   const focusInfoToggle = e.target.closest('[data-role="focus-info-toggle"]');
   if (focusInfoToggle) {
     focusInfoOpen = !focusInfoOpen;
+    if (focusInfoOpen) focusSwapOpen = false;
+    render();
+    return;
+  }
+
+  const focusSwapToggle = e.target.closest('[data-role="focus-swap-toggle"]');
+  if (focusSwapToggle) {
+    focusSwapOpen = !focusSwapOpen;
+    if (focusSwapOpen) focusInfoOpen = false;
     render();
     return;
   }
@@ -3356,6 +3460,7 @@ document.addEventListener("click", (e) => {
     const key = `${swapSelect.dataset.day}:${swapSelect.dataset.exid}`;
     state.swaps[key] = swapSelect.dataset.alt;
     swapOpenKey = null;
+    focusSwapOpen = false;
     persist();
     render();
     return;
@@ -3366,6 +3471,7 @@ document.addEventListener("click", (e) => {
     const key = `${swapClear.dataset.day}:${swapClear.dataset.exid}`;
     delete state.swaps[key];
     swapOpenKey = null;
+    focusSwapOpen = false;
     persist();
     render();
     return;
@@ -3448,8 +3554,18 @@ document.addEventListener("click", (e) => {
 
   const finishBtn = e.target.closest('[data-role="finish"]');
   if (finishBtn) {
+    const dayId = finishBtn.dataset.day;
     focusModeActive = false;
-    finishSession(finishBtn.dataset.day);
+    openChoiceModal({
+      title: "Wie war das Training?",
+      message: "Optional - hilft dir später im Tagebuch, dein Wohlbefinden über die Zeit zu verfolgen.",
+      options: [
+        { value: "good", label: "😊" },
+        { value: "ok", label: "😐" },
+        { value: "bad", label: "😖" },
+      ],
+      onConfirm: (wellbeing) => finishSession(dayId, wellbeing),
+    });
     return;
   }
 });
