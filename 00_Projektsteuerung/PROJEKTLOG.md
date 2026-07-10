@@ -2,6 +2,18 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.27.0 — 2026-07-10 (Teil 54): Native Dialoge ersetzt (Phase 1 der UI/UX-Liste)
+
+- Umsetzung von Phase 1 der gemeinsam mit dem Nutzer erstellten Reihenfolge (siehe `MEMORY.md`): native `prompt()`/`confirm()`/`alert()`-Dialoge durch eine App-eigene Modal-Komponente ersetzt.
+- **Vorab geklärt**: Bestätigungsdialoge vor dem Löschen existierten bereits (`confirm()` bei Plan-Löschen, Gym-Löschen, Import-Überschreiben) — kein Datenverlust-Risiko, wie in `MEMORY.md` befürchtet, nur hässliche native Optik.
+- **Neue Modal-Komponente**: `openPromptModal()`/`openConfirmModal()`/`closeModal()` + `renderModal()`, ephemerer `modal`-State (nie persistiert, gleiche Konvention wie `restTimer`). Rendert in ein eigenes `#modal-overlay`-Element außerhalb von `#app` (wie `#toast`/`#rest-timer-bar`), damit es aus jeder Ansicht sichtbar ist. Klick auf den abgedunkelten Hintergrund oder "Abbrechen" schließt das Modal; bewusst kein Enter/Escape-Tastaturhandling (hätte einen vierten globalen Event-Listener-Typ gebraucht, für zwei Buttons nicht verhältnismäßig).
+- **Farbliche Entschärfung des `--rust`-Doppelbelegungs-Problems** (zumindest für diese neue Komponente): "Speichern"/positive Bestätigung nutzt `--olive` (Erfolg/Positiv-Semantik, wie schon beim Gewichtsvorschlag-"Übernehmen"-Button), "Löschen"/destruktive Aktion nutzt `--rust`, "Abbrechen" bleibt neutral (nur Rahmen, gedimmter Text) — innerhalb eines Dialogs ist damit eindeutig, welcher Button was tut. Die breitere App-weite Doppelbelegung von `--rust` (z.B. `home-plan-delete`, `swap-clear-btn`, `rest-timer-skip`) wurde bewusst **nicht** global neu eingefärbt — das wäre ein größerer Redesign-Schritt, hier nur für die neue Komponente gelöst.
+- **5 Aufrufstellen umgestellt**: Gym anlegen/umbenennen (`prompt()` → `openPromptModal`), Gym löschen/Plan löschen/Import-Überschreiben (`confirm()` → `openConfirmModal`), Import-Fehlermeldung (`alert()` → `showToast()`, gleiches Muster wie überall sonst in der App).
+- **Zusätzlich gefunden und mitbehoben**: die ✎/✕-Buttons in der Gym-Verwaltung hatten inline `padding:0` — noch kleiner als der `.done-btn` vor v1.26.0 und beim Tap-Target-Pass übersehen (keine gemeinsame CSS-Klasse, nur Inline-Styles). Neue Klasse `.gym-icon-btn` (`min-width`/`min-height: 32px`), `.gym-icon-btn.danger` für den Löschen-Button.
+- Verifiziert per Playwright (lokaler Server, `dialog`-Event-Listener bestätigt: **kein natives Browser-Dialogfenster** feuert mehr bei Gym anlegen/umbenennen/löschen): Modal öffnet/schließt korrekt, Umbenennen-Modal ist korrekt vorbefüllt, Abbrechen verwirft die Aktion (Gym bleibt erhalten), Löschen-Bestätigung entfernt das Gym danach tatsächlich. Screenshots in Sepia und Dark-Theme geprüft.
+- Kein howto.html-Update nötig (das beschriebene Nutzer-Verhalten — Name eingeben, Löschen bestätigen — ändert sich nicht, nur die visuelle Umsetzung).
+- **Nächster Schritt**: Phase 2 der UI/UX-Reihenfolge (Cloud-Sync-Anzeige, Bänder-Kombinations-Rechner).
+
 ## 2026-07-10 (Teil 53): v1.26.0 live verifiziert (Tap-Targets)
 
 - Nutzer hat auf dem echten Gerät (Fitness-First-Gym-Kontext, Screenshots geteilt) die Kartenansicht für "Pull A" getestet: 🔥/↑-Toggles und Done-Häkchen antippen fühlt sich spürbar besser/sicherer an als vorher. Damit ist der von Claude+Gemini priorisierte Tap-Target-Punkt aus v1.26.0 bestätigt.

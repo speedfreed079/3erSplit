@@ -292,6 +292,39 @@
   }
   .toast.show { display: block; }
 
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    align-items: center; justify-content: center; z-index: 200; padding: 20px;
+    display: none;
+  }
+  .modal-overlay:not(:empty) { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; max-width: 360px; width: 100%;
+  }
+  .modal-title { font-family: 'Oswald', sans-serif; font-size: 18px; margin: 0 0 8px; color: var(--chalk); }
+  .modal-message { font-size: 13px; color: var(--chalk-dim); margin: 0 0 14px; line-height: 1.4; }
+  .modal-input {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; color: var(--chalk);
+    padding: 10px; width: 100%; margin-bottom: 14px;
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-btn {
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.3px;
+    padding: 10px 16px; border-radius: 8px; cursor: pointer; min-height: 44px;
+  }
+  .modal-btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--chalk-dim); }
+  .modal-btn-confirm { background: var(--olive); border: 1px solid var(--olive); color: #fff; }
+  .modal-btn-danger { background: var(--rust); border: 1px solid var(--rust); color: #fff; }
+
+  .gym-icon-btn {
+    background: none; border: none; cursor: pointer; color: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px; min-height: 32px; border-radius: 6px;
+  }
+  .gym-icon-btn.danger { color: var(--rust); }
+
   .focusmode-enter-btn {
     width: 100%; margin: 0 0 16px; padding: 12px; border-radius: 9px; border: 1px solid var(--rust);
     background: transparent; color: var(--rust); font-family: 'Oswald', sans-serif; font-size: 14px;
@@ -510,6 +543,7 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modal-overlay" data-role="modal-overlay"></div>
 
 <script>
 // ---------- EXERCISE DATABASE ----------
@@ -919,7 +953,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.26.0";
+const APP_VERSION = "1.27.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1387,6 +1421,53 @@ let adminViewActive = false;
 
 let saveTimer = null;
 
+// Modal (seit v1.27.0): ersetzt die nativen prompt()/confirm()-Dialoge (Gym anlegen/umbenennen/
+// loeschen, Plan loeschen, Import-Ueberschreiben) durch eine im App-Design gehaltene Komponente.
+// Bewusst ephemer, nie in state/localStorage - gleiche Konvention wie restTimer/swapOpenKey.
+// onConfirm ist eine Funktionsreferenz (nie serialisiert, daher unproblematisch). Rendert
+// ausserhalb von #app (eigenes #modal-overlay im statischen Shell, wie #toast/#rest-timer-bar) -
+// muss von jeder Ansicht aus sichtbar sein, nicht nur der Kartenansicht (siehe der in v1.19.0
+// gefundene #toast-Bug fuer die Begruendung dieses Musters). Bewusst kein Enter/Escape-Tastatur-
+// Handling (haette einen vierten globalen Event-Listener-Typ gebraucht, zusaetzlich zu
+// click/input/change - fuer zwei Buttons nicht verhaeltnismaessig).
+let modal = null; // { kind: "prompt" | "confirm", title, message, defaultValue, confirmLabel, danger, onConfirm }
+
+function openPromptModal({ title, message = "", defaultValue = "", confirmLabel = "Speichern", onConfirm }) {
+  modal = { kind: "prompt", title, message, defaultValue, confirmLabel, danger: false, onConfirm };
+  renderModal();
+}
+
+function openConfirmModal({ title, message = "", confirmLabel = "Löschen", onConfirm }) {
+  modal = { kind: "confirm", title, message, confirmLabel, danger: true, onConfirm };
+  renderModal();
+}
+
+function closeModal() {
+  modal = null;
+  renderModal();
+}
+
+function renderModal() {
+  const el = document.getElementById("modal-overlay");
+  if (!el) return;
+  if (!modal) { el.innerHTML = ""; return; }
+  el.innerHTML = `
+    <div class="modal-box">
+      <h3 class="modal-title">${escapeAttr(modal.title)}</h3>
+      ${modal.message ? `<p class="modal-message">${escapeAttr(modal.message)}</p>` : ""}
+      ${modal.kind === "prompt" ? `<input class="modal-input" id="modal-input-field" type="text" value="${escapeAttr(modal.defaultValue)}" />` : ""}
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" data-role="modal-cancel">Abbrechen</button>
+        <button class="modal-btn ${modal.danger ? "modal-btn-danger" : "modal-btn-confirm"}" data-role="modal-confirm">${escapeAttr(modal.confirmLabel)}</button>
+      </div>
+    </div>
+  `;
+  if (modal.kind === "prompt") {
+    const input = document.getElementById("modal-input-field");
+    if (input) { input.focus(); input.select(); }
+  }
+}
+
 // ---------- REST TIMER ----------
 const restTimer = { endsAt: null, duration: 90, intervalId: null };
 
@@ -1694,8 +1775,8 @@ function gymRowHTML() {
         ${state.gyms.map(g => `
           <span class="swap-opt-btn" style="display:inline-flex; align-items:center; gap:6px;">
             ${escapeAttr(g.name)}
-            <button data-role="gym-rename" data-gymid="${escapeAttr(g.id)}" title="Umbenennen" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;">✎</button>
-            <button data-role="gym-delete" data-gymid="${escapeAttr(g.id)}" title="Löschen" style="background:none;border:none;color:var(--rust);cursor:pointer;padding:0;">✕</button>
+            <button class="gym-icon-btn" data-role="gym-rename" data-gymid="${escapeAttr(g.id)}" title="Umbenennen">✎</button>
+            <button class="gym-icon-btn danger" data-role="gym-delete" data-gymid="${escapeAttr(g.id)}" title="Löschen">✕</button>
           </span>
         `).join("")}
         <button class="swap-opt-btn" data-role="gym-add">+ Neues Gym</button>
@@ -2511,42 +2592,47 @@ function importData(file) {
       const parsed = JSON.parse(reader.result);
       const incoming = parsed && parsed.state ? parsed.state : parsed;
       if (!incoming || typeof incoming !== "object") throw new Error("Ungültiges Format");
-      const ok = confirm("Backup importieren? Deine aktuell gespeicherten Trainingsdaten in diesem Browser werden überschrieben.");
-      if (!ok) return;
-      state = {
-        currentDay: incoming.currentDay || "pushA",
-        sessions: incoming.sessions || {},
-        history: incoming.history || {},
-        swaps: incoming.swaps || {},
-        notes: incoming.notes || {},
-        lastWeights: incoming.lastWeights || {},
-        lastCompletedDay: incoming.lastCompletedDay || null,
-        lastCompletedDate: incoming.lastCompletedDate || null,
-        theme: incoming.theme || "sepia",
-        currentPlan: incoming.currentPlan || "ppl",
-        textSize: incoming.textSize || "normal",
-        gyms: incoming.gyms || [],
-        currentGymId: incoming.currentGymId || null,
-        gymLastWeights: incoming.gymLastWeights || {},
-        gymHistory: incoming.gymHistory || {},
-        journal: incoming.journal || [],
-        customPlans: incoming.customPlans || [],
-        planDraft: incoming.planDraft || null,
-        weightSuggestions: incoming.weightSuggestions || {},
-        gymWeightSuggestions: incoming.gymWeightSuggestions || {},
-        updatedAt: incoming.updatedAt || null,
-      };
-      applyPlan(state.currentPlan);
-      if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
-      swapOpenKey = null;
-      infoOpenKey = null;
-      warmupOpen = false;
-      stretchOpen = false;
-      persist();
-      render();
-      showToast("Backup importiert.");
+      openConfirmModal({
+        title: "Backup importieren",
+        message: "Deine aktuell gespeicherten Trainingsdaten in diesem Browser werden überschrieben.",
+        confirmLabel: "Importieren",
+        onConfirm: () => {
+          state = {
+            currentDay: incoming.currentDay || "pushA",
+            sessions: incoming.sessions || {},
+            history: incoming.history || {},
+            swaps: incoming.swaps || {},
+            notes: incoming.notes || {},
+            lastWeights: incoming.lastWeights || {},
+            lastCompletedDay: incoming.lastCompletedDay || null,
+            lastCompletedDate: incoming.lastCompletedDate || null,
+            theme: incoming.theme || "sepia",
+            currentPlan: incoming.currentPlan || "ppl",
+            textSize: incoming.textSize || "normal",
+            gyms: incoming.gyms || [],
+            currentGymId: incoming.currentGymId || null,
+            gymLastWeights: incoming.gymLastWeights || {},
+            gymHistory: incoming.gymHistory || {},
+            journal: incoming.journal || [],
+            customPlans: incoming.customPlans || [],
+            planDraft: incoming.planDraft || null,
+            weightSuggestions: incoming.weightSuggestions || {},
+            gymWeightSuggestions: incoming.gymWeightSuggestions || {},
+            updatedAt: incoming.updatedAt || null,
+          };
+          applyPlan(state.currentPlan);
+          if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
+          swapOpenKey = null;
+          infoOpenKey = null;
+          warmupOpen = false;
+          stretchOpen = false;
+          persist();
+          render();
+          showToast("Backup importiert.");
+        },
+      });
     } catch (e) {
-      alert("Die Datei konnte nicht gelesen werden. Ist es ein gültiges Eisernes-Log-Backup (.json)?");
+      showToast("Die Datei konnte nicht gelesen werden. Ist es ein gültiges Fretze-Backup (.json)?");
     }
   };
   reader.readAsText(file);
@@ -2581,6 +2667,27 @@ function showToast(msg) {
 
 // ---------- EVENT DELEGATION ----------
 document.addEventListener("click", (e) => {
+  const modalOverlayClick = e.target.closest('[data-role="modal-overlay"]');
+  if (modalOverlayClick && e.target === modalOverlayClick) {
+    closeModal();
+    return;
+  }
+
+  const modalCancel = e.target.closest('[data-role="modal-cancel"]');
+  if (modalCancel) {
+    closeModal();
+    return;
+  }
+
+  const modalConfirm = e.target.closest('[data-role="modal-confirm"]');
+  if (modalConfirm) {
+    const current = modal;
+    const value = current && current.kind === "prompt" ? (document.getElementById("modal-input-field")?.value ?? "") : undefined;
+    closeModal();
+    if (current && current.onConfirm) current.onConfirm(value);
+    return;
+  }
+
   const focusEnter = e.target.closest('[data-role="focus-enter"]');
   if (focusEnter) {
     const day = focusEnter.dataset.day;
@@ -2859,8 +2966,11 @@ document.addEventListener("click", (e) => {
   const homeDeletePlan = e.target.closest('[data-role="home-delete-plan"]');
   if (homeDeletePlan) {
     const plan = state.customPlans.find(p => p.id === homeDeletePlan.dataset.planid);
-    const ok = confirm(`Plan "${plan ? plan.label : ""}" wirklich löschen?`);
-    if (ok) deleteCustomPlan(homeDeletePlan.dataset.planid);
+    openConfirmModal({
+      title: "Plan löschen",
+      message: `Plan "${plan ? plan.label : ""}" wirklich löschen?`,
+      onConfirm: () => deleteCustomPlan(homeDeletePlan.dataset.planid),
+    });
     return;
   }
 
@@ -2997,24 +3107,34 @@ document.addEventListener("click", (e) => {
 
   const gymAdd = e.target.closest('[data-role="gym-add"]');
   if (gymAdd) {
-    const name = prompt("Name des neuen Gyms (z.B. \"MCFit Köln\"):");
-    if (name) addGym(name);
+    openPromptModal({
+      title: "Neues Gym",
+      message: "Name des neuen Gyms (z.B. \"MCFit Köln\"):",
+      onConfirm: (name) => { if (name && name.trim()) addGym(name.trim()); },
+    });
     return;
   }
 
   const gymRename = e.target.closest('[data-role="gym-rename"]');
   if (gymRename) {
     const gym = state.gyms.find(g => g.id === gymRename.dataset.gymid);
-    const name = prompt("Neuer Name:", gym ? gym.name : "");
-    if (name) renameGym(gymRename.dataset.gymid, name);
+    openPromptModal({
+      title: "Gym umbenennen",
+      message: "Neuer Name:",
+      defaultValue: gym ? gym.name : "",
+      onConfirm: (name) => { if (name && name.trim()) renameGym(gymRename.dataset.gymid, name.trim()); },
+    });
     return;
   }
 
   const gymDelete = e.target.closest('[data-role="gym-delete"]');
   if (gymDelete) {
     const gym = state.gyms.find(g => g.id === gymDelete.dataset.gymid);
-    const ok = confirm(`Gym "${gym ? gym.name : ""}" wirklich aus der Liste löschen?`);
-    if (ok) deleteGym(gymDelete.dataset.gymid);
+    openConfirmModal({
+      title: "Gym löschen",
+      message: `Gym "${gym ? gym.name : ""}" wirklich aus der Liste löschen?`,
+      onConfirm: () => deleteGym(gymDelete.dataset.gymid),
+    });
     return;
   }
 
