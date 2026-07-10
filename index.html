@@ -746,10 +746,9 @@ const CALI_EXERCISES = {
 // Progressionsstufen. compound:true nur fuer die kanonischen Grunduebungen in ihrer Bar-Variante
 // (Bankdruecken, Rudern mit der Bar, Schulterdruecken, Kniebeugen, Rumaenisches Kreuzheben,
 // Kreuzheben) - unilaterale/Tueranker-Varianten und Latzug/Isolationsuebungen bleiben
-// unflagged, gleiche Konvention wie in den bestehenden Gym-Plaenen. Noch kein libraryId: die
-// Recherche markiert bei jeder Uebung einen relevanten Technik-Unterschied zur Freihantel-
-// Version (andere Widerstandskurve), braucht also einen eigenen, spaeteren Recherche-Durchgang
-// fuer die Uebungsdatenbank (gleiche Luecke wie bei Calisthenics vor der eigenen Recherche).
+// unflagged, gleiche Konvention wie in den bestehenden Gym-Plaenen. Seit v1.25.0 haben alle
+// 22 Uebungen ein libraryId (eigener Recherche-Durchgang, da die Freihantel-Erklaerungen wegen
+// der abweichenden, akkommodierenden Widerstandskurve technisch nicht 1:1 passen).
 const BAND_DAYS = [
   { id: "bandUpperA", label: "Oberkörper A", sub: "Brust, Rücken, Schultern, Arme" },
   { id: "bandLowerA", label: "Unterkörper A", sub: "Kniedominant, Hamstrings, Core", type: "legs" },
@@ -759,34 +758,34 @@ const BAND_DAYS = [
 
 const BAND_EXERCISES = {
   bandUpperA: [
-    { id: "bdua1", name: "Bankdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "6-8", alts: [], compound: true },
-    { id: "bdua2", name: "Vorgebeugtes Rudern mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
-    { id: "bdua3", name: "Schulterdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
-    { id: "bdua4", name: "Latzug kniend mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
-    { id: "bdua5", name: "Seitheben mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdua6", name: "Trizepsdrücken über Kopf mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdua1", name: "Bankdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "6-8", alts: [], compound: true, libraryId: "bankdruecken-smartworkout-bar-baender" },
+    { id: "bdua2", name: "Vorgebeugtes Rudern mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true, libraryId: "vorgebeugtes-rudern-smartworkout-bar-baender" },
+    { id: "bdua3", name: "Schulterdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true, libraryId: "schulterdruecken-smartworkout-bar-baender" },
+    { id: "bdua4", name: "Latzug kniend mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "latzug-kniend-tueranker-baender" },
+    { id: "bdua5", name: "Seitheben mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "seitheben-griffe-baender" },
+    { id: "bdua6", name: "Trizepsdrücken über Kopf mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "trizepsdruecken-ueberkopf-tueranker-baender" },
   ],
   bandLowerA: [
-    { id: "bdla1", name: "Kniebeugen mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true },
-    { id: "bdla2", name: "Rumänisches Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
-    { id: "bdla3", name: "Beinbeuger stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdla4", name: "Hüft-Abduktion mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdla5", name: "Core-Rotations-Holzfäller mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], core: true },
+    { id: "bdla1", name: "Kniebeugen mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true, libraryId: "kniebeugen-smartworkout-bar-baender" },
+    { id: "bdla2", name: "Rumänisches Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true, libraryId: "rumaenisches-kreuzheben-smartworkout-bar-baender" },
+    { id: "bdla3", name: "Beinbeuger stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "beinbeuger-stehend-tueranker-baender" },
+    { id: "bdla4", name: "Hüft-Abduktion mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "hueft-abduktion-tueranker-baender" },
+    { id: "bdla5", name: "Core-Rotations-Holzfäller mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], core: true, libraryId: "core-rotations-holzfaeller-tueranker-baender" },
   ],
   bandUpperB: [
-    { id: "bdub1", name: "Fliegende mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
-    { id: "bdub2", name: "Einarmiges Rudern mit Türanker und Griff (Bänder)", sets: 3, reps: "10-12", alts: [] },
-    { id: "bdub3", name: "Latzug eng mit Türanker und der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [] },
-    { id: "bdub4", name: "Seitheben vorgebeugt mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdub5", name: "Bizeps-Curls mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [] },
-    { id: "bdub6", name: "Trizepsdrücken mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdub1", name: "Fliegende mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "fliegende-tueranker-baender" },
+    { id: "bdub2", name: "Einarmiges Rudern mit Türanker und Griff (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "einarmiges-rudern-tueranker-baender" },
+    { id: "bdub3", name: "Latzug eng mit Türanker und der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], libraryId: "latzug-eng-tueranker-smartworkout-bar-baender" },
+    { id: "bdub4", name: "Seitheben vorgebeugt mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "seitheben-vorgebeugt-griffe-baender" },
+    { id: "bdub5", name: "Bizeps-Curls mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "bizeps-curls-smartworkout-bar-baender" },
+    { id: "bdub6", name: "Trizepsdrücken mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "trizepsdruecken-tueranker-baender" },
   ],
   bandLowerB: [
-    { id: "bdlb1", name: "Ausfallschritte mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [] },
-    { id: "bdlb2", name: "Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true },
-    { id: "bdlb3", name: "Beinstrecken stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdlb4", name: "Glute Kickbacks mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
-    { id: "bdlb5", name: "Pallof Press mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], core: true },
+    { id: "bdlb1", name: "Ausfallschritte mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [], libraryId: "ausfallschritte-smartworkout-bar-baender" },
+    { id: "bdlb2", name: "Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true, libraryId: "kreuzheben-smartworkout-bar-baender" },
+    { id: "bdlb3", name: "Beinstrecken stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "beinstrecken-stehend-tueranker-baender" },
+    { id: "bdlb4", name: "Glute Kickbacks mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [], libraryId: "glute-kickbacks-tueranker-baender" },
+    { id: "bdlb5", name: "Pallof Press mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], core: true, libraryId: "pallof-press-tueranker-baender" },
   ],
 };
 
@@ -915,7 +914,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.24.0";
+const APP_VERSION = "1.25.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";

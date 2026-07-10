@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.25.0 — 2026-07-10 (Teil 51): Übungserklärungen für alle 22 Bänder-Übungen integriert
+
+- Das Ergebnis des in Teil 50 vorbereiteten Deep-Research-Prompts lag im Ordner `01_Recherchen/02_Uebungserklaerungen/` (Datei "SmartWorkout Biomechanischer Übungskatalog.md") — gründlich gelesen und vollständig integriert. Alle angeforderten 22 Übungen im erwarteten Format geliefert, keine Nacharbeit am Recherche-Text nötig (nur Fußnoten-Zahlen automatisiert entfernt, gleiches Muster wie bei v1.17.0).
+- `exercise-library.json` wächst von 78 auf **100 Einträge**. Keine Namenskollisionen mit bestehenden Einträgen (neue Slugs alle mit `-baender`-Suffix). Alle 22 Plan-Slots in `BAND_EXERCISES` haben jetzt ein passendes `libraryId`.
+- **`muscleGroup`** für alle 22 neuen Einträge vergeben (gleiche 10 feste Kategorien wie seit v1.18.0); "Kreuzheben mit der SmartWorkout Bar" (primär: "Rückenstrecker, Großer Gesäßmuskel") manuell auf "Gesäß" eingeordnet, da "Rückenstrecker" keine der 10 Kategorien trifft, aber die zweite genannte Primärmuskelgruppe eindeutig zuordenbar ist — einziger Grenzfall in diesem Batch, sonst eindeutige Keyword-Treffer.
+- ℹ-Erklärungen sind damit jetzt für **alle sechs Pläne** verfügbar (Calisthenics bleibt mit nur 2 von 16 Übungen die einzige verbleibende Lücke).
+- `howto.html` ("Übungserklärung"-Abschnitt, Bänder-Zeile in der Plan-Liste) aktualisiert. Code-Kommentar über `BAND_DAYS`/`BAND_EXERCISES` in `index.html` von "noch kein libraryId" auf den jetzigen Stand korrigiert.
+- Verifiziert: `node --check` auf dem Haupt-Script; `exercise-library.json` als valides JSON geprüft (100 Einträge, additiver Diff ohne Reformatierung bestehender Einträge).
+- **Nächster Schritt**: optionaler Recherche-Durchgang für die verbleibenden 14 Calisthenics-Übungen (Prompt liegt bereit, siehe v1.21.0-Folge), sonst offen wie gehabt (Admin-Panel-Funktionalität).
+
 ## 2026-07-10 (Teil 50): Recherche-Prompt für die 22 Bänder-Übungserklärungen vorbereitet
 
 - Deep-Research-Prompt für die 22 offenen Übungserklärungen des Bänder-Plans erstellt: `01_Recherchen/02_Uebungserklaerungen/Recherche-Prompt-SmartWorkout-Baender.md` (Nutzer führt die Recherche selbst in einer separaten Gemini-Deep-Research-Session aus, gleicher Workflow wie bisher).

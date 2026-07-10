@@ -1637,5 +1637,468 @@
     "safety": "Die Schulterblätter während des gesamten Satzes aktiv nach unten und hinten gezogen halten, um das Schultergelenk im freien Hang vor Überlastung zu schützen.",
     "image": null,
     "muscleGroup": "Bauch"
+  },
+  "bankdruecken-smartworkout-bar-baender": {
+    "name": "Bankdrücken mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Großer Brustmuskel (mittlerer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Trizeps"
+    },
+    "steps": [
+      "Die Widerstandsbänder flach, faltenfrei und ohne Verdrehungen über den oberen Rücken auf Höhe der Schulterblätter führen und die Enden mit den Karabinerhaken an den rotierenden Ösen der SmartWorkout Bar befestigen.",
+      "Sich flach mit dem Rücken auf den Boden legen, die Füße fest auf dem Boden platzieren und den Rumpf anspannen, um eine stabile Auflagefläche zu bilden.",
+      "Die Stange im weiten Obergriff (etwas mehr als schulterbreit) direkt über der Brust halten, wobei am tiefsten Punkt eine spürbare Vorspannung im Band anliegen muss, damit die Brustmuskeln auch in der Dehnung unter Last arbeiten.",
+      "Die Stange kraftvoll vertikal nach oben drücken, bis die Arme fast vollständig gestreckt sind, ohne jedoch die Ellbogen ganz einzurasten, um die Muskelspannung aufrechtzuerhalten.",
+      "Die exzentrische Phase beim kontrollierten Absenken der Stange über mindestens 3 Sekunden bewusst verlangsamen, um die elastische Energie des Bandes aktiv mit der Brustmuskulatur abzufangen."
+    ],
+    "mistakes": [
+      "Fehlende Bandspannung am tiefsten Punkt der Bewegung, wodurch die Bänder schlaff hängen und der elastische Widerstand im gedehnten Zustand auf Null absinkt.",
+      "Abheben der Schulterblätter vom Boden während der Druckbewegung, was die Schultergelenke biomechanisch ungünstig belastet und die Brustaktivierung reduziert.",
+      "Unkontrolliertes Zurückschnellenlassen der SmartWorkout Bar am Ende der konzentrischen Phase durch die hohe Zugkraft der elastischen Bänder."
+    ],
+    "safety": "Vor Beginn des Satzes muss geprüft werden, ob das Band exakt mittig auf den Schulterblättern positioniert ist, um ein schmerzhaftes Hochrutschen in den Nackenbereich unter Zugspannung zu verhindern.",
+    "image": null,
+    "muscleGroup": "Brust"
+  },
+  "schulterdruecken-smartworkout-bar-baender": {
+    "name": "Schulterdrücken mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Deltamuskel (vorderer Anteil)",
+      "secondary": "Trizeps, Oberer Kapuzenmuskel"
+    },
+    "steps": [
+      "Mittig mit beiden Füßen im schulterbreiten Stand auf die Bänder stellen, um eine feste Verankerung und eine ausreichende Vorspannung am tiefsten Punkt zu etablieren.",
+      "Die Knie minimal beugen, die SmartWorkout Bar im Obergriff auf Schlüsselbeinhöhe vor dem Körper positionieren und den Rumpf sowie das Gesäß maximal anspannen.",
+      "Die Stange in einer geraden vertikalen Bahn über den Kopf nach oben drücken, bis die Arme fast vollständig gestreckt sind.",
+      "Am höchsten Punkt die Position kurz stabilisieren und die Stange anschließend über eine kontrollierte exzentrische Phase von 3 Sekunden zurück in die Ausgangsposition auf Schlüsselbeinhöhe absenken."
+    ],
+    "mistakes": [
+      "Ausweichen des Körpers in ein extremes Hohlkreuz während des Drückens, was zu einer hohen Kompressionsbelastung der Lendenwirbelsäule führt.",
+      "Ein zu enger Stand auf den Bändern, wodurch die Bänder am Start der Bewegung schlaff hängen und die vordere Schulter im gedehnten Zustand unbelastet bleibt.",
+      "Zu schnelles Absenken der Stange, wodurch die exzentrische Muskelarbeit vollständig eliminiert wird."
+    ],
+    "safety": "Bei hohen Widerständen über 90 kg darf die Übung nur mit der SmartWorkout Bar durchgeführt werden, um Gelenkscherkräfte in den Handgelenken zu minimieren.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "fliegende-tueranker-baender": {
+    "name": "Fliegende mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Großer Brustmuskel",
+      "secondary": "Vorderer Schultermuskel, Rumpfmuskulatur"
+    },
+    "steps": [
+      "Den XL-Türanker auf Brusthöhe im Türrahmen fixieren, die Bänder durchschlaufen und die beiden Silikongriffe an den Karabinerhaken befestigen.",
+      "Mit dem Rücken zum Türanker aufstellen, die Griffe aufnehmen und in einen stabilen Ausfallschritt nach vorne treten, um die Bänder bereits in der Ausgangsposition unter Dehnspannung zu setzen.",
+      "Die Arme leicht gebeugt seitlich ausstrecken und in einer weiten, bogenförmigen Bewegung vor dem Körper zusammenführen, bis sich die Hände fast berühren.",
+      "Die Arme unter kontinuierlichem, elastischem Widerstand langsam über 3 Sekunden in die Dehnung zurückführen, ohne die Ellbogen vollständig durchzustrecken."
+    ],
+    "mistakes": [
+      "Vollständiges Durchstrecken der Ellbogen während der Bewegung, was den Reiz auf die Gelenke verlagert und die Brustmuskulatur entlastet.",
+      "Zu geringer Abstand zum Türanker, wodurch die Bänder am Ende der Rückführbewegung schlaff werden und die dehnungsinduzierte Muskelspannung verloren geht.",
+      "Unkontrolliertes Zurückreißen der Arme durch den elastischen Zug am Ende der Wiederholung."
+    ],
+    "safety": "Vor jedem Satz muss die feste Verriegelung des Türblatts im Rahmen überprüft werden, um ein plötzliches Aufspringen der Tür unter Last zu verhindern.",
+    "image": null,
+    "muscleGroup": "Brust"
+  },
+  "vorgebeugtes-rudern-smartworkout-bar-baender": {
+    "name": "Vorgebeugtes Rudern mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Breitester Rückenmuskel (Latissimus)",
+      "secondary": "Trapezmuskel, Bizeps"
+    },
+    "steps": [
+      "Das Widerstandsband flach auf den Boden legen, sich schulterbreit daraufstellen und das Band mittig einmal um die SmartWorkout Bar wickeln, um die freie Länge zu verkürzen und eine hohe Vorspannung am Startpunkt zu garantieren.",
+      "Mit geradem Rücken ca. 45 Grad aus der Hüfte nach vorne beugen, die Knie leicht anwinkeln und die Stange im Obergriff knapp unterhalb der Knie halten.",
+      "Die Stange kontrolliert in Richtung des Bauchnabels ziehen, indem die Ellbogen eng am Rumpf vorbeigeführt und die Schulterblätter aktiv zusammengezogen werden.",
+      "Die Stange über eine exzentrische Phase von 3 Sekunden langsam wieder absenken, bis die Arme gestreckt sind, ohne die Vorspannung der Bänder komplett zu verlieren."
+    ],
+    "mistakes": [
+      "Abrunden der Wirbelsäule (Rundrücken), was bei steigendem Bandwiderstand zu einer kritischen Belastung der Bandscheiben führt.",
+      "Zu geringe Vorspannung im tiefsten Punkt der Bewegung, wodurch der Latissimus in der maximalen Dehnung nicht effektiv kontrahiert.",
+      "Nutzung von Schwung aus der Hüfte, um den progressiven Widerstand am Ende der Zugbewegung zu überwinden."
+    ],
+    "safety": "Es ist zwingend darauf zu achten, dass feste Sportschuhe getragen werden und das Band absolut mittig unter den Fußsohlen verläuft, um ein seitliches Abrutschen des Bandes zu verhindern.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "latzug-kniend-tueranker-baender": {
+    "name": "Latzug kniend mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Breitester Rückenmuskel (Latissimus)",
+      "secondary": "Großer Rundmuskel, Bizeps"
+    },
+    "steps": [
+      "Den XL-Türanker am oberen Ende des Türrahmens fixieren, die Bänder durchschlaufen und beide Silikongriffe an den Karabinerhaken befestigen.",
+      "Sich in ca. 1,5 Metern Entfernung mit Blick zur Tür auf beide Knie absenken und die Griffe mit gestreckten Armen greifen, sodass die Bänder bereits unter Zugspannung stehen.",
+      "Den Rumpf stabilisieren und die Ellbogen kraftvoll nach unten und hinten in Richtung der Rippen ziehen, während die Brust angehoben bleibt.",
+      "Am tiefsten Punkt die Schulterblätter maximal zusammenziehen und die Griffe anschließend kontrolliert über 3 Sekunden wieder in die Ausgangsposition zurückführen."
+    ],
+    "mistakes": [
+      "Initiierung der Zugbewegung primär aus der Kraft der Arme (Bizeps) anstatt die Bewegung durch das Herabziehen der Schulterblätter einzuleiten.",
+      "Hochziehen der Schultern zu den Ohren während der Zugphase, was die Latissimus-Aktivierung mechanisch blockiert.",
+      "Schnelles und unkontrolliertes Entlasten der Bänder in der exzentrischen Phase."
+    ],
+    "safety": "Der Latzug darf nur an einer Tür durchgeführt werden, die sich in Zugrichtung schließt, um ein Aufbrechen des Schlosses durch den elastischen Zug zu verhindern.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "einarmiges-rudern-tueranker-baender": {
+    "name": "Einarmiges Rudern mit Türanker und Griff (Bänder)",
+    "muscles": {
+      "primary": "Breitester Rückenmuskel (Latissimus)",
+      "secondary": "Hinterer Schultermuskel, Bizeps"
+    },
+    "steps": [
+      "Den XL-Türanker auf mittlerer Höhe (ca. Bauchnabelhöhe) an der Tür befestigen und einen einzelnen Griff per Karabiner an den Bändern fixieren.",
+      "In einen stabilen Ausfallschritt gehen (das Bein gegenüber dem arbeitenden Arm steht vorne) und den Griff bei gestrecktem Arm so halten, dass das Band bereits leicht gespannt ist.",
+      "Den Rumpf anspannen, um jegliche Rotation zu blockieren, und den Griff kontrolliert zur Hüfte ziehen, während der Ellbogen eng am Körper entlanggleitet.",
+      "Den Arm unter kontinuierlicher Bandspannung langsam über eine exzentrische Phase von 3 Sekunden wieder nach vorne führen."
+    ],
+    "mistakes": [
+      "Eindrehen oder Rotieren des Oberkörpers während der Zugphase, was die Arbeit des Latissimus minimiert.",
+      "Führen des Ellbogens weit nach außen, wodurch die Last auf den hinteren Deltamuskel verschoben wird.",
+      "Verlust der Bandspannung am vorderen Umkehrpunkt durch einen zu geringen Abstand zur Tür."
+    ],
+    "safety": "Der Stand muss biomechanisch so stabil gewählt werden, dass der Körper dem asymmetrischen Zug des Bandes ohne Ausweichbewegungen standhalten kann.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "latzug-eng-tueranker-smartworkout-bar-baender": {
+    "name": "Latzug eng mit Türanker und der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Breitester Rückenmuskel (Latissimus)",
+      "secondary": "Großer Rundmuskel, Bizeps"
+    },
+    "steps": [
+      "Den XL-Türanker ganz oben an der Tür befestigen, die Bänder durchführen und die Karabiner an den rotierenden Endösen der SmartWorkout Bar einhängen.",
+      "Sich in ca. 1 Meter Entfernung mit Blick zur Tür hinknien und die Stange im engen Untergriff (schulterbreit oder etwas enger) greifen.",
+      "Den Oberkörper leicht (um ca. 15 Grad) zurücklehnen, die Stange kontrolliert zur oberen Brust ziehen und die Ellbogen aktiv nach unten und innen pressen.",
+      "Die Stange über eine exzentrische Phase von 3 Sekunden langsam wieder nach oben führen, bis die Arme vollständig gestreckt sind."
+    ],
+    "mistakes": [
+      "Zu weites Zurücklehnen des Körpers während des Zugs, wodurch die Übung zu einer horizontalen Ruderbewegung abgefälscht wird.",
+      "Herabziehen der Stange hinter den Nacken, was eine unphysiologische Belastung für die Schultergelenke darstellt.",
+      "Nachlassen der Rumpfspannung im oberen Umkehrpunkt, wodurch die Bänder schlaff hängen."
+    ],
+    "safety": "Vor der Durchführung ist sicherzustellen, dass die zweiteilige SmartWorkout Bar vollständig und fest verschraubt ist.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "seitheben-griffe-baender": {
+    "name": "Seitheben mit Griffen (Bänder)",
+    "muscles": {
+      "primary": "Deltamuskel (mittlerer Anteil)",
+      "secondary": "Nackenmuskel, Vorderer Schultermuskel"
+    },
+    "steps": [
+      "Mittig mit einem Fuß (für moderaten Widerstand) oder beiden Füßen (für hohen Widerstand) auf das Band stellen, um die gewünschte Vorspannung einzustellen.",
+      "Die Knie minimal beugen, den Rumpf anspannen und die Griffe mit leicht angewinkelten Ellbogen seitlich des Körpers halten.",
+      "Die Arme kontrolliert seitlich nach oben führen, bis die Hände Schulterhöhe erreichen, wobei die Ellbogen die Bewegung anführen.",
+      "Die Position am höchsten Punkt kurz fixieren und die Griffe anschließend langsam über 3 Sekunden absenken, um die Bewegung kurz vor den Oberschenkeln zu stoppen."
+    ],
+    "mistakes": [
+      "Schwungholen aus den Beinen oder der Hüfte, was die Aktivierung des mittleren Deltamuskels drastisch reduziert.",
+      "Zu weites Anheben der Arme über Schulterhöhe hinaus, was die Belastung auf den oberen Kapuzenmuskel verschiebt.",
+      "Vollständiges Absenken der Arme bis zum Körperkontakt, wodurch das Band am tiefsten Punkt schlaff wird."
+    ],
+    "safety": "Da Seitheben eine reine Isolationsübung ist, sollte ein geringerer Widerstand gewählt werden, um die Rotatorenmanschette vor Scherkräften zu schützen.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "seitheben-vorgebeugt-griffe-baender": {
+    "name": "Seitheben vorgebeugt mit Griffen (Bänder)",
+    "muscles": {
+      "primary": "Deltamuskel (hinterer Anteil)",
+      "secondary": "Trapezmuskel, Rautenmuskeln"
+    },
+    "steps": [
+      "Mittig auf das Band stellen, die Griffe über Kreuz greifen und den Oberkörper mit absolut geradem Rücken nahezu parallel zum Boden nach vorne beugen.",
+      "Die Knie leicht anwinkeln und die Arme mit minimal gebeugten Ellbogen so unter dem Rumpf positionieren, dass die Bänder bereits leicht gespannt sind.",
+      "Die Arme kontrolliert seitlich nach oben ziehen, bis sie sich auf einer Linie mit den Schultern befinden, und die Schulterblätter aktiv zusammenpressen.",
+      "Die Arme unter kontinuierlichem Widerstand langsam über 3 Sekunden wieder in die Ausgangsposition absenken."
+    ],
+    "mistakes": [
+      "Krümmen der Wirbelsäule (Rundrücken), was bei steigender Last zu einer hohen Beanspruchung der Lendenwirbelsäule führt.",
+      "Verwendung von Schwung aus der Hüfte, um den biomechanisch schweren oberen Totpunkt der Bewegung zu überwinden.",
+      "Fehlende Vorspannung im tiefsten Punkt der Bewegung durch eine zu enge Fußstellung."
+    ],
+    "safety": "Es ist darauf zu achten, dass die überkreuzten Bänder während der Bewegung nicht aneinander scheuern, um vorzeitigem Materialverschleiß vorzubeugen.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "trizepsdruecken-ueberkopf-tueranker-baender": {
+    "name": "Trizepsdrücken über Kopf mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Trizeps",
+      "secondary": "Ellenbogenmuskel, Rumpfmuskulatur"
+    },
+    "steps": [
+      "Den XL-Türanker im oberen Drittel der Tür fixieren, die Bänder durchschlaufen und die Griffe an den Karabinerhaken befestigen.",
+      "Mit dem Rücken zur Tür in einen stabilen Ausfallschritt treten und die Griffe mit nach vorne zeigenden, gebeugten Ellbogen über dem Kopf halten.",
+      "Den Rumpf maximal stabilisieren und die Unterarme durch Kontraktion des Trizeps kontrolliert nach vorne-oben strecken, während die Oberarme starr fixiert bleiben.",
+      "Die Ellbogen langsam beugen, um die Griffe über 3 Sekunden kontrolliert hinter den Kopf zurückzuführen, bis ein deutlicher Dehnungsreiz im Trizeps spürbar ist."
+    ],
+    "mistakes": [
+      "Ausweichen der Ellbogen nach außen während der Streckung, was die vordere Schulter belastet und die Trizepsaktivierung verringert.",
+      "Zu geringer Abstand zur Tür, wodurch die Bänder in der Dehnphase schlaff werden und die Spannung im Muskel verloren geht.",
+      "Unkontrolliertes Zurückreißen der Arme am Ende der Bewegung."
+    ],
+    "safety": "Der Ausfallschritt muss biomechanisch so stabil gewählt werden, dass der elastische Zug der Bänder den Körper nicht nach hinten ziehen kann.",
+    "image": null,
+    "muscleGroup": "Trizeps"
+  },
+  "bizeps-curls-smartworkout-bar-baender": {
+    "name": "Bizeps-Curls mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Zweiköpfiger Armmuskel (Bizeps)",
+      "secondary": "Armbeuger, Speichenarmmuskel"
+    },
+    "steps": [
+      "Mittig mit beiden Füßen im schulterbreiten Stand auf die Bänder stellen, um eine Grundspannung zu erzeugen, und die Karabiner an der SmartWorkout Bar befestigen.",
+      "Die Stange im Untergriff (Handflächen nach oben) halten, die Ellbogen eng am Rumpf fixieren und die Schultern bewusst nach hinten-unten ziehen.",
+      "Die Stange kontrolliert in einer Kreisbahn in Richtung der Schultern nach oben beugen, wobei sich ausschließlich die Unterarme bewegen.",
+      "Am höchsten Punkt den Bizeps maximal kontrahieren und die Stange anschließend über eine kontrollierte exzentrische Phase von 3 Sekunden absenken."
+    ],
+    "mistakes": [
+      "Vorschwingen der Ellbogen beim Aufwärtsbewegen, wodurch die vordere Schulter die Arbeit des Bizeps übernimmt.",
+      "Zurücklehnen des Oberkörpers (Hohlkreuz), um die Stange mit Schwung nach oben zu befördern.",
+      "Unvollständiges Strecken der Arme am tiefsten Punkt, wodurch die Bänder erschlaffen und die Muskelspannung abreißt."
+    ],
+    "safety": "Vor der Durchführung ist sicherzustellen, dass die Bänder absolut mittig unter den Schuhsohlen platziert sind, um ein Hochschnellen unter Dehnspannung zu verhindern.",
+    "image": null,
+    "muscleGroup": "Bizeps"
+  },
+  "trizepsdruecken-tueranker-baender": {
+    "name": "Trizepsdrücken mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Trizeps",
+      "secondary": "Ellenbogenmuskel, Rumpfmuskulatur"
+    },
+    "steps": [
+      "Den XL-Türanker ganz oben im Türrahmen fixieren, die Bänder durchschlaufen und beide Griffe anbringen.",
+      "Mit Blick zur Tür leicht nach vorne gebeugt aufstellen und die Ellbogen eng am Rippenbogen fixieren, sodass die Bänder auf Brusthöhe leicht gespannt sind.",
+      "Die Griffe durch Streckung der Unterarme kontrolliert nach unten drücken, bis die Arme vollständig gestreckt sind, und den Trizeps am tiefsten Punkt maximal kontrahieren.",
+      "Die Griffe über 3 Sekunden langsam wieder nach oben führen, ohne dass die Ellbogen ihre feste Position am Körper verlassen."
+    ],
+    "mistakes": [
+      "Ausweichen der Ellbogen nach außen, was die Aktivierung des Trizeps minimiert und die Brustmuskulatur einbezieht.",
+      "Zu schnelles Zurückschnellenlassen der Bänder in der Aufwärtsbewegung, wodurch der exzentrische Trainingsreiz verloren geht.",
+      "Zu nahes Stehen an der Tür, was zu einem vollständigen Spannungsverlust am oberen Umkehrpunkt führt."
+    ],
+    "safety": "Die Griffe dürfen unter maximaler Spannung niemals plötzlich losgelassen werden, um schwere Verletzungen durch zurückschnellendes Material zu verhindern.",
+    "image": null,
+    "muscleGroup": "Trizeps"
+  },
+  "kniebeugen-smartworkout-bar-baender": {
+    "name": "Kniebeugen mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger"
+    },
+    "steps": [
+      "Mit geschlossenen Beinen mittig auf das Band stellen, in die Hocke gehen und die SmartWorkout Bar sicher auf der Nackenmuskulatur positionieren.",
+      "Die Füße langsam auf Schulterbreite auseinanderbewegen, um das Band massiv vorzuspannen, und die Fußspitzen leicht nach außen drehen.",
+      "Mit geradem Rücken und aufgerichtetem Oberkörper kontrolliert in die Kniebeuge gehen, bis die Oberschenkel mindestens parallel zum Boden stehen.",
+      "Durch Druck aus den Fersen kraftvoll nach oben aufrichten und am Endpunkt das Gesäß maximal anspannen, während das Band seine maximale Spannung erreicht."
+    ],
+    "mistakes": [
+      "Nach-innen-Knicken der Knie (Valgus-Stellung) während des Aufrichtens, was die Menisken und Kreuzbänder schädigt.",
+      "Zu enger Stand auf dem Band, wodurch die Bänder in der Hocke komplett erschlaffen und die stabilisierende Muskelspannung verloren geht.",
+      "Abrunden des unteren Rückens im tiefsten Punkt der Kniebeuge."
+    ],
+    "safety": "Die SmartWorkout Bar muss während der gesamten Kniebeuge fest mit beiden Händen auf den Schultern fixiert werden, um ein Verrutschen auf die Halswirbelsäule zu verhindern.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "ausfallschritte-smartworkout-bar-baender": {
+    "name": "Ausfallschritte mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger"
+    },
+    "steps": [
+      "Das Band unter die Sohle des vorderen Fußes legen und die Enden an der SmartWorkout Bar befestigen, welche sicher auf den Schultern platziert wird.",
+      "Mit dem anderen Fuß einen großen Schritt nach hinten machen, sodass der hintere Fuß nur auf den Zehenspitzen steht, und den Rumpf stabilisieren.",
+      "Das hintere Knie kontrolliert absenken, bis es knapp über dem Boden steht, wobei das vordere Knie einen stabilen 90-Grad-Winkel wahrt.",
+      "Aus der Kraft des vorderen Oberschenkels kontrolliert nach oben drücken, wobei die exzentrische Phase beim Absenken über mindestens 3 Sekunden verzögert wird."
+    ],
+    "mistakes": [
+      "Vorschieben des vorderen Knies über die Zehenspitzen hinaus, was die Scherkräfte im Kniegelenk massiv erhöht.",
+      "Mangelnde Vorspannung im Band am tiefsten Punkt der Bewegung durch eine zu schlaffe Ausgangseinstellung der Bänder.",
+      "Verlust des Gleichgewichts durch ein zu enges, seiltänzerartiges Aufstellen der Füße hintereinander."
+    ],
+    "safety": "Da Ausfallschritte hohe Anforderungen an die Balance stellen, ist ein absolut rutschfester Untergrund sowie das Tragen von festem Schuhwerk zwingend erforderlich.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "beinstrecken-stehend-tueranker-baender": {
+    "name": "Beinstrecken stehend mit Türanker und Fußmanschette (Bänder)",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadriceps)",
+      "secondary": "Rumpfmuskulatur"
+    },
+    "steps": [
+      "Den XL-Türanker ganz unten am Türrahmen befestigen und eine Fußmanschette per Karabiner an den Bändern anbringen.",
+      "Die Manschette fest um das Sprunggelenk legen, sich mit dem Rücken zur Tür aufstellen und einen Schritt nach vorn machen, um das Band vorzuspannen.",
+      "Das Knie des arbeitenden Beins auf ca. 90 Grad anheben, den Rumpf maximal anspannen und sich bei Bedarf an einer Wand oder einem Stuhl abstützen.",
+      "Das Bein gegen den Widerstand des Bandes kontrolliert nach vorne strecken, den Oberschenkel am Endpunkt kurz maximal kontrahieren und das Bein langsam wieder beugen."
+    ],
+    "mistakes": [
+      "Schwunghaftes Kicken des Beins anstatt einer kontrollierten Kraftentfaltung, was das Kniegelenk überlastet.",
+      "Zurückschnellenlassen des Beins ohne Muskelspannung in der exzentrischen Phase.",
+      "Zu nahes Stehen an der Tür, wodurch das Band in der Ausgangsposition schlaff am Boden liegt."
+    ],
+    "safety": "Der Klettverschluss der Fußmanschette muss vor Beginn des Satzes vollständig geschlossen sein, um ein plötzliches Lösen unter Dehnspannung zu verhindern.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "rumaenisches-kreuzheben-smartworkout-bar-baender": {
+    "name": "Rumänisches Kreuzheben mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Beinbeuger",
+      "secondary": "Großer Gesäßmuskel, Rückenstrecker"
+    },
+    "steps": [
+      "Das Band verdoppeln oder einmal fest um die SmartWorkout Bar wickeln, um die notwendige extreme Vorspannung für diese hüftdominante Bewegung zu erzeugen.",
+      "Schulterbreit auf die Bänder stellen, die Stange im Obergriff greifen, den Rumpf anspannen und sich aufrecht hinstellen.",
+      "Mit minimal gebeugten Knien die Hüfte weit nach hinten schieben, während der Oberkörper mit absolut geradem Rücken nach vorne sackt.",
+      "Die Stange eng an den Oberschenkeln nach unten führen, bis eine maximale Dehnung in den Hamstrings spürbar ist (das Band muss unter Spannung bleiben), und die Hüfte durch Kontraktion von Po und Beinrückseite wieder nach vorne drücken."
+    ],
+    "mistakes": [
+      "Beugen der Knie zu einer klassischen Kniebeuge, wodurch der Fokus von den Hamstrings auf den Quadriceps rutscht.",
+      "Runden des Rückens (besonders der Lendenwirbelsäule) beim Absenken der Stange.",
+      "Fehlende Vorspannung im Band im gedehnten Zustand (am tiefsten Punkt)."
+    ],
+    "safety": "Der Kopf muss während der gesamten Bewegung in Verlängerung der Wirbelsäule gehalten werden (Blick zum Boden im tiefsten Punkt), um die Halswirbelsäule vor Scherkräften zu schützen.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "kreuzheben-smartworkout-bar-baender": {
+    "name": "Kreuzheben mit der SmartWorkout Bar (Bänder)",
+    "muscles": {
+      "primary": "Rückenstrecker, Großer Gesäßmuskel",
+      "secondary": "Beinbeuger, Vierköpfiger Oberschenkelmuskel"
+    },
+    "steps": [
+      "Das Band verdoppeln, indem es so um die SmartWorkout Bar gewickelt wird, dass Schlaufen entstehen, in die jeweils ein Fuß gestellt wird (dies verkürzt das Band drastisch und erzeugt die biomechanisch notwendige Last am Startpunkt).",
+      "Schulterbreit aufstellen, tief in die Hocke gehen (Hüfte höher als die Knie, Rücken absolut gerade) und die Stange im Obergriff fest umklammern.",
+      "Die Bewegung durch den Druck der Beine in den Boden initiieren, die Stange eng am Schienbein nach oben führen und Hüfte sowie Knie gleichzeitig strecken.",
+      "Am höchsten Punkt den Po fest anspannen, den Oberkörper aufrecht halten (kein Überstrecken nach hinten) und die Bewegung langsam und kontrolliert umkehren."
+    ],
+    "mistakes": [
+      "Einleitung der Bewegung mit einem \"Katzenbuckel\", was extrem schädlich für die Bandscheiben ist.",
+      "Start der Bewegung mit zu tiefem Becken (Kniebeugen-Position statt Hüftgelenks-Dominanz).",
+      "Nachlassen der Muskelkontrolle in der exzentrischen Phase, wodurch die Stange unkontrolliert nach unten gezogen wird."
+    ],
+    "safety": "Vor dem Satz ist penibel darauf zu achten, dass das Band absolut symmetrisch gewickelt ist, um eine ungleichmäßige Belastung der Wirbelsäule zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "beinbeuger-stehend-tueranker-baender": {
+    "name": "Beinbeuger stehend mit Türanker und Fußmanschette (Bänder)",
+    "muscles": {
+      "primary": "Beinbeuger",
+      "secondary": "Großer Gesäßmuskel, Waden"
+    },
+    "steps": [
+      "Den XL-Türanker ganz unten am Türrahmen befestigen, das Band durchführen und eine Fußmanschette am Karabiner befestigen.",
+      "Die Manschette eng um das Sprunggelenk legen, sich mit dem Blick zur Tür aufstellen und so weit zurücktreten, bis das Band bereits im Stehen unter Vorspannung steht.",
+      "Das Standbein leicht beugen, den Rumpf stabilisieren und das Knie des arbeitenden Beins leicht anheben.",
+      "Die Ferse des arbeitenden Beins kontrolliert gegen den Bandwiderstand in Richtung des Gesäßes ziehen (maximale Kniebeugung) und den Beinbeuger am Peak fest anspannen."
+    ],
+    "mistakes": [
+      "Ausweichen der Hüfte nach vorne oder starkes Hohlkreuz, um die Bewegung abzukürzen.",
+      "Verwendung von Schwung aus dem gesamten Körper statt einer isolierten Kniebeugung.",
+      "Zu nahes Stehen an der Tür, wodurch das Band am Punkt der maximalen Dehnung schlaff wird."
+    ],
+    "safety": "Zur Erhaltung des Gleichgewichts sollte sich während der gesamten Übung an einer stabilen Wand oder Stuhllehne festgehalten werden.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "glute-kickbacks-tueranker-baender": {
+    "name": "Glute Kickbacks mit Türanker und Fußmanschette (Bänder)",
+    "muscles": {
+      "primary": "Großer Gesäßmuskel",
+      "secondary": "Beinbeuger, Rückenstrecker"
+    },
+    "steps": [
+      "Den XL-Türanker am unteren Ende der Tür montieren, das Band hindurchfädeln und die Fußmanschette ankoppeln.",
+      "Die Manschette am Sprunggelenk anlegen, sich der Tür zuwenden und ca. 1-1,5 Meter zurücktreten, um eine deutliche Vorspannung im Band zu spüren.",
+      "Den Oberkörper leicht nach vorne beugen, das Standbein leicht anwinkeln und das arbeitende Bein gestreckt nach hinten-oben wegdrücken.",
+      "Am obersten Punkt das Gesäß für 1-2 Sekunden maximal kontrahieren und das Bein anschließend langsam und kontrolliert wieder nach vorne führen, ohne die Grundspannung im Band zu verlieren."
+    ],
+    "mistakes": [
+      "Starkes Ausweichen in ein Hohlkreuz am obersten Punkt, was die Lendenwirbelsäule staucht.",
+      "Schwunghaftes Zurückkicken, das die Muskelspannung minimiert und Gelenkbelastungen erhöht.",
+      "Unzureichender Bewegungsradius durch zu nahes Stehen am Ankerpunkt."
+    ],
+    "safety": "Die Rückwärtsbewegung muss absolut linear erfolgen, um ein Scheuern des Bandes an Türkanten oder Gegenständen zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "hueft-abduktion-tueranker-baender": {
+    "name": "Hüft-Abduktion mit Türanker und Fußmanschette (Bänder)",
+    "muscles": {
+      "primary": "Mittlerer Gesäßmuskel",
+      "secondary": "Großer Gesäßmuskel, Schenkelbindenspanner"
+    },
+    "steps": [
+      "Den XL-Türanker ganz unten an der Tür befestigen, das Band durchziehen und die Fußmanschette am Karabiner einhängen.",
+      "Die Manschette am knöchelnahen Bereich des von der Tür abgewandten Beins befestigen und sich seitlich zur Tür aufstellen.",
+      "So weit zur Seite treten, bis das Band vor dem Standbein leicht gespannt ist, und das Standbein leicht beugen.",
+      "Das arbeitende Bein kontrolliert seitlich vom Körper weg nach außen führen, die Hüfte absolut stabil halten (kein seitliches Kippen des Beckens) und das Bein gebremst wieder zurückführen."
+    ],
+    "mistakes": [
+      "Kippen des gesamten Oberkörpers zur Seite, um das Bein scheinbar höher anheben zu können.",
+      "Vorschwingen des Beins nach vorne anstatt einer rein seitlichen Abduktion.",
+      "Verlust der Bandspannung beim Zurückführen des Beins vor den Körper."
+    ],
+    "safety": "Zur Wahrung einer stabilen Achse und Vermeidung von Stürzen ist eine zusätzliche Stabilisierung durch Festhalten an einer festen Struktur dringend empfohlen.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "core-rotations-holzfaeller-tueranker-baender": {
+    "name": "Core-Rotations-Holzfäller mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Schräge Bauchmuskeln",
+      "secondary": "Gerade Bauchmuskeln, Schultermuskulatur"
+    },
+    "steps": [
+      "Den XL-Türanker am oberen Ende der Tür befestigen, das Band durchführen und beide Karabiner an einem einzigen Griff fixieren.",
+      "Seitlich zur Tür aufstellen (ca. 1,5 Meter Abstand), den Griff mit beiden Händen greifen und die Arme fast vollständig ausstrecken, sodass das Band unter Zug steht.",
+      "Die Bewegung durch eine kraftvolle Rotation des Rumpfes einleiten und den Griff in einer diagonalen Bewegung von oben nach unten am Körper vorbeiführen.",
+      "Die Hüfte bleibt stabil nach vorne gerichtet, während die Bauchmuskeln maximal kontrahieren; danach den Griff kontrolliert und langsam über 3 Sekunden zurückführen."
+    ],
+    "mistakes": [
+      "Mitreißen des Griffs rein aus der Kraft der Arme anstelle einer echten Rumpfrotation.",
+      "Mitdrehen der Hüfte und Knie, wodurch die Torsionsspannung in den schrägen Bauchmuskeln verpufft.",
+      "Zu schnelles Zurückfedernlassen des Griffs, was die exzentrische Rumpfstabilisierung zunichte macht."
+    ],
+    "safety": "Der zweihändige Griff muss fest umschlossen sein, da ein Abrutschen unter maximalem Torsionszug zu Verletzungen führen kann.",
+    "image": null,
+    "muscleGroup": "Bauch"
+  },
+  "pallof-press-tueranker-baender": {
+    "name": "Pallof Press mit Türanker und Griffen (Bänder)",
+    "muscles": {
+      "primary": "Gerade und schräge Bauchmuskeln (Anti-Rotations-Core-Kraft)",
+      "secondary": "Brustmuskulatur, vordere Schulter"
+    },
+    "steps": [
+      "Den XL-Türanker auf mittlerer Höhe (Brusthöhe) fixieren, das Band durchführen und einen Griff ankoppeln.",
+      "Seitlich zur Tür aufstellen (schulterbreiter Stand), den Griff mit beiden Händen greifen und ihn mittig vor dem Brustbein halten, während das Band bereits eine spürbare Querzug-Vorspannung erzeugt.",
+      "Den Rumpf und das Gesäß maximal anspannen, um jeglicher Rotation standzuhalten, und die Arme kontrolliert gerade nach vorne ausstrecken.",
+      "Die voll gestreckte Position für 2 Sekunden statisch halten, während die Anti-Rotationskräfte im Core maximal arbeiten, und die Hände anschließend langsam wieder zur Brust zurückführen."
+    ],
+    "mistakes": [
+      "Zulassen, dass der Oberkörper durch den seitlichen Zug des Bandes in Richtung der Tür rotiert.",
+      "Nach-vorne-Fallen der Schultern (Rundrücken) oder Einnehmen eines Hohlkreuzes während des Pressens.",
+      "Hektisches, schnelles Vor- und Zurückschieben ohne isometrische Haltephase."
+    ],
+    "safety": "Der Abstand zur Tür muss so gewählt werden, dass die Rumpfmuskulatur die seitlich wirkende Kraft jederzeit sicher kontrollieren kann, ohne die Lendenwirbelsäule zu gefährden.",
+    "image": null,
+    "muscleGroup": "Bauch"
   }
 }
