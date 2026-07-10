@@ -78,3 +78,13 @@ Auf Nutzeranfrage hat Claude den kompletten `<style>`-Block von `index.html` ges
 - **Card-in-Card-Verschachtelung / fehlender Weißraum** (Claude + Gemini decken denselben Punkt aus zwei Blickwinkeln ab): Swap-/Info-/KI-Panel liegen alle in derselben `.card`; Gemini ergänzt, dass die Karte bei Historie+Vorschlag+Notizen+mehreren Sätzen "kollabiert" — beides zeigt auf dasselbe Kartenlayout-Problem, noch nicht angegangen.
 - **Abrupte Screen-Wechsel ohne Übergang** (Gemini, neu): `innerHTML`-Austausch beim View-Wechsel "flasht" hart, keine CSS-Fades.
 - **Trainingsmodus zu nah an der normalen Liste** (Gemini, neu): Fokus-Ansicht nutzt exakt dieselbe Kartengrafik wie die Kartenliste; Wunsch nach mehr Immersion (Header ausblenden, Übung größer, Navigation dominanter).
+
+## Umsetzungsreihenfolge UI/UX + Feature-Wünsche (Stand v1.29.0)
+
+Nach dem Sammeln von Claudes zwei Rollenspiel-Listen ("Feature-Wünsche"/"Kritisches Feedback" oben) und Geminis zwei Nachrichten (Optik/Bedienbarkeit + Feature-Wunschliste) wurde gemeinsam mit dem Nutzer eine priorisierte Reihenfolge festgelegt. Dies ist die eine Stelle, an der der Gesamtfortschritt über alle vier Quellen hinweg steht — nicht die vier Einzellisten einzeln durchgehen.
+
+- **Phase 1 (erledigt, v1.26.0/v1.27.0/v1.27.1)**: Tap-Targets, native Dialoge ersetzt, `--rust`-Doppelbelegung in der neuen Modal-Komponente entschärft, Gym-Verwaltung auch im Profil. Details siehe "Kritisches Feedback" oben.
+- **Phase 2 (erledigt, v1.28.2/v1.29.0)**: Button-Kontrast (ℹ/⟲/⚙), Cloud-Sync-Statusanzeige (Konto-Bereich), Bänder-Kombinations-Rechner (Klammer-Hinweis beim Gewichtsvorschlag im `baender`-Plan).
+- **Phase 3 (offen)**: Kartenlayout entschlacken (Card-in-Card/Weißraum), sanfte Screen-Übergänge, Trainingsmodus immersiver gestalten.
+- **Phase 4 (offen)**: KI-Übungstausch auch im Trainingsmodus verfügbar machen, PR-Modell auf geschätztes 1RM (Epley/Brzycki) umstellen, Wohlbefinden-Tracking pro Trainingstag (neu), Rest der langen Wunschliste (Wochenvolumen-Trend, Kalender/Streak, Notizen pro Einheit, konfigurierbarer Timer, KI-Dialog statt Einbahnstraße) — noch nicht im Detail bewertet/priorisiert.
+- **Parallel, nicht von mir blockiert**: Calisthenics-Übungsdatenbank (14 Übungen, Recherche-Prompt liegt bereit, wartet auf Nutzer-Recherche), Fraktionales Wochenvolumen (bewusst abgelehnt in v1.18.0, nur bei explizitem Wunsch revidieren), Admin-Panel-Funktionalität (braucht privilegierten Backend-Entscheid).

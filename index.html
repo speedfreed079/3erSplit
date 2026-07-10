@@ -138,6 +138,10 @@
   .history-line b { color: var(--chalk); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
   .weight-suggestion { color: var(--olive); display: inline-flex; align-items: center; gap: 6px; }
   .weight-suggestion b { color: var(--olive); }
+  .band-combo-hint { color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .sync-status { font-size: 12px; color: var(--chalk-dim); }
+  .sync-status.sync-ok { color: var(--olive); }
+  .sync-status.sync-error { color: var(--rust); }
   .suggestion-accept-btn {
     font-size: 11px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--olive);
     background: transparent; color: var(--olive); cursor: pointer;
@@ -953,7 +957,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.28.2";
+const APP_VERSION = "1.29.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1420,6 +1424,34 @@ let currentUser = null;
 let loginEmailFormOpen = false;
 let editNameOpen = false;
 
+// Cloud-Sync-Statusanzeige (seit v1.29.0): rein ephemer, nie in state/localStorage. Wird von
+// persist() und reconcileCloudState() aktualisiert (siehe setCloudSyncStatus() unten). Bewusst
+// KEIN voller render()-Aufruf bei jeder Statusaenderung - persist() wird u.a. aus dem
+// input-Listener fuer Gewicht/Wdh.-Felder aufgerufen, der bewusst KEIN render() ausloest, um den
+// Eingabefokus beim Tippen nicht zu verlieren. Stattdessen aktualisiert renderCloudSyncStatus()
+// nur das eine #cloud-sync-status-Element direkt per DOM, gleiches Muster wie renderRestTimer().
+let cloudSyncStatus = "idle"; // "idle" | "syncing" | "synced" | "error"
+let lastCloudSyncAt = null;
+
+function cloudSyncStatusHTML() {
+  if (!currentUser) return "";
+  if (cloudSyncStatus === "syncing") return `<span class="sync-status sync-syncing">⏳ Synchronisiert …</span>`;
+  if (cloudSyncStatus === "error") return `<span class="sync-status sync-error">⚠ Sync fehlgeschlagen</span>`;
+  if (cloudSyncStatus === "synced") return `<span class="sync-status sync-ok">✓ Synchronisiert</span>`;
+  return `<span class="sync-status">–</span>`;
+}
+
+function renderCloudSyncStatus() {
+  const el = document.getElementById("cloud-sync-status");
+  if (el) el.innerHTML = cloudSyncStatusHTML();
+}
+
+function setCloudSyncStatus(status) {
+  cloudSyncStatus = status;
+  if (status === "synced") lastCloudSyncAt = Date.now();
+  renderCloudSyncStatus();
+}
+
 // Admin-Panel (seit v1.20.0): reines Sichtbarkeits-Gate fuer jetzt - zeigt nur einen
 // Platzhalter-Screen. Die eigentliche Nutzerverwaltung (Konten auflisten/loeschen) braucht
 // privilegierten Backend-Zugriff (Firebase Admin SDK, das NIE im Client-JS laufen darf - sonst
@@ -1630,7 +1662,10 @@ function persist() {
       console.error("Speichern fehlgeschlagen", e);
     }
     if (currentUser && window.FretzeCloud) {
-      window.FretzeCloud.saveState(currentUser.uid, state).catch(() => {});
+      setCloudSyncStatus("syncing");
+      window.FretzeCloud.saveState(currentUser.uid, state)
+        .then(() => setCloudSyncStatus("synced"))
+        .catch(() => setCloudSyncStatus("error"));
     }
   }, 300);
 }
@@ -1654,6 +1689,7 @@ function mergeJournals(a, b) {
 // gleiche "state als ein Blob"-Konvention wie ueberall sonst in der App.
 async function reconcileCloudState(uid) {
   if (!window.FretzeCloud) return;
+  setCloudSyncStatus("syncing");
   try {
     const cloud = await window.FretzeCloud.loadState(uid);
     if (!cloud) {
@@ -1661,6 +1697,7 @@ async function reconcileCloudState(uid) {
       // Deckt zugleich "bestehende lokale Daten beim ersten Login migrieren" ab.
       state.updatedAt = state.updatedAt || Date.now();
       await window.FretzeCloud.saveState(uid, state);
+      setCloudSyncStatus("synced");
       return;
     }
     const localTs = state.updatedAt || 0;
@@ -1699,8 +1736,10 @@ async function reconcileCloudState(uid) {
     // Zusammengefuehrtes Tagebuch immer zurueckschreiben, unabhaengig davon wer "gewonnen" hat -
     // sonst wuerde die andere Seite ihre eigenen, dem Gewinner unbekannten Eintraege verlieren.
     await window.FretzeCloud.saveState(uid, state);
+    setCloudSyncStatus("synced");
   } catch (e) {
     console.warn("Cloud-Sync fehlgeschlagen", e);
+    setCloudSyncStatus("error");
   }
 }
 
@@ -1922,6 +1961,29 @@ function exerciseInfoPanelHTML(ex) {
   `;
 }
 
+// Baender-Kombinations-Rechner (seit v1.29.0): das SmartWorkout-Elite-Set hat genau diese 7
+// Baender (2x 25kg, 2x 20kg, je 1x 15/10/5kg). Findet per Brute-Force (nur 2^7=128 Teilmengen,
+// trivial schnell) die Kombination, deren Summe dem Zielgewicht am naechsten kommt - bei
+// Gleichstand die mit weniger Baendern (einfacher zu greifen). Nur fuer den baender-Plan relevant.
+const BAND_WEIGHTS = [25, 25, 20, 20, 15, 10, 5];
+
+function findBandCombination(targetKg) {
+  const n = BAND_WEIGHTS.length;
+  let best = null;
+  for (let mask = 1; mask < (1 << n); mask++) {
+    let sum = 0;
+    const combo = [];
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) { sum += BAND_WEIGHTS[i]; combo.push(BAND_WEIGHTS[i]); }
+    }
+    const diff = Math.abs(sum - targetKg);
+    if (!best || diff < best.diff || (diff === best.diff && combo.length < best.combo.length)) {
+      best = { sum, combo: combo.slice().sort((a, b) => b - a), diff };
+    }
+  }
+  return best;
+}
+
 // Geteilt zwischen Kartenansicht und Fokusmodus (wie setsRowsHTML/exerciseInfoPanelHTML),
 // damit "Letztes Mal" und der Gewichtsvorschlag-Chip in beiden Ansichten identisch sind.
 function historyLineHTML(exId, hist) {
@@ -1929,9 +1991,15 @@ function historyLineHTML(exId, hist) {
     ? `Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span>`
     : "";
   const suggestion = getWeightSuggestion(exId);
-  const suggestionPart = suggestion
-    ? `<span class="weight-suggestion">💡 Vorschlag: <b>${escapeAttr(String(suggestion.weight))}kg</b> <button class="suggestion-accept-btn" data-role="suggestion-accept" data-exid="${escapeAttr(exId)}">Übernehmen</button></span>`
-    : "";
+  let suggestionPart = "";
+  if (suggestion) {
+    let bandHint = "";
+    if (state.currentPlan === "baender") {
+      const best = findBandCombination(Number(suggestion.weight));
+      if (best) bandHint = ` <span class="band-combo-hint">(${best.combo.join("+")}kg)</span>`;
+    }
+    suggestionPart = `<span class="weight-suggestion">💡 Vorschlag: <b>${escapeAttr(String(suggestion.weight))}kg</b>${bandHint} <button class="suggestion-accept-btn" data-role="suggestion-accept" data-exid="${escapeAttr(exId)}">Übernehmen</button></span>`;
+  }
   if (!historyPart && !suggestionPart) return "";
   return `<div class="history-line">${historyPart}${suggestionPart}</div>`;
 }
@@ -2197,6 +2265,10 @@ function accountSectionHTML() {
       <div class="profile-row">
         <span>Eingeloggt als ${escapeAttr(currentUser.displayName || currentUser.email || "Konto")}</span>
         <button class="icon-btn" data-role="logout">Ausloggen</button>
+      </div>
+      <div class="profile-row">
+        <span>Cloud-Sync</span>
+        <span id="cloud-sync-status">${cloudSyncStatusHTML()}</span>
       </div>
       <div class="profile-row">
         <span>Anzeigename</span>
@@ -3493,7 +3565,7 @@ window.addEventListener("fretzecloud-ready", () => {
     const wasLoggedIn = !!currentUser;
     currentUser = user;
     if (user) { loginEmailFormOpen = false; reconcileCloudState(user.uid); }
-    if (!user) { editNameOpen = false; adminViewActive = false; }
+    if (!user) { editNameOpen = false; adminViewActive = false; cloudSyncStatus = "idle"; }
     render();
     if (user && !wasLoggedIn) showToast(`Eingeloggt als ${user.email || user.displayName || "Konto"}.`);
     if (!user && wasLoggedIn) showToast("Ausgeloggt.");

@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.29.0 — 2026-07-10 (Teil 59): Phase 2 der UI/UX-Liste — Cloud-Sync-Anzeige + Bänder-Kombinations-Rechner
+
+- Umsetzung von Phase 2 der gemeinsam erstellten Reihenfolge (siehe `MEMORY.md`): beide ursprünglich von Gemini vorgeschlagenen Quick-Wins.
+- **Bänder-Kombinations-Rechner**: neue `findBandCombination(targetKg)` (Brute-Force über alle 2^7=128 Teilmengen der 7 SmartWorkout-Bänder — trivial schnell, keine Optimierung nötig) findet die Kombination, deren Summe dem Gewichtsvorschlag am nächsten kommt (bei Gleichstand: weniger Bänder bevorzugt). `historyLineHTML()` zeigt das Ergebnis nur beim `baender`-Plan zusätzlich in Klammern neben dem bestehenden 💡-Vorschlag-Chip, z.B. "35kg (20+15kg)".
+- **Cloud-Sync-Statusanzeige**: neue Zeile "Cloud-Sync" im Konto-Bereich (⏳ Synchronisiert.../✓ Synchronisiert/⚠ Sync fehlgeschlagen), gespeist aus `persist()`s Firestore-Push und `reconcileCloudState()`. Bewusst **kein** voller `render()`-Aufruf bei jeder Statusänderung — `persist()` läuft u.a. aus dem Gewicht/Wdh.-Eingabefeld-Listener, der bewusst kein `render()` auslöst, um den Fokus beim Tippen nicht zu verlieren. Stattdessen aktualisiert `renderCloudSyncStatus()` nur das eine `#cloud-sync-status`-Element direkt per DOM, gleiches Muster wie `renderRestTimer()`/`showToast()`.
+- `howto.html` (Gewichtsvorschlag-Abschnitt, Konto-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: Sync-Status durchläuft alle drei Zustände korrekt im UI; Bänder-Hinweis zeigt für einen simulierten 35kg-Vorschlag korrekt "(20+15kg)".
+- **Nächster Schritt**: Phase 3 (Kartenlayout entschlacken, Screen-Übergänge, Trainingsmodus immersiver) — siehe `MEMORY.md`.
+
 ## v1.28.2 — 2026-07-10 (Teil 58): Sichtbarkeit der ℹ/⟲/⚙-Buttons erhöht
 
 - Nutzer-Feedback: die ℹ/⟲-Buttons an den Übungskarten sind kaum vom Karten-Hintergrund zu unterscheiden — passend zum in `MEMORY.md` dokumentierten Kritikpunkt "Sekundärtext oft klein und stark gedimmt".
