@@ -49,6 +49,8 @@
   }
   h1, h3, .display { font-family: 'Oswald', sans-serif; }
   .mono { font-family: 'JetBrains Mono', monospace; }
+  @keyframes app-fade-in { from { opacity: 0; } to { opacity: 1; } }
+  #app.fade-in { animation: app-fade-in 150ms ease; }
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
@@ -121,7 +123,7 @@
 
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px; margin-bottom: 12px;
+    padding: 16px; margin-bottom: 14px;
   }
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
   .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -348,8 +350,8 @@
   .focusmode-content { padding: 16px; }
   .focusmode-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .focusmode-title {
-    font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 600; letter-spacing: 0.3px;
-    text-transform: uppercase; margin: 0;
+    font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 600; letter-spacing: 0.3px;
+    text-transform: uppercase; margin: 0; line-height: 1.15;
   }
   .focusmode-target { font-size: 13px; color: var(--chalk-dim); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
   .focusmode-next {
@@ -357,11 +359,14 @@
     font-size: 12px; color: var(--chalk-dim);
   }
   .focusmode-next b { color: var(--chalk); font-weight: 500; }
-  .focusmode-nav { display: flex; gap: 8px; margin-top: 16px; }
+  .focusmode-nav {
+    display: flex; gap: 8px; margin-top: 16px;
+    position: sticky; bottom: 0; padding: 10px 0 4px; background: var(--bg);
+  }
   .focusmode-nav-btn {
-    flex: 1; padding: 12px; border-radius: 9px; border: 1px solid var(--border);
+    flex: 1; padding: 15px; border-radius: 9px; border: 1px solid var(--border);
     background: var(--surface); color: var(--chalk); font-family: 'Oswald', sans-serif;
-    font-size: 13px; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .focusmode-nav-btn:disabled { opacity: 0.4; cursor: default; }
@@ -957,7 +962,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.29.0";
+const APP_VERSION = "1.30.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2463,6 +2468,22 @@ function renderPlanBuilder() {
   `;
 }
 
+// Seit v1.30.0: ersetzt alle direkten `#app`.innerHTML-Zuweisungen in render() - fuegt einen
+// sanften Fade-in beim View-Wechsel hinzu (Reaktion auf Feedback, dass der harte innerHTML-
+// Sprung beim Wechseln zwischen Ansichten "flasht"). CSS-Keyframe statt Inline-Opacity+rAF,
+// damit ein erneuter Aufruf noch waehrend einer laufenden Animation sauber neu startet (Klasse
+// entfernen + erzwungener Reflow + Klasse wieder hinzufuegen). Rein kosmetisch, kein Einfluss auf
+// den bestehenden Fokus-Erhalt-Mechanismus (der input-Listener ruft render()/setAppHTML() ohnehin
+// nie auf).
+function setAppHTML(html) {
+  const app = document.getElementById("app");
+  if (!app) return;
+  app.innerHTML = html;
+  app.classList.remove("fade-in");
+  void app.offsetWidth;
+  app.classList.add("fade-in");
+}
+
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
@@ -2470,37 +2491,37 @@ function render() {
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
 
   if (planBuilderActive) {
-    document.getElementById("app").innerHTML = renderPlanBuilder();
+    setAppHTML(renderPlanBuilder());
     return;
   }
 
   if (profileActive) {
-    document.getElementById("app").innerHTML = renderProfileView();
+    setAppHTML(renderProfileView());
     return;
   }
 
   if (adminViewActive) {
-    document.getElementById("app").innerHTML = renderAdminView();
+    setAppHTML(renderAdminView());
     return;
   }
 
   if (libraryActive) {
-    document.getElementById("app").innerHTML = renderLibraryView();
+    setAppHTML(renderLibraryView());
     return;
   }
 
   if (homeScreenActive) {
-    document.getElementById("app").innerHTML = renderHomeScreen();
+    setAppHTML(renderHomeScreen());
     return;
   }
 
   if (journalViewActive) {
-    document.getElementById("app").innerHTML = renderJournalView();
+    setAppHTML(renderJournalView());
     return;
   }
 
   if (focusModeActive) {
-    document.getElementById("app").innerHTML = renderFocusMode();
+    setAppHTML(renderFocusMode());
     return;
   }
 
@@ -2567,7 +2588,7 @@ function render() {
     `;
   }).join("");
 
-  document.getElementById("app").innerHTML = `
+  setAppHTML(`
     <div class="header">
       <div class="header-row">
         <div style="min-width:0; flex:1;">
@@ -2605,7 +2626,7 @@ function render() {
       ${stretchSectionHTML(dayMeta.type)}
       <button class="finish-btn" data-role="finish" data-day="${day}">Training abschließen →</button>
     </div>
-  `;
+  `);
 }
 
 function finishSession(dayId) {
@@ -3260,6 +3281,9 @@ document.addEventListener("click", (e) => {
   if (swapToggle) {
     const key = `${swapToggle.dataset.day}:${swapToggle.dataset.exid}`;
     swapOpenKey = swapOpenKey === key ? null : key;
+    // Seit v1.30.0: Info- und Tausch-Panel sind gegenseitig exklusiv (nie beide gleichzeitig
+    // offen) - Reaktion auf Feedback, dass die Karte bei mehreren offenen Panels "kollabiert".
+    if (swapOpenKey) infoOpenKey = null;
     render();
     return;
   }
@@ -3268,6 +3292,7 @@ document.addEventListener("click", (e) => {
   if (infoToggle) {
     const key = `${infoToggle.dataset.day}:${infoToggle.dataset.exid}`;
     infoOpenKey = infoOpenKey === key ? null : key;
+    if (infoOpenKey) swapOpenKey = null;
     render();
     return;
   }

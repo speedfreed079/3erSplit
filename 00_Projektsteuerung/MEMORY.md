@@ -75,9 +75,11 @@ Auf Nutzeranfrage hat Claude den kompletten `<style>`-Block von `index.html` ges
 - **Set-Row weiterhin dicht auf schmalen Screens**: durch die größeren Tap-Targets ist noch weniger Platz für die Gewicht/Wdh.-Eingabefelder übrig (Kompromiss: `gap` von 8px auf 6px reduziert, um das teilweise auszugleichen) — bei sehr schmalen Geräten immer noch eng, aber kein horizontales Overflow.
 - **Sekundärtext oft klein und stark gedimmt**: `--chalk-dim` bei 10–13px trägt Infos, die man mitten im Satz braucht. **Teilweise behoben in v1.28.2**: die ℹ/⟲/⚙-Buttons (`.swap-btn`) haben jetzt vollen Textkontrast (`--chalk`) plus eine sichtbare Füllfarbe (`--surface2`) statt transparent — `target-line`/`history-line`/`set-count` bleiben aber weiterhin gedimmt, das war nicht Teil dieser Änderung.
 - **Reine Icon-Buttons ohne Label** (⟲/✏/🗑): haben bereits `title`-Tooltips (helfen Desktop-Maus-Nutzern und Screenreadern), aber `title` zeigt auf Touch-Geräten beim Antippen nichts an — für den eigentlichen Nutzungskontext (Handy im Gym) bleibt die Lernkurve für Erstnutzer damit im Kern unverändert offen.
-- **Card-in-Card-Verschachtelung / fehlender Weißraum** (Claude + Gemini decken denselben Punkt aus zwei Blickwinkeln ab): Swap-/Info-/KI-Panel liegen alle in derselben `.card`; Gemini ergänzt, dass die Karte bei Historie+Vorschlag+Notizen+mehreren Sätzen "kollabiert" — beides zeigt auf dasselbe Kartenlayout-Problem, noch nicht angegangen.
-- **Abrupte Screen-Wechsel ohne Übergang** (Gemini, neu): `innerHTML`-Austausch beim View-Wechsel "flasht" hart, keine CSS-Fades.
-- **Trainingsmodus zu nah an der normalen Liste** (Gemini, neu): Fokus-Ansicht nutzt exakt dieselbe Kartengrafik wie die Kartenliste; Wunsch nach mehr Immersion (Header ausblenden, Übung größer, Navigation dominanter).
+
+**Behoben in v1.30.0 (Phase 3):**
+- **Card-in-Card-Verschachtelung / fehlender Weißraum**: ℹ/⟲-Panels sind jetzt gegenseitig exklusiv (nie beide gleichzeitig offen), `.card`-Padding/Abstand leicht erhöht. Die KI-Vorschlag-Panel-Verschachtelung *innerhalb* des Swap-Panels bleibt unverändert (kein separater Punkt, war nie als eigenes Problem benannt).
+- **Abrupte Screen-Wechsel ohne Übergang**: neue `setAppHTML()`-Funktion, 150ms-CSS-Fade-in bei jedem View-Wechsel.
+- **Trainingsmodus zu nah an der normalen Liste**: Titel 24→32px vergrößert, Navigation jetzt sticky am unteren Rand. Header war schon vorher ausgeblendet (eigener minimaler `.focusmode-topbar`, kein Missverständnis — Gemini kannte den tatsächlichen Code nicht).
 
 ## Umsetzungsreihenfolge UI/UX + Feature-Wünsche (Stand v1.29.0)
 
@@ -85,6 +87,6 @@ Nach dem Sammeln von Claudes zwei Rollenspiel-Listen ("Feature-Wünsche"/"Kritis
 
 - **Phase 1 (erledigt, v1.26.0/v1.27.0/v1.27.1)**: Tap-Targets, native Dialoge ersetzt, `--rust`-Doppelbelegung in der neuen Modal-Komponente entschärft, Gym-Verwaltung auch im Profil. Details siehe "Kritisches Feedback" oben.
 - **Phase 2 (erledigt, v1.28.2/v1.29.0)**: Button-Kontrast (ℹ/⟲/⚙), Cloud-Sync-Statusanzeige (Konto-Bereich), Bänder-Kombinations-Rechner (Klammer-Hinweis beim Gewichtsvorschlag im `baender`-Plan).
-- **Phase 3 (offen)**: Kartenlayout entschlacken (Card-in-Card/Weißraum), sanfte Screen-Übergänge, Trainingsmodus immersiver gestalten.
+- **Phase 3 (erledigt, v1.30.0)**: ℹ/⟲-Panels gegenseitig exklusiv (nie beide gleichzeitig offen) + etwas mehr Karten-Weißraum; Trainingsmodus-Titel vergrößert (24→32px) + Navigation sticky am unteren Rand; sanfter Fade-in bei jedem View-Wechsel (`setAppHTML()`, ersetzt alle direkten `#app`.innerHTML-Zuweisungen).
 - **Phase 4 (offen)**: KI-Übungstausch auch im Trainingsmodus verfügbar machen, PR-Modell auf geschätztes 1RM (Epley/Brzycki) umstellen, Wohlbefinden-Tracking pro Trainingstag (neu), Rest der langen Wunschliste (Wochenvolumen-Trend, Kalender/Streak, Notizen pro Einheit, konfigurierbarer Timer, KI-Dialog statt Einbahnstraße) — noch nicht im Detail bewertet/priorisiert.
 - **Parallel, nicht von mir blockiert**: Calisthenics-Übungsdatenbank (14 Übungen, Recherche-Prompt liegt bereit, wartet auf Nutzer-Recherche), Fraktionales Wochenvolumen (bewusst abgelehnt in v1.18.0, nur bei explizitem Wunsch revidieren), Admin-Panel-Funktionalität (braucht privilegierten Backend-Entscheid).

@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.30.0 — 2026-07-10 (Teil 60): Phase 3 der UI/UX-Liste — Kartenlayout, Screen-Übergänge, Trainingsmodus
+
+- Umsetzung von Phase 3 der gemeinsam erstellten Reihenfolge (siehe `MEMORY.md`): visueller Feinschliff, kein Datenmodell betroffen.
+- **Kartenlayout entschlacken**: ℹ-Erklärung und ⟲-Tausch-Panel (`infoOpenKey`/`swapOpenKey`) sind jetzt gegenseitig exklusiv — Öffnen des einen schließt automatisch das andere, statt beide gleichzeitig anzeigen zu können. Direkte Antwort auf "Karte kollabiert bei mehreren offenen Panels". `.card`-Padding/Abstand leicht erhöht (14px→16px Padding, 12px→14px Abstand zwischen Karten) für mehr Weißraum.
+- **Trainingsmodus immersiver**: `.focusmode-title` von 24px auf 32px vergrößert; die Navigationsleiste (Zurück/Überspringen/Weiter) ist jetzt `position: sticky` am unteren Bildschirmrand (statt nur am Ende des Inhalts), mit kräftigerer Schrift/mehr Padding — bleibt beim Scrollen durch die Sätze immer erreichbar.
+- **Sanfte Screen-Übergänge**: neue `setAppHTML()`-Funktion ersetzt alle 8 direkten `#app`.innerHTML-Zuweisungen in `render()` (7 View-Early-Returns + die Kartenansicht selbst) — fügt einen 150ms-CSS-Fade-in beim View-Wechsel hinzu (`@keyframes app-fade-in`, Klasse entfernen+erzwungener Reflow+wieder hinzufügen, damit ein erneuter Aufruf mitten in der Animation sauber neu startet). Rein kosmetisch, berührt nicht den bestehenden Fokus-Erhalt-Mechanismus (der `input`-Listener ruft `render()`/`setAppHTML()` ohnehin nie auf).
+- `howto.html` (Übung-tauschen-Abschnitt: Hinweis auf die neue Exklusivität) aktualisiert.
+- Verifiziert per Playwright: Fade-Klasse wird nach `render()` korrekt gesetzt; Öffnen von ⟲ schließt ℹ und umgekehrt; Trainingsmodus-Titel ist 32px; Sticky-Navigation bleibt beim Scrollen in einem kurzen Viewport sichtbar am unteren Rand.
+- **Nächster Schritt**: Phase 4 (KI-Tausch im Trainingsmodus, PR-Modell auf e1RM, Wohlbefinden-Tracking, Rest der Wunschliste) — siehe `MEMORY.md`.
+
 ## v1.29.0 — 2026-07-10 (Teil 59): Phase 2 der UI/UX-Liste — Cloud-Sync-Anzeige + Bänder-Kombinations-Rechner
 
 - Umsetzung von Phase 2 der gemeinsam erstellten Reihenfolge (siehe `MEMORY.md`): beide ursprünglich von Gemini vorgeschlagenen Quick-Wins.
