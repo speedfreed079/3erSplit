@@ -2,6 +2,18 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.26.0 — 2026-07-10 (Teil 52): Tap-Targets vergrößert
+
+- Nutzer hat sowohl Claude (Rollenspiel, bereits in `MEMORY.md` dokumentiert) als auch Gemini nach Optik/Bedienbarkeit gefragt — beide unabhängig zum selben Hauptbefund gekommen: die Tap-Targets in der Satzzeile (Aufwärm-/Mehr-Toggle, Done-Häkchen) sind für den Trainingskontext (oft einhändig, schwitzige/zittrige Finger) zu klein. Nutzer hat das als ersten Umsetzungspunkt priorisiert.
+- **`.set-header`/`.set-row`-Grid**: Spalten für 🔥/↑/Done von `32px 32px 24px` auf `40px 40px 40px` vergrößert (beide Grids synchron geändert, siehe CLAUDE.md "Set-row grid alignment" — sonst würden Header und Zeilen auseinanderdriften), `gap` von 8px auf 6px reduziert, um einen Teil der zusätzlichen Breite bei den Gewicht/Wdh.-Eingabefeldern auszugleichen.
+- `.warmup-toggle`/`.couldmore-toggle`: `min-width` von 26px auf 40px, `min-height: 40px` ergänzt, `display: flex` mit zentriertem Inhalt (vorher reine Buttons ohne explizite Höhe/Zentrierung). `.done-btn`: `width`/`height` von 24px auf 40px.
+- `.swap-btn` (ℹ/⟲) und `.home-plan-edit`/`.home-plan-delete` (✏/🗑, auf dem Startbildschirm bei eigenen Plänen) auf `min-width`/`min-height: 44px` gebracht (letztere zusätzlich mit `display: flex` zentriert, vorher nur Padding).
+- **Verifiziert per Playwright-Screenshot-Test** (lokaler Server + `chromium`, 375px Viewportbreite = iPhone SE, das engste realistische Zielgerät): gemessene Boxen exakt 40×40px (Satzzeile) bzw. 44×44px (ℹ/⟲), `document.documentElement.scrollWidth === clientWidth` (kein horizontales Überlaufen), Auto-Erledigt-Funktion (v1.23.0) nach der CSS-Änderung weiterhin funktional getestet (Wiederholungen eintragen → Häkchen wird `done`, Pausen-Timer erscheint). Kartenansicht und Trainingsmodus (teilen sich `setsRowsHTML()`) beide per Screenshot geprüft.
+- `MEMORY.md` aktualisiert: Tap-Target-Punkt als umgesetzt markiert, Geminis restliches Feedback (Screen-Übergänge, `prompt()`-Dialoge, Trainingsmodus-Immersion) als neue offene Punkte ergänzt, Überschneidungen mit Claudes Liste (Card-in-Card/Weißraum) zusammengeführt.
+- Kein howto.html-Update nötig (rein optische Größenänderung bestehender Bedienelemente, keine neue Funktion/kein geändertes Verhalten).
+- Verifiziert: `node --check` auf dem Haupt-Script.
+- **Nächster Schritt**: nächster Punkt aus der UI/UX-Liste nach Nutzerpriorität (siehe `MEMORY.md`), z.B. `prompt()`-Dialoge ersetzen oder Kartenlayout entschlacken.
+
 ## v1.25.0 — 2026-07-10 (Teil 51): Übungserklärungen für alle 22 Bänder-Übungen integriert
 
 - Das Ergebnis des in Teil 50 vorbereiteten Deep-Research-Prompts lag im Ordner `01_Recherchen/02_Uebungserklaerungen/` (Datei "SmartWorkout Biomechanischer Übungskatalog.md") — gründlich gelesen und vollständig integriert. Alle angeforderten 22 Übungen im erwarteten Format geliefert, keine Nacharbeit am Recherche-Text nötig (nur Fußnoten-Zahlen automatisiert entfernt, gleiches Muster wie bei v1.17.0).

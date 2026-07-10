@@ -44,3 +44,33 @@ Wunschliste des Nutzers, einsortiert nach Recherche- vs. Engineering-Aufwand und
 - **Phase 3 — bewusst zuletzt:** Punkt 4 (Login/Firebase). Bleibt an die bestehende Entscheidung gekoppelt (Auslöser = erster mitnutzender Freund, siehe oben), zusätzlich sinnvoll erst NACH Phase 2, damit nur einmal migriert wird (fertiges Datenmodell nach Firestore, nicht zweimal migrieren).
 
 **Nächster konkreter Schritt:** eigene Übungen hinzufügen (Punkt 5) — bisher einziger offener Roadmap-Punkt außer Login/Firebase (Phase 3, absichtlich später).
+
+## Feature-Wünsche aus Nutzerperspektive (Claude-Rollenspiel, 2026-07-10)
+
+Auf Nutzeranfrage hat Claude sich in die Nutzerrolle versetzt und die App aus Anwendersicht bewertet. Noch nicht priorisiert oder mit dem Nutzer abgestimmt — reine Ideensammlung, ergänzend zur Feature-Roadmap oben.
+
+- **Wochenvolumen als Trend statt Einzelwoche**: `journalVolumeHTML()` (v1.18.0) zeigt nur die aktuelle ISO-Woche isoliert. Mehrwochen-Trend pro Muskelgruppe würde helfen, strukturelles Unter-/Übertraining zu erkennen statt nur eine Momentaufnahme.
+- **PRs über reines Gewicht hinaus**: `computePersonalRecords()` definiert PR aktuell als schwerstes je gehobenes Gewicht (unabhängig von Wiederholungen). Volumen-PR (Gewicht × Wdh.) oder e1RM-Schätzung wären bei Übungen mit hohen Wiederholungszahlen aussagekräftiger.
+- **Konfigurierbarer Ruhetimer**: `restTimer` startet aktuell pauschal bei jedem abgehakten Satz mit fester Logik. Wunsch: unterschiedliche Standardzeiten für Compound vs. Isolation, plus Push-Benachrichtigung, wenn die App im Hintergrund ist.
+- **KI-Übungstausch als Dialog statt Einbahnstraße**: `fetchAiSuggestions()`/der Gemini-Proxy liefert aktuell nur statische Alternativlisten. Interessant wäre ein kurzer Dialog (z. B. "Knie zwickt bei Kniebeugen, was für die nächsten 2 Wochen?") statt einmaliger Vorschläge.
+- **Bibliothekslücken schließen**: Calisthenics-Plan und einige Custom-Plan-Übungen haben noch keinen `libraryId`/keine ℹ-Erklärung (siehe CLAUDE.md, Abschnitt "calisthenics plan's alts repurposed"). Auf Dauer als unfertig wahrnehmbar für Nutzer dieser Pläne.
+- **Cloud-Sync (Phase B) früher spürbar vermisst**: Aktuell nur Firebase Auth ohne Firestore-Sync (siehe "Konto/Login — Phase A" in CLAUDE.md). Bei Geräte-/Browserwechsel ist man auf Export/Import angewiesen — aus Nutzersicht schon jetzt spürbar, nicht erst "sobald ein Freund mitmacht".
+- **Kalender-/Streak-Ansicht im Tagebuch**: aktuell zeigt das Tagebuch Verlauf/Rekorde/Volumen, aber keine Trainings-Streak oder Kalenderübersicht (aufeinanderfolgende Trainingstage, Pausentage). Wird als motivierender eingeschätzt als reine Zahlen.
+- **Notizen pro Trainingseinheit statt nur pro Übung**: `state.notes` ist aktuell nur je Übung vorgesehen. Ein Tages-/Session-Kommentar (Schlaf, Energie, Krankheit) würde späteren Kontext liefern, warum eine Woche schwächer lief.
+
+## Kritisches Feedback zu Optik/Bedienbarkeit (Claude-Rollenspiel + Gemini, 2026-07-10)
+
+Auf Nutzeranfrage hat Claude den kompletten `<style>`-Block von `index.html` gesichtet und aus Nutzersicht bewertet; der Nutzer hat dieselbe Frage zusätzlich Gemini gestellt und beide Antworten zusammen einsortiert. Grundton beider Male positiv (Oswald/Inter/JetBrains-Mono-Kombination + Dark/Sepia-Themes wirken stimmig, kein Fokusverlust beim Tippen, festes Spalten-Grid).
+
+**Bereits umgesetzt (v1.26.0):**
+- **Tap-Targets zu klein für den Trainingskontext** — von beiden unabhängig voneinander als größtes Problem identifiziert (Claude: `.done-btn` war 24×24px, `.warmup-toggle`/`.couldmore-toggle` nur `min-width: 26px`, deutlich unter der 44px-Empfehlung; Gemini: dieselbe Beobachtung über Fitts' Law, Buttons zu nah beieinander bei schwitzigen/zittrigen Fingern im Training). Behoben: `.set-header`/`.set-row`-Grid-Spalten für 🔥/↑/Done auf `40px 40px 40px` (vorher `32px 32px 24px`), `.swap-btn` (ℹ/⟲) und `.home-plan-edit`/`.home-plan-delete` (✏/🗑) auf `min-width/height: 44px`. Playwright-Screenshot-Test bei 375px-Breite (iPhone SE) bestätigt: kein horizontales Überlaufen, alle Zielgrößen exakt getroffen.
+
+**Noch offen, nicht priorisiert:**
+- **Set-Row weiterhin dicht auf schmalen Screens**: durch die größeren Tap-Targets ist noch weniger Platz für die Gewicht/Wdh.-Eingabefelder übrig (Kompromiss: `gap` von 8px auf 6px reduziert, um das teilweise auszugleichen) — bei sehr schmalen Geräten immer noch eng, aber kein horizontales Overflow.
+- **`--rust` doppelt belegt**: gleichzeitig Primärfarbe für bestätigende Aktionen (Finish-Button, aktiver Tab, Today-Banner) und für Lösch-/Abbrechen-Aktionen (`home-plan-delete`, `swap-clear-btn`, `rest-timer-skip`). Unklar, ob es vor dem Löschen eines Plans/Gyms einen Bestätigungsdialog gibt.
+- **Sekundärtext oft klein und stark gedimmt**: `--chalk-dim` bei 10–13px trägt Infos, die man mitten im Satz braucht.
+- **Reine Icon-Buttons ohne Label** (⟲/✏/🗑): für Erstnutzer nicht selbsterklärend ohne Ausprobieren.
+- **Card-in-Card-Verschachtelung / fehlender Weißraum** (Claude + Gemini decken denselben Punkt aus zwei Blickwinkeln ab): Swap-/Info-/KI-Panel liegen alle in derselben `.card`; Gemini ergänzt, dass die Karte bei Historie+Vorschlag+Notizen+mehreren Sätzen "kollabiert" — beides zeigt auf dasselbe Kartenlayout-Problem, noch nicht angegangen.
+- **Abrupte Screen-Wechsel ohne Übergang** (Gemini, neu): `innerHTML`-Austausch beim View-Wechsel "flasht" hart, keine CSS-Fades.
+- **`prompt()`/native Browser-Dialoge** (Gemini, neu): Gym anlegen/umbenennen nutzt native `prompt()`-Fenster statt einer im App-Design gehaltenen Eingabe-Komponente.
+- **Trainingsmodus zu nah an der normalen Liste** (Gemini, neu): Fokus-Ansicht nutzt exakt dieselbe Kartengrafik wie die Kartenliste; Wunsch nach mehr Immersion (Header ausblenden, Übung größer, Navigation dominanter).
