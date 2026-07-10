@@ -382,6 +382,13 @@
   .focusmode-nav-btn.finish { background: var(--olive); border-color: var(--olive); color: #fff; }
 
   .journal-empty { padding: 20px 4px; color: var(--chalk-dim); font-size: 13px; }
+  .streak-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    padding: 10px 14px; margin-bottom: 14px; border-radius: 9px;
+    border: 1px solid var(--rust-dim); background: linear-gradient(180deg, rgba(193,68,14,0.14), rgba(193,68,14,0.05));
+    font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.3px; color: var(--chalk);
+  }
+  .streak-best { font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; }
   .journal-entry-header {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     margin-bottom: 8px; flex-wrap: wrap;
@@ -395,6 +402,10 @@
   }
   .journal-ex-line { font-size: 13px; margin-bottom: 4px; }
   .journal-ex-line i { color: var(--chalk-dim); font-style: italic; }
+  .journal-session-note {
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border);
+    font-size: 12px; color: var(--chalk-dim); white-space: pre-wrap;
+  }
   .journal-record-header {
     display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
   }
@@ -429,6 +440,7 @@
     position: relative; height: 10px; border-radius: 5px; background: var(--surface);
     border: 1px solid var(--border); overflow: hidden;
   }
+  .volume-row-trend .sparkline { height: 24px; margin-top: 4px; }
   .volume-row-target {
     position: absolute; top: 0; bottom: 0; background: rgba(124, 143, 90, 0.18);
   }
@@ -971,7 +983,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.33.0";
+const APP_VERSION = "1.38.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1137,13 +1149,15 @@ function getWeekStart(date) {
 // Zaehlt bewusst 1 Satz = 1 Volumen-Punkt fuer die primaere Muskelgruppe, ohne MJ/SJ-fraktionale
 // Anrechnung auf Sekundaermuskeln (siehe 01_Recherchen/01_Trainingsplaene/Trainingswissenschaft-
 // Uebungsauswahl.md) - bewusste Vereinfachung fuer die erste Version.
-function computeWeeklyVolume() {
-  const weekStart = getWeekStart(new Date());
+// Seit v1.36.0 in eine wiederverwendbare Bereichs-Funktion ausgelagert, damit sowohl die aktuelle
+// Woche (computeWeeklyVolume) als auch der Mehrwochen-Trend (computeVolumeTrend) dieselbe Logik
+// nutzen, statt sie zu duplizieren.
+function computeWeeklyVolumeForRange(weekStart, weekEnd) {
   const counts = {};
   MUSCLE_GROUPS.forEach(g => { counts[g] = 0; });
   let unattributed = 0;
   state.journal.forEach(entry => {
-    if (entry.timestamp < weekStart.getTime()) return;
+    if (entry.timestamp < weekStart.getTime() || entry.timestamp >= weekEnd.getTime()) return;
     entry.exercises.forEach(ex => {
       const def = findExerciseDefById(ex.exId);
       const info = def && def.libraryId ? exerciseLibrary[def.libraryId] : null;
@@ -1155,7 +1169,31 @@ function computeWeeklyVolume() {
       });
     });
   });
+  return { counts, unattributed };
+}
+
+function computeWeeklyVolume() {
+  const weekStart = getWeekStart(new Date());
+  const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const { counts, unattributed } = computeWeeklyVolumeForRange(weekStart, weekEnd);
   return { counts, unattributed, weekStart };
+}
+
+// Mehrwochen-Trend (seit v1.36.0): letzte VOLUME_TREND_WEEKS Kalenderwochen (inkl. der laufenden,
+// noch unvollstaendigen Woche), aeltester Eintrag zuerst - damit hilft das Dashboard, strukturelles
+// Unter-/Uebertraining ueber die Zeit zu erkennen statt nur eine Momentaufnahme zu zeigen.
+const VOLUME_TREND_WEEKS = 8;
+
+function computeVolumeTrend() {
+  const currentWeekStart = getWeekStart(new Date());
+  const weeks = [];
+  for (let i = VOLUME_TREND_WEEKS - 1; i >= 0; i--) {
+    const weekStart = new Date(currentWeekStart.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const { counts } = computeWeeklyVolumeForRange(weekStart, weekEnd);
+    weeks.push({ weekStart, counts });
+  }
+  return weeks;
 }
 
 // Kleine, abhaengigkeitsfreie Inline-SVG-Sparkline (kein Chart-Framework im Projekt).
@@ -1527,11 +1565,14 @@ function openConfirmModal({ title, message = "", confirmLabel = "Löschen", onCo
 }
 
 // Seit v1.33.0 (Wohlbefinden-Tracking): Auswahl aus mehreren Optionen statt Text/Bestaetigung.
-// "Ueberspringen" ruft onConfirm(null) auf statt die Aktion abzubrechen wie modal-cancel bei
-// prompt/confirm - der Skip-Fall soll die dahinterliegende Aktion (z.B. Training abschliessen)
-// trotzdem ausfuehren, nur ohne gewaehlten Wert.
-function openChoiceModal({ title, message = "", options, onConfirm }) {
-  modal = { kind: "choice", title, message, options, onConfirm };
+// "Ueberspringen" ruft onConfirm(null, note) auf statt die Aktion abzubrechen wie modal-cancel
+// bei prompt/confirm - der Skip-Fall soll die dahinterliegende Aktion (z.B. Training
+// abschliessen) trotzdem ausfuehren, nur ohne gewaehlten Wert. `includeNote` (seit v1.34.0,
+// Einheiten-Notizen) blendet zusaetzlich ein optionales Textfeld ein, dessen Wert immer als
+// zweites Argument an onConfirm geht (auch beim Ueberspringen - man kann eine Notiz schreiben
+// und trotzdem kein Emoji waehlen).
+function openChoiceModal({ title, message = "", options, includeNote = false, notePlaceholder = "", onConfirm }) {
+  modal = { kind: "choice", title, message, options, includeNote, notePlaceholder, onConfirm };
   renderModal();
 }
 
@@ -1552,6 +1593,7 @@ function renderModal() {
         <div class="modal-choice-options">
           ${modal.options.map(o => `<button class="modal-choice-btn" data-role="modal-choice-select" data-value="${escapeAttr(o.value)}">${escapeAttr(o.label)}</button>`).join("")}
         </div>
+        ${modal.includeNote ? `<textarea class="modal-input" id="modal-note-field" rows="2" placeholder="${escapeAttr(modal.notePlaceholder)}"></textarea>` : ""}
         <div class="modal-actions">
           <button class="modal-btn modal-btn-cancel" data-role="modal-skip">Überspringen</button>
         </div>
@@ -1577,7 +1619,14 @@ function renderModal() {
 }
 
 // ---------- REST TIMER ----------
-const restTimer = { endsAt: null, duration: 90, intervalId: null };
+// Seit v1.35.0: unterschiedliche Standard-Pausenzeit je nach Uebungsart (Grunduebungen brauchen
+// laut gaengiger Trainingswissenschaft laengere Satzpausen als Isolationsuebungen, ca. 2-3 statt
+// 1-1.5 Minuten). restTimer.duration bleibt der aktuelle/zuletzt genutzte Wert (weiterhin per
+// +15s/-15s anpassbar); REST_DURATION_COMPOUND/REST_DURATION_DEFAULT sind nur die Ausgangswerte,
+// die startRestTimer() beim naechsten Satz-Abhaken je nach ex.compound waehlt.
+const REST_DURATION_COMPOUND = 150;
+const REST_DURATION_DEFAULT = 90;
+const restTimer = { endsAt: null, duration: REST_DURATION_DEFAULT, intervalId: null };
 
 function beep() {
   try {
@@ -2182,11 +2231,55 @@ function journalPointsFor(exId) {
   return points;
 }
 
+// Streak-Zaehler (seit v1.37.0): zaehlt aufeinanderfolgende KALENDERWOCHEN (Mo-So) mit
+// mindestens einer abgeschlossenen Einheit, bewusst NICHT aufeinanderfolgende Kalendertage - bei
+// einem Push/Pull/Legs-artigen Split mit eingeplanten Ruhetagen waere ein taeglicher Streak fast
+// nie am Leben und wuerde normale, eingeplante Ruhetage faelschlich als "Serie gebrochen" werten.
+function computeTrainingStreaks() {
+  if (state.journal.length === 0) return { current: 0, best: 0 };
+  const weeksWithTraining = new Set(
+    state.journal.map(entry => getWeekStart(new Date(entry.timestamp)).getTime())
+  );
+  const sortedWeeks = Array.from(weeksWithTraining).sort((a, b) => a - b);
+  const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+  let best = 1;
+  let run = 1;
+  for (let i = 1; i < sortedWeeks.length; i++) {
+    run = sortedWeeks[i] - sortedWeeks[i - 1] === weekMs ? run + 1 : 1;
+    best = Math.max(best, run);
+  }
+
+  // Rueckwaerts von der laufenden Woche aus zaehlen. Fehlt nur die laufende, noch unvollstaendige
+  // Woche, bleibt die Serie bis zur letzten abgeschlossenen Woche trotzdem gueltig.
+  const currentWeekStart = getWeekStart(new Date()).getTime();
+  let current = 0;
+  let cursor = weeksWithTraining.has(currentWeekStart) ? currentWeekStart : currentWeekStart - weekMs;
+  while (weeksWithTraining.has(cursor)) {
+    current++;
+    cursor -= weekMs;
+  }
+
+  return { current, best };
+}
+
+function streakHTML() {
+  const { current, best } = computeTrainingStreaks();
+  if (current === 0 && best === 0) return "";
+  const weekWord = (n) => (n === 1 ? "Woche" : "Wochen");
+  return `
+    <div class="streak-banner">
+      <span>🔥 ${current} ${weekWord(current)} in Folge trainiert</span>
+      ${best > current ? `<span class="streak-best">Beste Serie: ${best} ${weekWord(best)}</span>` : ""}
+    </div>
+  `;
+}
+
 function journalHistoryHTML() {
   if (state.journal.length === 0) {
     return `<div class="journal-empty">Noch keine abgeschlossenen Einheiten im Tagebuch.</div>`;
   }
-  return [...state.journal].reverse().map(entry => {
+  return streakHTML() + [...state.journal].reverse().map(entry => {
     const gym = entry.gymId ? state.gyms.find(g => g.id === entry.gymId) : null;
     const exercisesHTML = entry.exercises.map(ex => {
       const setsText = ex.sets.map(s => {
@@ -2203,6 +2296,7 @@ function journalHistoryHTML() {
           <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}${wellbeingEmoji ? ` ${wellbeingEmoji}` : ""}</span>
         </div>
         ${exercisesHTML}
+        ${entry.sessionNote ? `<div class="journal-session-note">📝 ${escapeAttr(entry.sessionNote)}</div>` : ""}
       </div>
     `;
   }).join("");
@@ -2232,6 +2326,7 @@ function journalRecordsHTML() {
 
 function journalVolumeHTML() {
   const { counts, unattributed } = computeWeeklyVolume();
+  const trend = computeVolumeTrend();
   const maxScale = 24; // etwas ueber dem oberen Zielwert (20), damit der Balken nicht abgeschnitten wirkt
   const targetMinPct = (12 / maxScale) * 100;
   const targetMaxPct = (20 / maxScale) * 100;
@@ -2240,6 +2335,14 @@ function journalVolumeHTML() {
     const pct = Math.min(100, (n / maxScale) * 100);
     const status = n < 12 ? "low" : n <= 20 ? "ok" : "high";
     const statusLabel = { low: "niedrig", ok: "im Zielbereich", high: "hoch" }[status];
+    // Trend ueber die letzten VOLUME_TREND_WEEKS Wochen fuer diese Muskelgruppe - sparklineSVG()
+    // ist generisch genug (liest nur .weight/.timestamp), um sie unveraendert wiederzuverwenden,
+    // genau wie schon bei den Rekorden/e1RM.
+    const trendPoints = trend.map(w => ({ weight: w.counts[group], timestamp: w.weekStart.getTime() }));
+    const hasTrendData = trendPoints.some(p => p.weight > 0);
+    const trendHTML = hasTrendData
+      ? `<div class="volume-row-trend">${sparklineSVG(trendPoints)}</div>`
+      : "";
     return `
       <div class="volume-row">
         <div class="volume-row-top">
@@ -2250,6 +2353,7 @@ function journalVolumeHTML() {
           <div class="volume-row-target" style="left:${targetMinPct}%; width:${targetMaxPct - targetMinPct}%"></div>
           <div class="volume-row-fill volume-fill-${status}" style="width:${pct}%"></div>
         </div>
+        ${trendHTML}
       </div>
     `;
   }).join("");
@@ -2257,7 +2361,7 @@ function journalVolumeHTML() {
     ? `<div class="journal-empty">${unattributed} diese Woche erfasste(r) Satz/Sätze ohne zuordenbare Muskelgruppe (z.B. aus einer gelöschten oder bearbeiteten eigenen Übung).</div>`
     : "";
   return `
-    <div class="volume-hint">Zielbereich (heller Balkenbereich): 12–20 Sätze pro Muskelgruppe und Woche (Mo–So) — Richtwert für trainierte Sportler.</div>
+    <div class="volume-hint">Zielbereich (heller Balkenbereich): 12–20 Sätze pro Muskelgruppe und Woche (Mo–So) — Richtwert für trainierte Sportler. Die kleine Linie unter jedem Balken zeigt den Verlauf der letzten ${VOLUME_TREND_WEEKS} Wochen.</div>
     ${rows}
     ${unattributedHTML}
   `;
@@ -2702,7 +2806,7 @@ function render() {
   `);
 }
 
-function finishSession(dayId, wellbeing) {
+function finishSession(dayId, wellbeing, sessionNote) {
   const daySets = state.sessions[dayId] || {};
   const today = new Date().toLocaleDateString("de-DE");
   const journalExercises = [];
@@ -2750,6 +2854,7 @@ function finishSession(dayId, wellbeing) {
       gymId: state.currentGymId || null,
       exercises: journalExercises,
       wellbeing: wellbeing || null,
+      sessionNote: (sessionNote || "").trim() || null,
     });
   }
   state.lastCompletedDay = dayId;
@@ -2959,8 +3064,9 @@ document.addEventListener("click", (e) => {
   const modalSkip = e.target.closest('[data-role="modal-skip"]');
   if (modalSkip) {
     const current = modal;
+    const note = current && current.includeNote ? (document.getElementById("modal-note-field")?.value ?? "") : "";
     closeModal();
-    if (current && current.onConfirm) current.onConfirm(null);
+    if (current && current.onConfirm) current.onConfirm(null, note);
     return;
   }
 
@@ -2968,8 +3074,9 @@ document.addEventListener("click", (e) => {
   if (modalChoiceSelect) {
     const current = modal;
     const value = modalChoiceSelect.dataset.value;
+    const note = current && current.includeNote ? (document.getElementById("modal-note-field")?.value ?? "") : "";
     closeModal();
-    if (current && current.onConfirm) current.onConfirm(value);
+    if (current && current.onConfirm) current.onConfirm(value, note);
     return;
   }
 
@@ -3530,7 +3637,7 @@ document.addEventListener("click", (e) => {
     sets[idx].done = nowDone;
     persist();
     render();
-    if (nowDone) startRestTimer();
+    if (nowDone) startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
     return;
   }
 
@@ -3564,7 +3671,9 @@ document.addEventListener("click", (e) => {
         { value: "ok", label: "😐" },
         { value: "bad", label: "😖" },
       ],
-      onConfirm: (wellbeing) => finishSession(dayId, wellbeing),
+      includeNote: true,
+      notePlaceholder: "Notiz zur Einheit (Schlaf, Energie, Krankheit …) — optional",
+      onConfirm: (wellbeing, sessionNote) => finishSession(dayId, wellbeing, sessionNote),
     });
     return;
   }
@@ -3692,7 +3801,7 @@ document.addEventListener("change", (e) => {
       s.done = true;
       persist();
       render();
-      startRestTimer();
+      startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
     }
   }
 });

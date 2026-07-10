@@ -2,6 +2,57 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.38.0 — 2026-07-10 (Teil 69): howto.html gekürzt
+
+- Nutzer-Feedback: "Anleitung ist zu lang" — über die vielen Feature-Ergänzungen dieser Session war `howto.html` auf 21 TOC-Einträge mit mehreren dicht geschriebenen, teils mehrabsätzigen Karten angewachsen (v.a. `#konto` mit 3 Absätzen, `#saetze`, `#tagebuch`, `#backup`).
+- Alle Karten auf knappe, aktionsorientierte Sätze/Stichpunkte gekürzt; interne Implementierungsdetails (Epley-Formel-Name, Kalenderwochen-Mechanik, Datenbank-Architektur-Hintergrund) rausgenommen — für Endnutzer zählt was die Funktion tut, nicht wie sie intern berechnet wird. Funktionale Vollständigkeit bleibt erhalten, nichts Nutzerrelevantes gestrichen.
+- `#darstellung` (Hell/Dunkel) und `#schriftgroesse` zu einer gemeinsamen Karte "☀/🌙 Darstellung" zusammengelegt (beides kurze, verwandte Toggles im selben Profil-Bereich) — TOC entsprechend von 21 auf 20 Einträge reduziert.
+- Kein inhaltlicher/funktionaler Unterschied in der App selbst, nur die Doku-Seite betroffen.
+
+## 2026-07-10 (Teil 68): Notiz — Aufwärmen-Inhalt soll überdacht werden
+
+- Nutzer-Feedback: der `WARMUP`-Inhalt (seit v1.4.0) soll deutlich vereinfacht werden — im Kern nur noch dynamisches Dehnen (`mobilization`) plus eine Auswahl an Cardio-Geräten (Crosstrainer, Fahrrad, Rudern — aktuell ist in `general` nur Rudern hart hinterlegt). Die bestehenden `activation`-Bandübungen und die prozentualen `rampSets` stehen damit infrage, noch nicht final entschieden.
+- Nutzer möchte dafür erst noch recherchieren (eigene Gemini-Deep-Research-Session, gleiches Muster wie bisher) — noch kein Prompt vorbereitet, das ist der nächste Schritt sobald gewünscht.
+- Kein Code geändert, daher kein Versions-Bump. Ausführlich dokumentiert in `MEMORY.md` unter "Offene Punkte / Ideen".
+
+## v1.37.0 — 2026-07-10 (Teil 67): Streak-Zähler im Tagebuch (Rest der Wunschliste, Teil 4 — Liste komplett)
+
+- Letzter Punkt der gemeinsam priorisierten Wunschliste (KI-Dialog bleibt bewusst eigene, spätere Planungsrunde).
+- **Bewusst wochenbasiert, nicht tagesbasiert**: ein Streak über aufeinanderfolgende Kalendertage würde bei einem Push/Pull/Legs-artigen Split mit eingeplanten Ruhetagen fast nie am Leben bleiben und normale Ruhetage fälschlich als "Serie gebrochen" werten. `computeTrainingStreaks()` zählt stattdessen aufeinanderfolgende Kalenderwochen (Mo–So) mit mindestens einer abgeschlossenen Einheit — nutzt das bereits bestehende `getWeekStart()`.
+- Liefert `{ current, best }`: aktuelle Serie (rückwärts von der laufenden Woche, zählt auch wenn nur die laufende, noch unvollständige Woche fehlt) und beste je erreichte Serie. Rein abgeleitet aus `state.journal`, nichts zusätzlich gespeichert (gleiche Konvention wie `computePersonalRecords()`/`computeWeeklyVolume()`).
+- Neuer `streakHTML()`-Banner ("🔥 X Wochen in Folge trainiert", plus "Beste Serie: Y Wochen" falls die historische Bestleistung höher war) oben im Verlauf-Tab des Tagebuchs.
+- `howto.html` (Verlauf-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: mehrere Szenarien (durchgehende Serie, Serie mit Lücke, historische Bestleistung übertrifft aktuelle Serie) liefern korrekte Werte; Banner erscheint korrekt im UI.
+- **Dies war der letzte Punkt der ursprünglichen Wunschliste** (Claude-Rollenspiel + Gemini, siehe `MEMORY.md`). Offen bleibt nur noch: KI-Übungstausch als echter Dialog (eigene, größere Planungsrunde), Calisthenics-Übungsdatenbank (wartet auf Nutzer-Recherche), Admin-Panel-Funktionalität (wartet auf Backend-Entscheidung).
+
+## v1.36.0 — 2026-07-10 (Teil 66): Wochenvolumen-Trend über mehrere Wochen (Rest der Wunschliste, Teil 3)
+
+- Dritter Punkt aus dem "Rest der Wunschliste": das Wochenvolumen-Dashboard (v1.18.0) zeigte bisher nur eine Momentaufnahme der laufenden Woche — kein Trend über die Zeit, um strukturelles Unter-/Übertraining zu erkennen.
+- **`computeWeeklyVolume()` in eine wiederverwendbare `computeWeeklyVolumeForRange(weekStart, weekEnd)` ausgelagert** (keine Verhaltensänderung für die bestehende Aufrufstelle) — jetzt Basis sowohl für die aktuelle Woche als auch für den neuen Trend, statt die Zähl-Logik zu duplizieren.
+- **Neue `computeVolumeTrend()`**: letzte `VOLUME_TREND_WEEKS` (8) Kalenderwochen inkl. der laufenden, unvollständigen Woche, älteste zuerst.
+- **`journalVolumeHTML()`**: pro Muskelgruppe eine kleine Trend-Sparkline unter dem bestehenden Balken — `sparklineSVG()` (bisher nur für Rekorde/e1RM genutzt) ist generisch genug, um unverändert wiederverwendet zu werden, einfach mit `{weight: Saetze, timestamp: Wochenstart}`-Punkten gefüttert. Muskelgruppen ohne jegliches Volumen im gesamten 8-Wochen-Fenster (z.B. unbenutzte Gruppen bei manchen Plänen) zeigen bewusst keine leere Linie, um die Ansicht nicht unnötig zu überladen.
+- `howto.html` (Wochenvolumen-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: simulierte Tagebuch-Einträge über 8 Wochen ergeben korrekte Pro-Woche-Zählung; nur die Muskelgruppe mit tatsächlichen Daten zeigt eine Trendlinie, alle anderen bleiben schlank ohne.
+- **Nächster Schritt**: Kalender/Streak-Zähler im Tagebuch — letzter Punkt der aktuellen Wunschliste (KI-Dialog bleibt eigene, spätere Planungsrunde).
+
+## v1.35.0 — 2026-07-10 (Teil 65): Konfigurierbarer Ruhetimer nach Übungsart (Rest der Wunschliste, Teil 2)
+
+- Zweiter Punkt aus dem "Rest der Wunschliste": unterschiedliche Standard-Pausenzeit für Grundübungen (`ex.compound: true`) vs. Isolationsübungen, statt einer festen 90-Sekunden-Pause für alle Übungen. Bewusst nur dieser Teil — Push-Benachrichtigung im Hintergrund bleibt ein eigener, größerer Folgeschritt (Notifications-API, Berechtigungen), wie vorab mit dem Nutzer abgestimmt.
+- Neue Konstanten `REST_DURATION_COMPOUND` (150s) und `REST_DURATION_DEFAULT` (90s, unverändert). Beide Aufrufstellen von `startRestTimer()` (manuelles Abhaken via `set-done`, automatisches Abhaken beim Eintragen der Wiederholungen seit v1.23.0) wählen jetzt anhand von `ex.compound` die passende Dauer, statt immer den Funktions-Default zu nutzen.
+- `howto.html` (Satzpause-Abschnitt) aktualisiert.
+- Verifiziert: direkte Logikprüfung (Kniebeugen-artige Grundübung → 150s, Isolationsübung → 90s) sowie über den echten `set-done`-Klick-Handler bestätigt.
+- **Nächster Schritt**: Wochenvolumen-Trend über mehrere Wochen, dann Kalender/Streak-Zähler — siehe `MEMORY.md`.
+
+## v1.34.0 — 2026-07-10 (Teil 64): Notizen pro Trainingseinheit (Rest der Wunschliste, Teil 1)
+
+- Erster Punkt aus dem "Rest der Wunschliste" nach Phase 4. Bisher gab es nur `state.notes` pro Übung — ein Kommentar zur ganzen Einheit (Schlaf, Energie, Krankheit) hatte keinen Platz.
+- **Andockung an das gerade gebaute Wohlbefinden-Modal statt neuer Komponente**: `openChoiceModal()` bekommt einen neuen optionalen `includeNote`/`notePlaceholder`-Parameter, der ein Textfeld unter den Emoji-Optionen einblendet. Wichtig: der Notiz-Wert wird immer als zweites Argument an `onConfirm` durchgereicht — auch beim Überspringen ("Überspringen" ruft `onConfirm(null, note)` auf statt `onConfirm(null)`), damit eine geschriebene Notiz nicht verloren geht, nur weil kein Emoji gewählt wurde.
+- `finishSession(dayId, wellbeing, sessionNote)` um einen dritten Parameter erweitert, landet getrimmt (leer → `null`) als `sessionNote`-Feld im Tagebuch-Eintrag.
+- `journalHistoryHTML()` zeigt die Notiz (falls vorhanden) als eigene, abgesetzte Zeile (📝-Präfix, gestrichelte Trennlinie) unter den Übungen.
+- `howto.html` (Abschluss-Abschnitt) aktualisiert.
+- Verifiziert per Playwright: Notiz + Emoji-Auswahl landen beide korrekt im Tagebuch; Notiz bleibt auch beim Überspringen der Emoji-Auswahl erhalten; Anzeige im Verlauf korrekt.
+- **Nächster Schritt**: konfigurierbarer Ruhetimer (Compound vs. Isolation), dann Wochenvolumen-Trend, dann Kalender/Streak-Zähler — siehe `MEMORY.md`.
+
 ## v1.33.0 — 2026-07-10 (Teil 63): Wohlbefinden-Tracking (Phase 4, Teil 3 — Phase 4 komplett)
 
 - Letzter Punkt aus Phase 4. Vorab per Rückfrage geklärt: Erfassung beim Trainingsabschluss (optional, überspringbar), ein einziges Gesamt-Rating pro Einheit (nicht pro Körperbereich/Übung — deutlich kleinerer Scope als ursprünglich von Gemini als Beispiel genannt).

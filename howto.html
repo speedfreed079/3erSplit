@@ -95,7 +95,7 @@
     <div class="toc">
       <a href="#start">Startbildschirm</a>
       <a href="#plaene">Trainingspläne</a>
-      <a href="#eigenerplan">Eigenen Plan erstellen</a>
+      <a href="#eigenerplan">Eigener Plan</a>
       <a href="#bibliothek">Übungs-Bibliothek</a>
       <a href="#gym">Gym wählen</a>
       <a href="#tag">Trainingstag</a>
@@ -107,173 +107,165 @@
       <a href="#tauschen">Übung tauschen</a>
       <a href="#timer">Satzpause</a>
       <a href="#stretching">Stretching</a>
-      <a href="#abschluss">Training abschließen</a>
+      <a href="#abschluss">Abschließen</a>
       <a href="#tagebuch">Tagebuch</a>
       <a href="#profil">Profil</a>
-      <a href="#darstellung">Hell/Dunkel</a>
-      <a href="#schriftgroesse">Schriftgröße</a>
+      <a href="#darstellung">Darstellung</a>
       <a href="#backup">Backup</a>
-      <a href="#konto">Konto (optional)</a>
+      <a href="#konto">Konto</a>
       <a href="#installieren">App installieren</a>
     </div>
 
     <div class="card">
-      <p>Fretze ist dein Trainingstracker für Krafttraining — hier trägst du ein, was du in jedem Satz geschafft hast, und die App merkt sich deine Gewichte fürs nächste Mal. Standardmäßig läuft alles nur auf diesem Gerät, ganz ohne Konto — mehr dazu bei <a href="#backup" style="color:var(--rust);">Backup</a>. Ein <a href="#konto" style="color:var(--rust);">Konto</a> ist komplett optional.</p>
+      <p>Fretze ist dein Trainingstracker für Krafttraining: du trägst ein, was du je Satz geschafft hast, die App merkt sich alles fürs nächste Mal. Läuft standardmäßig nur auf diesem Gerät, ganz ohne Konto (siehe <a href="#backup" style="color:var(--rust);">Backup</a>) — ein <a href="#konto" style="color:var(--rust);">Konto</a> ist optional.</p>
     </div>
 
     <div class="card" id="start">
       <h2>🏠 Startbildschirm</h2>
-      <p>Beim ersten Öffnen der App (oder nach dem Neuladen) erscheint zuerst der Startbildschirm: ein Button "Weiter mit [Plan] – [empfohlener Tag]", eine Liste aller Pläne zur Auswahl, und "+ Neuen Plan erstellen". Über den "🏠 Start"-Button im Header kannst du den Startbildschirm danach jederzeit wieder aufrufen.</p>
+      <p>Zeigt "Weiter mit [Plan] – [Tag]", deine Pläne zur Auswahl und "+ Neuen Plan erstellen". Über "🏠 Start" im Header jederzeit wieder aufrufbar.</p>
     </div>
 
     <div class="card" id="plaene">
       <h2>📋 Trainingsplan wählen</h2>
-      <p>Über den Startbildschirm oder das Dropdown wählst du deinen Trainingsplan:</p>
       <ul>
-        <li><b>Push/Pull/Legs</b> — 6 Tage, klassischer 3er-Split</li>
-        <li><b>Upper/Lower</b> — 4 Tage, Ober-/Unterkörper getrennt</li>
-        <li><b>Ganzkörper</b> — 3 Tage, jede Einheit trainiert alles</li>
+        <li><b>Push/Pull/Legs</b> — 6 Tage</li>
+        <li><b>Upper/Lower</b> — 4 Tage</li>
+        <li><b>Ganzkörper</b> — 3 Tage</li>
         <li><b>Bro-Split</b> — 5 Tage, ein Muskel pro Tag</li>
-        <li><b>Zuhause/Calisthenics</b> — 4 Tage, reines Körpergewichtstraining (nur eine Klimmzugstange vorausgesetzt), mit Vorschlägen für einfachere/schwerere Varianten statt Gewichtssteigerung</li>
-        <li><b>Bänder (SmartWorkout)</b> — 4 Tage Oberkörper/Unterkörper, abgestimmt auf das SmartWorkout-Elite-Widerstandsbänder-Set (Bar, Griffe, Türanker, Fußmanschetten), mit vollständigen Übungserklärungen (ℹ); Gewicht trägst du wie gewohnt ein — bei Bändern einfach die aktuell kombinierte Bänder-Belastung in kg</li>
-        <li>plus alle <b>eigenen Pläne</b>, die du selbst erstellt hast</li>
+        <li><b>Zuhause/Calisthenics</b> — 4 Tage, nur Körpergewicht + Klimmzugstange</li>
+        <li><b>Bänder (SmartWorkout)</b> — 4 Tage, fürs SmartWorkout-Bänder-Set</li>
+        <li>plus deine <b>eigenen Pläne</b></li>
       </ul>
-      <p class="dim">Wechselst du den Plan, bleiben deine bisherigen Daten in jedem Plan erhalten — nichts geht verloren, wenn du später zurückwechselst.</p>
+      <p class="dim">Plan wechseln verliert keine Daten — jeder Plan behält seinen eigenen Stand.</p>
     </div>
 
     <div class="card" id="eigenerplan">
       <h2>✏ Eigenen Plan erstellen</h2>
-      <p>Über "+ Neuen Plan erstellen" auf dem Startbildschirm baust du deinen eigenen Trainingsplan: Name, beliebig viele Tage, pro Tag beliebig viele Übungen (Name, Sätze, Ziel-Wiederholungen). Beim Übungsnamen bekommst du Vorschläge aus der Übungsdatenbank (siehe unten) — wählst du einen vorgeschlagenen Namen, bekommt die Übung automatisch eine funktionierende ℹ-Erklärung. Du kannst aber auch einen eigenen Namen eintippen, dann eben ohne Erklärung.</p>
-      <p class="dim">Ein eigener Plan lässt sich über das ✏-Symbol auf dem Startbildschirm jederzeit bearbeiten (Tage/Übungen hinzufügen, umbenennen, entfernen) und über 🗑 löschen. Alternativ-Übungen und das CORE-Badge gibt es für eigene Übungen weiterhin nicht.</p>
+      <p>Über "+ Neuen Plan erstellen": Name, beliebig viele Tage und Übungen (Sätze, Ziel-Wiederholungen). Beim Übungsnamen gibt's Vorschläge aus der Datenbank — wählst du einen davon, bekommst du automatisch eine ℹ-Erklärung dazu.</p>
+      <p class="dim">Bearbeiten über ✏, Löschen über 🗑 auf dem Startbildschirm.</p>
     </div>
 
     <div class="card" id="bibliothek">
       <h2>📚 Übungs-Bibliothek</h2>
-      <p>Der Button "📚 Übungen durchsuchen" auf dem Startbildschirm zeigt alle Übungen aus allen Plänen (eingebaute und eigene), gruppiert nach Plan und Tag — unabhängig davon, welchen Plan/Tag du gerade aktiv hast. Übungen mit hinterlegter Erklärung lassen sich per ℹ direkt dort aufklappen.</p>
-      <p class="dim">Die Erklärungen (Zielmuskulatur, Ausführung, häufigste Fehler, Sicherheitshinweis) kommen aus einer wachsenden Übungsdatenbank, die unabhängig von der App selbst aktualisiert werden kann — für die meisten Übungen der ersten vier Pläne vorhanden, für eigene Pläne nur bei Übungen, die aus der Datenbank ausgewählt wurden. Beim neuen Zuhause/Calisthenics-Plan sind bisher nur die Klimmzug-Übungen hinterlegt — die übrigen (z.B. Pistol Squats, Nordic Hamstring Curls) folgen mit einer späteren Recherche.</p>
+      <p>"📚 Übungen durchsuchen" auf dem Startbildschirm zeigt alle Übungen aus allen Plänen, gruppiert nach Plan und Tag — mit ℹ direkt nachlesbar.</p>
     </div>
 
     <div class="card" id="gym">
       <h2>🏋 Gym wählen</h2>
-      <p>Trainierst du über Wellhub, Urban Sports Club o.ä. mal in diesem, mal in jenem Studio, sind die Gewichte an den Geräten oft unterschiedlich. Dafür gibt es die Gym-Auswahl direkt unter dem Plan:</p>
+      <p>Trainierst du mal hier, mal dort (z.B. über Wellhub/Urban Sports Club), hilft die Gym-Auswahl unter dem Plan:</p>
       <ul>
-        <li>Über <b>"+ Standort hinzufügen"</b> bzw. das ⚙-Symbol legst du deine Gyms an (z.B. "MCFit Köln", "Fitness First").</li>
-        <li>Wählst du im Dropdown ein Gym aus, merkt sich die App ab sofort <b>Gewichte und "Letztes Mal" getrennt pro Gym</b> — kein Vermischen mehr zwischen Studios.</li>
-        <li>Steht die Auswahl auf <b>"Kein Gym"</b>, verhält sich die App wie bisher (ein gemeinsamer Gewichtsstand für alle Übungen).</li>
+        <li>Gyms anlegen über <b>"+ Standort hinzufügen"</b> (⚙ zum Verwalten, auch im Profil-Bereich)</li>
+        <li>Gym ausgewählt → Gewichte und "Letztes Mal" werden getrennt pro Gym gemerkt</li>
+        <li><b>"Kein Gym"</b> → wie bisher, ein gemeinsamer Stand</li>
       </ul>
-      <p class="dim">Kein GPS, keine automatische Standorterkennung — du wählst das Gym selbst aus, bevor du loslegst. Löschst du ein Gym aus der Liste, bleiben die zugehörigen Trainingsdaten im Hintergrund erhalten, tauchen aber nicht mehr auf. Die Gym-Verwaltung findest du auch im Profil-Bereich, falls du sie nicht gerade während des Trainings brauchst.</p>
+      <p class="dim">Kein GPS — du wählst selbst aus. Ein gelöschtes Gym nimmt seine Daten nicht mit, sie tauchen nur nicht mehr auf.</p>
     </div>
 
     <div class="card" id="tag">
       <h2>📅 Trainingstag wählen</h2>
-      <p>Über die Reiter unter dem Plan wählst du den Tag (z.B. "Push A"). Die Banner-Zeile oben schlägt dir automatisch den nächsten Tag in der Rotation vor, basierend darauf, was du zuletzt trainiert hast.</p>
+      <p>Über die Reiter unter dem Plan wählst du den Tag. Die Banner-Zeile oben schlägt automatisch den nächsten Tag in der Rotation vor.</p>
     </div>
 
     <div class="card" id="trainingsmodus">
       <h2>▶ Trainingsmodus</h2>
-      <p>Der Button <b>"▶ Trainingsmodus starten"</b> über den Übungskarten öffnet eine fokussierte Ansicht: eine Übung nach der anderen, groß auf dem Bildschirm — praktisch mitten im Training, wenn du nicht durch eine lange Liste scrollen willst.</p>
+      <p>"▶ Trainingsmodus starten" zeigt eine Übung nach der anderen groß im Vollbild.</p>
       <ul>
-        <li>Oben siehst du den Fortschritt ("3/6") und einen <b>"✕ Verlassen"</b>-Button, der dich zurück zur Kartenansicht bringt (nichts geht dabei verloren).</li>
-        <li><b>"Als Nächstes: ..."</b> zeigt dir, welche Übung als Nächstes kommt.</li>
-        <li><b>"Überspringen"</b> schiebt die aktuelle Übung auf den übernächsten Platz — praktisch, wenn z.B. gerade eine Maschine belegt ist. Sie taucht danach automatisch wieder auf, nichts geht verloren.</li>
-        <li><b>"Zurück"</b> und <b>"Weiter"</b> navigieren zwischen den Übungen des Tages; bei der letzten Übung wird aus "Weiter" der Abschluss-Button.</li>
+        <li>Fortschritt oben, <b>✕ Verlassen</b> bringt dich zurück (nichts geht verloren)</li>
+        <li><b>Überspringen</b> schiebt die Übung nach hinten, sie kommt automatisch wieder</li>
+        <li><b>Zurück</b>/<b>Weiter</b> navigiert; bei der letzten Übung wird "Weiter" zum Abschluss-Button</li>
       </ul>
-      <p class="dim">Übung tauschen (⟲, inkl. KI-Vorschläge) funktioniert jetzt auch direkt im Trainingsmodus, genau wie in der Kartenansicht. Sätze eintragen, Aufwärmsatz/"mehr möglich"-Toggle, Erklärung (ℹ) und der Satzpausen-Timer funktionieren ebenfalls wie gewohnt.</p>
+      <p class="dim">Tauschen (⟲, inkl. KI-Vorschläge), Erklärung (ℹ), Sätze eintragen und der Satzpausen-Timer funktionieren genau wie in der Kartenansicht.</p>
     </div>
 
     <div class="card" id="aufwaermen">
       <h2>🔥 Aufwärmen</h2>
-      <p>Über den Übungen (sofern für den Tag hinterlegt) findest du eine aufklappbare Aufwärmen-Sektion: kurze allgemeine Erwärmung, Mobilisation, Aktivierung und ein Rampenschema für die erste schwere Übung. Wissenschaftlich fundiert, dauert insgesamt nur wenige Minuten.</p>
+      <p>Über den Übungen (sofern hinterlegt) findest du eine aufklappbare, auf den Trainingstag abgestimmte Aufwärm-Sektion — dauert nur wenige Minuten.</p>
     </div>
 
     <div class="card" id="saetze">
       <h2>💪 Sätze eintragen</h2>
-      <p>Pro Übung siehst du eine Zeile je Satz: Gewicht (kg) und Wiederholungen. Sobald du die Wiederholungen einträgst und das Feld verlässt, markiert die App den Satz automatisch als erledigt (Häkchen wird grün) und startet die Satzpause — das manuelle Häkchen rechts bleibt für Sonderfälle bedienbar (z.B. um einen Satz ohne Wiederholungszahl abzuhaken oder eine automatische Markierung zurückzunehmen). Das 🔥-Symbol markiert einen Satz als <b>Aufwärmsatz</b> (antippen zum Umschalten) — praktisch, wenn du z.B. mit einem leichteren Satz reinstartest, bevor du dein Arbeitsgewicht nimmst. Das ↑-Symbol markiert, ob <b>mehr Wiederholungen möglich gewesen wären</b> — daraus berechnet die App bei Bedarf einen Gewichtsvorschlag fürs nächste Mal (siehe unten).</p>
-      <p class="dim">"Letztes Mal: ..." unter dem Übungsnamen zeigt dein Ergebnis aus der letzten Einheit, und das Gewichtsfeld ist schon mit deinem letzten Wert vorbefüllt. Aufwärmsätze zählen dabei nicht mit — "Letztes Mal" und der Fortschrittszähler ("X/Y Arbeitssätze") beziehen sich nur auf deine markierten Arbeitssätze.</p>
+      <p>Pro Satz trägst du Gewicht (kg) und Wiederholungen ein. Wiederholungen eintragen markiert den Satz automatisch als erledigt (Häkchen grün) und startet die Pause — das Häkchen rechts bleibt für Sonderfälle auch manuell bedienbar.</p>
+      <ul>
+        <li>🔥 markiert einen <b>Aufwärmsatz</b> (antippen zum Umschalten)</li>
+        <li>↑ markiert <b>"mehr Wiederholungen wären möglich gewesen"</b> — Basis für den Gewichtsvorschlag (siehe unten)</li>
+      </ul>
+      <p class="dim">"Letztes Mal" zeigt dein letztes Ergebnis, das Gewichtsfeld ist schon vorbefüllt. Aufwärmsätze zählen dabei nicht mit.</p>
     </div>
 
     <div class="card" id="gewichtsvorschlag">
       <h2>💡 Gewichtsvorschlag</h2>
-      <p>Schließt du eine Übung ab, bei der du beim letzten Arbeitssatz die Obergrenze deiner Ziel-Wiederholungen erreicht/überschritten <b>und</b> das ↑-Symbol ("mehr möglich") aktiviert hast, schlägt dir die App beim nächsten Mal ein höheres Gewicht vor: ein "💡 Vorschlag: ...kg"-Hinweis neben "Letztes Mal", mit einem "Übernehmen"-Button, der alle Sätze der Übung auf den vorgeschlagenen Wert setzt.</p>
+      <p>Erreichst/überschreitest du beim letzten Arbeitssatz die Ziel-Wiederholungen <b>und</b> markierst ↑, schlägt dir die App beim nächsten Mal mehr Gewicht vor (💡-Hinweis mit "Übernehmen"-Button).</p>
       <ul>
-        <li>Bei schweren Grundübungen (Kniebeuge, Kreuzheben, Bankdrücken, Schulterdrücken, Klimmzüge, Langhantelrudern) sind es <b>+5 %</b>, sonst <b>+2,5 %</b> — gerundet auf 0,5 kg.</li>
-        <li>Nichts passiert automatisch — der Vorschlag ist nur ein Hinweis, den du bewusst übernimmst oder ignorierst.</li>
-        <li>Bei Übungen ohne klare Zahlen-Wiederholungsspanne (z.B. "12/Seite", "max") gibt es keinen Vorschlag.</li>
-        <li>Beim Bänder-Plan zeigt der Vorschlag zusätzlich in Klammern eine passende Band-Kombination aus deinem SmartWorkout-Set (z.B. "35kg (20+15kg)"), damit du nicht selbst nachrechnen musst, welche Bänder du kombinieren sollst.</li>
+        <li>+5 % bei schweren Grundübungen, sonst +2,5 % — gerundet auf 0,5 kg</li>
+        <li>Nichts passiert automatisch, du entscheidest</li>
+        <li>Beim Bänder-Plan kommt gleich die passende Band-Kombination dazu (z.B. "35kg (20+15kg)")</li>
       </ul>
     </div>
 
     <div class="card" id="erklaerung">
       <h2>ℹ Übungserklärung</h2>
-      <p>Der ℹ-Button neben einer Übung zeigt Zielmuskulatur, Ausführung Schritt für Schritt, häufigste Fehler und einen Sicherheitshinweis — praktisch, wenn du eine Übung zum ersten Mal machst oder dir bei der Technik unsicher bist. Für Push/Pull/Legs, Upper/Lower, Ganzkörper, Bro-Split und den Bänder-Plan durchgängig hinterlegt; beim Zuhause/Calisthenics-Plan bisher nur für die Klimmzug-Übungen.</p>
+      <p>Zeigt Zielmuskulatur, Ausführung Schritt für Schritt, häufigste Fehler und einen Sicherheitshinweis — für die meisten Pläne durchgängig hinterlegt.</p>
     </div>
 
     <div class="card" id="tauschen">
       <h2>⟲ Übung tauschen</h2>
-      <p>Passt eine Übung nicht (Gerät belegt, Verletzung, keine Lust)? Der ⟲-Button öffnet eine Liste von Alternativen. Es bleiben Zielsätze/Wiederholungen und dein Verlauf für die ursprüngliche Übung erhalten — nur der angezeigte Name ändert sich.</p>
-      <p class="dim">"✨ KI-Vorschläge holen" schlägt zusätzlich per KI passende Alternativen vor, falls die Standardliste nicht reicht. ℹ-Erklärung und ⟲-Tausch-Liste sind bewusst nicht gleichzeitig offen — öffnest du eine, schließt sich die andere automatisch, damit die Karte übersichtlich bleibt.</p>
+      <p>Passt eine Übung nicht (Gerät belegt, Verletzung, keine Lust)? ⟲ öffnet eine Liste von Alternativen — Zielsätze/Wiederholungen und dein Verlauf bleiben an der ursprünglichen Übung, nur der angezeigte Name ändert sich.</p>
+      <p class="dim">"✨ KI-Vorschläge holen" liefert weitere Alternativen per KI. ℹ und ⟲ sind nie gleichzeitig offen.</p>
     </div>
 
     <div class="card" id="timer">
       <h2>⏱ Satzpause</h2>
-      <p>Sobald du einen Satz abhakst, startet unten automatisch ein Pausen-Timer (Ton + Vibration am Ende). Mit ±15s anpassbar, mit "Überspringen" sofort beendbar.</p>
+      <p>Startet automatisch nach einem abgehakten Satz (Ton + Vibration am Ende): 2:30 Min. bei schweren Grundübungen, 1:30 Min. sonst. Mit ±15s anpassbar, mit "Überspringen" sofort beendbar.</p>
     </div>
 
     <div class="card" id="stretching">
       <h2>🧘 Stretching</h2>
-      <p>Unter den Übungen (sofern hinterlegt) findest du passende Dehnübungen für nach dem Training, inklusive ehrlicher Einordnung: Dehnen danach verhindert keinen Muskelkater, hilft aber beim Runterkommen.</p>
+      <p>Unter den Übungen (sofern hinterlegt) findest du passende Dehnübungen für nach dem Training.</p>
     </div>
 
     <div class="card" id="abschluss">
       <h2>✅ Training abschließen</h2>
-      <p>Der Button unten schließt die Einheit ab: deine Gewichte werden für nächstes Mal gemerkt, die Sätze werden zurückgesetzt, und die App merkt sich, dass du heute trainiert hast (für die Tagesempfehlung oben). Gleichzeitig landet die Einheit im Tagebuch.</p>
-      <p class="dim">Davor fragt die App kurz, wie sich das Training angefühlt hat (😊/😐/😖) — komplett optional, "Überspringen" schließt genauso ab. Das Rating erscheint danach neben dem Tagebuch-Eintrag im Verlauf.</p>
+      <p>Der Button unten schließt die Einheit ab, merkt sich deine Gewichte fürs nächste Mal und trägt alles ins Tagebuch ein. Davor fragt die App optional, wie es war (😊/😐/😖) und ob du eine Notiz hinterlassen willst — beides komplett überspringbar.</p>
     </div>
 
     <div class="card" id="tagebuch">
       <h2>📔 Tagebuch</h2>
-      <p>Der "📔 Tagebuch"-Button im Header öffnet dein Trainings-Log, mit drei Reitern:</p>
+      <p>Im Header, drei Reiter:</p>
       <ul>
-        <li><b>📅 Verlauf</b> — alle abgeschlossenen Einheiten, neueste zuerst: Datum, Tag, Gym (falls gewählt) und was du je Übung gemacht hast. Aufwärmsätze werden dabei kursiv angezeigt.</li>
-        <li><b>🏆 Rekorde</b> — pro Übung dein geschätztes Einer-Wiederholungs-Maximum (1RM, nach der gängigen Epley-Formel aus Gewicht × Wiederholungen berechnet), mit dem Satz, aus dem es stammt, und einem kleinen Verlaufs-Chart der letzten Einheiten. So zählt z.B. ein leichteres Gewicht für viele Wiederholungen auch dann als neuer Rekord, wenn es unter deinem bisher schwersten Einzelgewicht liegt — die geschätzte Kraftleistung dahinter ist trotzdem höher.</li>
-        <li><b>📊 Wochenvolumen</b> — wie viele Sätze du diese Woche (Montag–Sonntag) pro Muskelgruppe trainiert hast, verglichen mit dem Richtwert von 12–20 Sätzen/Woche für trainierte Sportler (heller Bereich im Balken). So siehst du auf einen Blick, ob eine Muskelgruppe zu kurz kommt oder schon gut abgedeckt ist.</li>
+        <li><b>📅 Verlauf</b> — alle Einheiten, neueste zuerst, plus ein 🔥-Banner ("X Wochen in Folge trainiert")</li>
+        <li><b>🏆 Rekorde</b> — dein bestes geschätztes Gewicht pro Übung, mit Verlaufs-Chart</li>
+        <li><b>📊 Wochenvolumen</b> — Sätze pro Muskelgruppe diese Woche (Richtwert 12–20), mit 8-Wochen-Trendlinie</li>
       </ul>
-      <p class="dim">Ein Eintrag landet nur im Tagebuch, wenn du beim Abschließen tatsächlich etwas eingetragen hast — komplett leere Einheiten werden nicht geloggt.</p>
+      <p class="dim">Nur Einheiten mit echten Einträgen landen im Tagebuch.</p>
     </div>
 
     <div class="card" id="profil">
       <h2>👤 Profil</h2>
-      <p>Der "👤 Profil"-Button im Header sammelt Geräte- und Daten-Einstellungen an einem Ort: Theme, Schriftgröße, Backup exportieren/importieren. Vorher standen diese einzeln im Header, was auf schmalen Handys nicht mehr alle in eine Zeile passte.</p>
+      <p>Sammelt Geräte- und Daten-Einstellungen an einem Ort: Theme, Schriftgröße, Gym-Verwaltung, Backup, Konto.</p>
     </div>
 
     <div class="card" id="darstellung">
-      <h2>☀ / 🌙 Hell oder Dunkel</h2>
-      <p>Im Profil-Bereich schaltest du zwischen dunklem und hellem (Sepia-)Theme um — z.B. praktisch bei viel Umgebungslicht im Fitnessstudio.</p>
-    </div>
-
-    <div class="card" id="schriftgroesse">
-      <h2>Aa Schriftgröße</h2>
-      <p>Ebenfalls im Profil-Bereich: der "Aa"-Button schaltet zwischen 3 Stufen um (normal, groß, sehr groß) — die Punkte im Button zeigen die aktuelle Stufe. Praktisch, wenn der Bildschirm beim Training etwas weiter weg liegt.</p>
+      <h2>☀/🌙 Darstellung</h2>
+      <p>Theme (hell/dunkel) und Schriftgröße (3 Stufen, "Aa"-Button) lassen sich im Profil-Bereich umschalten — praktisch bei viel Umgebungslicht oder wenn der Bildschirm weiter weg liegt.</p>
     </div>
 
     <div class="card" id="backup">
-      <h2>⭳ Backup (Export/Import)</h2>
-      <p>Deine Trainingsdaten liegen immer zuerst auf diesem Gerät in diesem Browser. Ohne Login ist das der einzige Ort. Im Profil-Bereich: <b>Export</b> lädt eine JSON-Datei mit deinem gesamten Verlauf herunter; <b>Import</b> spielt eine solche Datei wieder ein (überschreibt den aktuellen Stand). Praktisch als manuelle Sicherung oder um Daten ohne Konto auf ein neues Gerät zu übertragen — mit Konto (siehe unten) läuft die Geräte-Übertragung meist automatisch.</p>
-      <p class="dim"><b>In Drive sichern</b> lädt dieselbe Sicherungsdatei stattdessen direkt in dein Google Drive hoch — eine dritte, unabhängige Absicherung, die nichts mit dem "Konto"-Login (siehe unten) zu tun hat. Beim ersten Klick fragt Google per Popup nach Zustimmung; die App bekommt dabei nur Zugriff auf die Dateien, die sie selbst dort anlegt, nicht auf dein restliches Drive. Jeder Klick legt eine neue, datumsgestempelte Datei an (kein automatisches Überschreiben der letzten).</p>
+      <h2>⭳ Backup</h2>
+      <p>Deine Daten liegen zuerst immer auf diesem Gerät. Im Profil-Bereich: <b>Export</b> lädt eine Sicherungsdatei herunter, <b>Import</b> spielt sie wieder ein.</p>
+      <p class="dim"><b>In Drive sichern</b> lädt dieselbe Datei zusätzlich in dein Google Drive hoch (unabhängig vom Konto-Login) — jeder Klick legt eine neue, datierte Datei an.</p>
     </div>
 
     <div class="card" id="konto">
       <h2>👤 Konto (optional)</h2>
-      <p>Im Profil-Bereich, unter "Konto", kannst du dich freiwillig mit Google oder mit E-Mail/Passwort anmelden. Das ist <b>nicht Pflicht</b> — ohne Login funktioniert Fretze genau wie bisher, alle Daten bleiben nur auf diesem Gerät.</p>
-      <p>Sobald du eingeloggt bist, werden deine Trainingsdaten automatisch mit deinem Konto abgeglichen: meldest du dich auf einem anderen Gerät oder Browser mit demselben Konto an, wird dein bisheriger Stand dort automatisch geladen. Dein Tagebuch geht dabei nie verloren — Einträge von beiden Geräten werden immer zusammengeführt. Bei allem anderen (z.B. laufende Sätze, Einstellungen) gilt bei zwischenzeitlich unterschiedlicher Offline-Nutzung auf zwei Geräten: der zuletzt gespeicherte Stand gewinnt komplett, ganz selten kann dabei eine Änderung des anderen Geräts überschrieben werden. Bei der Registrierung per E-Mail/Passwort gibst du einen Anzeigenamen an (bei Google-Login kommt er automatisch von deinem Google-Konto), kannst dein Passwort beim Eintippen ein-/ausblenden und ein vergessenes Passwort per E-Mail-Link zurücksetzen.</p>
-      <p class="dim">Deinen Anzeigenamen kannst du jederzeit über "✎ Ändern" im Konto-Bereich anpassen, solange du eingeloggt bist. Er erscheint dann auch oben im Header, z.B. als "Tobias Trainingsbuch".</p>
-      <p class="dim">Eine kleine Statuszeile "Cloud-Sync" im Konto-Bereich zeigt dir, ob der letzte Abgleich geklappt hat (✓ Synchronisiert), gerade läuft (⏳) oder fehlgeschlagen ist (⚠) — z.B. bei fehlender Internetverbindung. Deine Daten bleiben dabei immer zuerst lokal gespeichert, egal was der Sync-Status zeigt.</p>
+      <p>Freiwillige Anmeldung mit Google oder E-Mail/Passwort im Profil-Bereich — <b>nicht Pflicht</b>, ohne Login läuft alles wie gewohnt.</p>
+      <p>Eingeloggt gleicht die App deine Daten automatisch zwischen Geräten ab. Dein Tagebuch geht dabei nie verloren; bei allem anderen gewinnt im Zweifel der zuletzt gespeicherte Stand.</p>
+      <p class="dim">Anzeigename jederzeit über "✎ Ändern" anpassbar. Die "Cloud-Sync"-Zeile zeigt, ob der letzte Abgleich geklappt hat (✓), läuft (⏳) oder fehlgeschlagen ist (⚠).</p>
     </div>
 
     <div class="card" id="installieren">
       <h2>📱 Als App installieren</h2>
-      <p>Fretze lässt sich wie eine App installieren: im Handy-Browser-Menü "Zum Startbildschirm hinzufügen" (iOS) bzw. "App installieren" (Android/Chrome) wählen. Danach startet sie direkt vom Homescreen, auch ohne Internetverbindung.</p>
-      <p class="dim">Nach einem Update: die installierte App einmal komplett schließen (aus der App-Übersicht wischen) und neu öffnen, damit die neue Version greift.</p>
+      <p>Im Handy-Browser-Menü "Zum Startbildschirm hinzufügen" (iOS) bzw. "App installieren" (Android/Chrome) wählen — danach startet Fretze direkt vom Homescreen, auch offline.</p>
+      <p class="dim">Nach einem Update: die installierte App einmal komplett schließen und neu öffnen, damit die neue Version greift.</p>
     </div>
   </div>
 
