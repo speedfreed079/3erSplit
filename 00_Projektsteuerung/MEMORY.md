@@ -73,7 +73,7 @@ Auf Nutzeranfrage hat Claude den kompletten `<style>`-Block von `index.html` ges
 
 **Noch offen, nicht priorisiert:**
 - **Set-Row weiterhin dicht auf schmalen Screens**: durch die größeren Tap-Targets ist noch weniger Platz für die Gewicht/Wdh.-Eingabefelder übrig (Kompromiss: `gap` von 8px auf 6px reduziert, um das teilweise auszugleichen) — bei sehr schmalen Geräten immer noch eng, aber kein horizontales Overflow.
-- **Sekundärtext oft klein und stark gedimmt**: `--chalk-dim` bei 10–13px trägt Infos, die man mitten im Satz braucht.
+- **Sekundärtext oft klein und stark gedimmt**: `--chalk-dim` bei 10–13px trägt Infos, die man mitten im Satz braucht. **Teilweise behoben in v1.28.2**: die ℹ/⟲/⚙-Buttons (`.swap-btn`) haben jetzt vollen Textkontrast (`--chalk`) plus eine sichtbare Füllfarbe (`--surface2`) statt transparent — `target-line`/`history-line`/`set-count` bleiben aber weiterhin gedimmt, das war nicht Teil dieser Änderung.
 - **Reine Icon-Buttons ohne Label** (⟲/✏/🗑): haben bereits `title`-Tooltips (helfen Desktop-Maus-Nutzern und Screenreadern), aber `title` zeigt auf Touch-Geräten beim Antippen nichts an — für den eigentlichen Nutzungskontext (Handy im Gym) bleibt die Lernkurve für Erstnutzer damit im Kern unverändert offen.
 - **Card-in-Card-Verschachtelung / fehlender Weißraum** (Claude + Gemini decken denselben Punkt aus zwei Blickwinkeln ab): Swap-/Info-/KI-Panel liegen alle in derselben `.card`; Gemini ergänzt, dass die Karte bei Historie+Vorschlag+Notizen+mehreren Sätzen "kollabiert" — beides zeigt auf dasselbe Kartenlayout-Problem, noch nicht angegangen.
 - **Abrupte Screen-Wechsel ohne Übergang** (Gemini, neu): `innerHTML`-Austausch beim View-Wechsel "flasht" hart, keine CSS-Fades.

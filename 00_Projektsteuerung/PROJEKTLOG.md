@@ -2,6 +2,19 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.28.2 — 2026-07-10 (Teil 58): Sichtbarkeit der ℹ/⟲/⚙-Buttons erhöht
+
+- Nutzer-Feedback: die ℹ/⟲-Buttons an den Übungskarten sind kaum vom Karten-Hintergrund zu unterscheiden — passend zum in `MEMORY.md` dokumentierten Kritikpunkt "Sekundärtext oft klein und stark gedimmt".
+- `.swap-btn` (gemeinsame Klasse für ℹ/⟲ in Kartenansicht/Fokusmodus/Bibliothek sowie ⚙ für Gyms verwalten): `background: transparent` → `var(--surface2)` (dieselbe leicht abgesetzte Füllfarbe wie die Swap-/Info-Panels), `color: var(--chalk-dim)` → `var(--chalk)` (voller statt gedimmter Textkontrast). Eine Änderung an einer gemeinsam genutzten Klasse behebt alle Vorkommen konsistent.
+- Verifiziert per Playwright-Screenshot in Sepia und Dark-Theme.
+
+## v1.28.1 — 2026-07-10 (Teil 57): Icon-Fixes nach dem Live-Test von v1.28.0
+
+- Nutzer hat v1.28.0 live getestet — Google-Drive-Backup hat vollständig funktioniert (Popup, Zustimmung, Datei landet in Drive). Zwei Kosmetik-Punkte gemeldet: die Export/Import-Buttons zeigten nur ein "X" (die Unicode-Zeichen ⭳/⭱ aus dem "Miscellaneous Symbols and Arrows"-Block werden von vielen Systemschriften/Emoji-Sets nicht unterstützt, im Gegensatz zu den sonst in der App verwendeten Standard-Emojis); Wunsch nach einem offiziellen Google-Drive-Icon statt des ☁-Emojis.
+- `⭳ Export`/`⭱ Import` → `↓ Export`/`↑ Import` (einfache, universell unterstützte Pfeilzeichen — dasselbe `↑`-Zeichen wird bereits erfolgreich als Spaltenkopf in der Satzzeile verwendet).
+- Neue `DRIVE_ICON_SVG`-Konstante (offizielles Google-Drive-Dreieck-Logo, dreifarbig) nach demselben Muster wie das bestehende `GOOGLE_ICON_SVG` für den "Mit Google anmelden"-Button — ersetzt das ☁-Emoji beim "In Drive sichern"-Button.
+- Verifiziert per Playwright-Screenshot (Profil-Ansicht, alle drei Daten-Buttons).
+
 ## v1.28.0 — 2026-07-10 (Teil 56): Google-Drive-Backup
 
 - Nutzer-Wunsch: eine dritte, unabhängige Absicherung neben Export/Import und dem Firestore-Sync (Phase B) — ein Backup direkt in Google Drive, komplett losgelöst vom "Konto"-Login.

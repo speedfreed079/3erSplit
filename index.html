@@ -144,8 +144,8 @@
   }
 
   .swap-btn {
-    background: transparent; border: 1px solid var(--border); border-radius: 7px;
-    padding: 7px; color: var(--chalk-dim); cursor: pointer; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px; color: var(--chalk); cursor: pointer; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     min-width: 44px; min-height: 44px;
   }
@@ -953,7 +953,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.28.0";
+const APP_VERSION = "1.28.2";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2148,16 +2148,16 @@ function renderProfileView() {
       <div class="home-section-label" style="margin-top:18px;">Daten</div>
       <div class="profile-row">
         <span>Backup exportieren</span>
-        <button class="icon-btn" data-role="export">⭳ Export</button>
+        <button class="icon-btn" data-role="export">↓ Export</button>
       </div>
       <div class="profile-row">
         <span>Backup importieren</span>
-        <button class="icon-btn" data-role="import-trigger">⭱ Import</button>
+        <button class="icon-btn" data-role="import-trigger">↑ Import</button>
       </div>
       <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
       <div class="profile-row">
         <span>In Google Drive sichern</span>
-        <button class="icon-btn" data-role="drive-backup">☁ In Drive sichern</button>
+        <button class="icon-btn" data-role="drive-backup">${DRIVE_ICON_SVG} In Drive sichern</button>
       </div>
       <div class="home-section-label" style="margin-top:18px;">Konto</div>
       ${accountSectionHTML()}
@@ -2170,6 +2170,16 @@ const GOOGLE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 18 18" xmlns="
   <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
   <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
   <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+</svg>`;
+
+// Offizielles Google-Drive-Dreieck-Logo, gleiches Muster wie GOOGLE_ICON_SVG oben.
+const DRIVE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+  <path fill="#0066da" d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z"/>
+  <path fill="#00ac47" d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z"/>
+  <path fill="#ea4335" d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z"/>
+  <path fill="#00832d" d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z"/>
+  <path fill="#2684fc" d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z"/>
+  <path fill="#ffba00" d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z"/>
 </svg>`;
 
 function accountSectionHTML() {
