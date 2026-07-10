@@ -2,6 +2,24 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.28.0 — 2026-07-10 (Teil 56): Google-Drive-Backup
+
+- Nutzer-Wunsch: eine dritte, unabhängige Absicherung neben Export/Import und dem Firestore-Sync (Phase B) — ein Backup direkt in Google Drive, komplett losgelöst vom "Konto"-Login.
+- Nach kurzer Planungsrunde (inkl. Recherche zu aktuellem Google-Identity-Services-Stand) umgesetzt: neue, dedizierte OAuth-Client-ID ("Fretze Drive Backup", Web-Anwendung) im selben GCP-Projekt `fretze-pumpt`, registriert für `https://speedfreed079.github.io`. Bewusst **nicht** die von Firebase Auth wiederverwendet — gleiches Isolationsprinzip wie bei jeder externen Integration in dieser App.
+- **Architektur**: Google Identity Services (`accounts.google.com/gsi/client`) wird erst beim ersten Klick auf "☁ In Drive sichern" nachgeladen (nicht beim Boot wie Firebase — Opt-in-Feature, das die meisten Sessions nie anfassen). Scope ist der eingeschränkte `drive.file` (App sieht nur ihre eigenen Dateien, nicht das restliche Drive) — dieser Scope gilt bei Google als "nicht sensitiv", braucht also keine App-Verifizierung. Zugriffstoken ist rein ephemer (nie in `state`/localStorage), wird bei Bedarf neu angefragt. `exportData()` wurde refaktoriert (`buildBackupPayload()` extrahiert), damit Datei-Export und Drive-Backup exakt dieselbe JSON-Struktur liefern.
+- **v1 legt bei jedem Klick eine neue, datumsgestempelte Datei an** (kein Suchen/Überschreiben der letzten Backup-Datei) — bewusst einfach gehalten, Drive-eigene Versionsgeschichte reicht als Sicherheitsnetz für ein paar kleine JSON-Dateien.
+- **Sicherheitsvorfall während der Einrichtung**: der Nutzer hat versehentlich den Client **Secret** statt der Client-**ID** in den Chat eingefügt — sofort als Client-Secret erkannt (wird bei dieser rein clientseitigen Implementierung gar nicht gebraucht) und dem Nutzer empfohlen, das Secret in der Google Cloud Console zurückzusetzen, da es durch das Einfügen als kompromittiert gilt.
+- Verifiziert per Playwright bis zur Grenze der menschlichen Interaktion: Button erscheint im Profil (Daten-Sektion), Klick lädt das GIS-Skript, initialisiert den Token-Client mit der echten Client-ID und fragt ein echtes Google-OAuth-Popup an (im Headless-Testkontext automatisch geschlossen → korrekter Fehler-Toast statt Absturz, keine JS-Fehler). Der eigentliche Abschluss (Zustimmung erteilen, Datei in Drive prüfen) braucht echte menschliche Interaktion auf der echten Live-Domain — steht noch aus.
+- `howto.html` (Backup-Abschnitt) und `CLAUDE.md` (neuer Architektur-Absatz) aktualisiert.
+- **Nächster Schritt**: Live-Test durch den Nutzer auf `https://speedfreed079.github.io/...` (Popup zustimmen, Datei in Drive prüfen), plus das Client-Secret in der Google Cloud Console zurücksetzen (Sicherheitsvorsichtsmaßnahme, wird von dieser Funktion nie gebraucht).
+
+## v1.27.1 — 2026-07-10 (Teil 55): Gym-Verwaltung auch im Profil verfügbar
+
+- Nutzer-Feedback nach dem Testen von v1.27.0 (Modal-Komponente): die Gym-Verwaltung existierte bisher nur in der Kartenansicht (Plan/Gym-Zeile), gar nicht im Profil-Bereich — dort wäre sie aber ebenfalls sinnvoll (z.B. wenn man nicht gerade mitten im Training ist).
+- `gymRowHTML()` (bestehende Funktion, liefert Auswahl-Dropdown + "Gyms verwalten"-Panel) wird jetzt zusätzlich in `renderProfileView()` eingebunden, neue Sektion "Gym-Standort" zwischen "Darstellung" und "Daten" — keine Logik dupliziert, exakt dieselbe Funktion wie in der Kartenansicht, `gymManageOpen` ist ohnehin ein einziger geteilter ephemerer State.
+- `howto.html` (Gym-Abschnitt) um den Hinweis ergänzt, dass die Verwaltung jetzt auch im Profil zu finden ist.
+- Verifiziert per Playwright: Profil-Ansicht zeigt die neue Sektion, "Gyms verwalten" lässt sich dort öffnen.
+
 ## v1.27.0 — 2026-07-10 (Teil 54): Native Dialoge ersetzt (Phase 1 der UI/UX-Liste)
 
 - Umsetzung von Phase 1 der gemeinsam mit dem Nutzer erstellten Reihenfolge (siehe `MEMORY.md`): native `prompt()`/`confirm()`/`alert()`-Dialoge durch eine App-eigene Modal-Komponente ersetzt.

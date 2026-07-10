@@ -953,10 +953,19 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.27.0";
+const APP_VERSION = "1.28.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
+
+// Google-Drive-Backup (seit v1.28.0): eigene, dedizierte OAuth-Client-ID, bewusst NICHT die von
+// Firebase Auth wiederverwendet (gleiches Isolationsprinzip wie ueberall sonst in der App - jede
+// externe Integration bekommt ihr eigenes, unabhaengiges Setup). Die Client-ID ist kein Geheimnis
+// (anders als der Gemini-API-Key) - Sicherheit kommt ueber die registrierten "Authorized
+// JavaScript origins" in der Google Cloud Console, nicht ueber Geheimhaltung, genau wie bei der
+// bereits oeffentlichen Firebase-Config.
+const DRIVE_CLIENT_ID = "1039659812800-p6n3ufdpcjmatco4i4ks00mdli91uhm2.apps.googleusercontent.com";
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 function emptySets(n) {
   return Array.from({ length: n }, () => ({ weight: "", reps: "", isWarmup: false, couldDoMore: false, done: false }));
@@ -1431,6 +1440,13 @@ let saveTimer = null;
 // Handling (haette einen vierten globalen Event-Listener-Typ gebraucht, zusaetzlich zu
 // click/input/change - fuer zwei Buttons nicht verhaeltnismaessig).
 let modal = null; // { kind: "prompt" | "confirm", title, message, defaultValue, confirmLabel, danger, onConfirm }
+
+// Google-Drive-Backup (seit v1.28.0): komplett unabhaengig vom Firebase-Login (kein Bezug zu
+// currentUser/window.FretzeCloud) - eigener OAuth-Fluss nur fuer diese eine Funktion. Token ist
+// bewusst nur im Speicher (nie in state/localStorage), gleiche Konvention wie restTimer/modal.
+let driveAccessToken = null; // { token, expiresAt }
+let driveTokenClient = null;
+let driveGisLoadPromise = null;
 
 function openPromptModal({ title, message = "", defaultValue = "", confirmLabel = "Speichern", onConfirm }) {
   modal = { kind: "prompt", title, message, defaultValue, confirmLabel, danger: false, onConfirm };
@@ -2127,6 +2143,8 @@ function renderProfileView() {
         <span>Schriftgröße</span>
         <button class="icon-btn" data-role="textsize-toggle">${textSizeLabel(state.textSize || "normal")}</button>
       </div>
+      <div class="home-section-label" style="margin-top:18px;">Gym-Standort</div>
+      ${gymRowHTML()}
       <div class="home-section-label" style="margin-top:18px;">Daten</div>
       <div class="profile-row">
         <span>Backup exportieren</span>
@@ -2137,6 +2155,10 @@ function renderProfileView() {
         <button class="icon-btn" data-role="import-trigger">⭱ Import</button>
       </div>
       <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
+      <div class="profile-row">
+        <span>In Google Drive sichern</span>
+        <button class="icon-btn" data-role="drive-backup">☁ In Drive sichern</button>
+      </div>
       <div class="home-section-label" style="margin-top:18px;">Konto</div>
       ${accountSectionHTML()}
     </div>
@@ -2565,13 +2587,17 @@ function finishSession(dayId) {
 }
 
 // ---------- EXPORT / IMPORT ----------
-function exportData() {
-  const payload = {
+function buildBackupPayload() {
+  return {
     exportedAt: new Date().toISOString(),
     app: "fretze",
     version: 1,
     state: state,
   };
+}
+
+function exportData() {
+  const payload = buildBackupPayload();
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -2636,6 +2662,80 @@ function importData(file) {
     }
   };
   reader.readAsText(file);
+}
+
+// ---------- GOOGLE-DRIVE-BACKUP ----------
+// Komplett unabhaengig vom Firebase-Login oben (kein Bezug zu currentUser/window.FretzeCloud) -
+// eigener OAuth-Fluss ueber Google Identity Services (GIS), nur fuer diese eine Funktion. Das
+// GIS-Skript wird bewusst erst beim ersten Klick nachgeladen (nicht beim Boot wie Firebase), da
+// dies ein Opt-in-Feature ist, das die meisten Sessions nie anfassen. v1 legt bei jedem Klick
+// eine neue, datumsgestempelte Datei an (kein Suchen/Ueberschreiben der letzten Backup-Datei) -
+// einfacher, kein gespeicherter Datei-ID-State noetig; Drive-eigene Versionsgeschichte/Papierkorb
+// reicht als Sicherheitsnetz fuer ein paar kleine JSON-Dateien.
+function loadGisScript() {
+  if (driveGisLoadPromise) return driveGisLoadPromise;
+  driveGisLoadPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("GIS-Skript konnte nicht geladen werden"));
+    document.head.appendChild(s);
+  });
+  return driveGisLoadPromise;
+}
+
+function ensureDriveTokenClient() {
+  if (driveTokenClient) return Promise.resolve(driveTokenClient);
+  return loadGisScript().then(() => {
+    driveTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: () => {},
+      error_callback: () => {},
+    });
+    return driveTokenClient;
+  });
+}
+
+function getDriveAccessToken() {
+  if (driveAccessToken && driveAccessToken.expiresAt > Date.now() + 5000) {
+    return Promise.resolve(driveAccessToken.token);
+  }
+  return ensureDriveTokenClient().then((client) => new Promise((resolve, reject) => {
+    client.callback = (resp) => {
+      if (resp.error) { reject(new Error(resp.error)); return; }
+      driveAccessToken = { token: resp.access_token, expiresAt: Date.now() + resp.expires_in * 1000 };
+      resolve(resp.access_token);
+    };
+    client.error_callback = (err) => reject(new Error((err && err.type) || "Abgebrochen"));
+    client.requestAccessToken();
+  }));
+}
+
+async function backupToDrive() {
+  showToast("Verbinde mit Google Drive …");
+  try {
+    const token = await getDriveAccessToken();
+    const payload = buildBackupPayload();
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const fileName = `fretze-backup-${dateStr}.json`;
+    const boundary = "fretze-boundary-" + Date.now();
+    const metadata = { name: fileName, mimeType: "application/json" };
+    const body =
+      `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+      `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(payload, null, 2)}\r\n` +
+      `--${boundary}--`;
+    const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}` },
+      body,
+    });
+    if (!res.ok) throw new Error(`Drive-Fehler (${res.status})`);
+    showToast("Backup in Google Drive gesichert.");
+  } catch (e) {
+    showToast("Google-Drive-Backup fehlgeschlagen" + (e && e.message ? ` (${e.message})` : "") + ".");
+  }
 }
 
 // ---------- KONTO / LOGIN (Phase A: nur Auth, kein Firestore-Datensync) ----------
@@ -3053,6 +3153,12 @@ document.addEventListener("click", (e) => {
   if (importTrigger) {
     const input = document.getElementById("import-file-input");
     if (input) input.click();
+    return;
+  }
+
+  const driveBackup = e.target.closest('[data-role="drive-backup"]');
+  if (driveBackup) {
+    backupToDrive();
     return;
   }
 
