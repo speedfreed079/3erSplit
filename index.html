@@ -282,9 +282,10 @@
     justify-content: center; gap: 6px; cursor: pointer;
   }
   .toast {
-    margin-top: 12px; padding: 10px 12px; background: var(--surface2);
+    position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    max-width: 90%; padding: 10px 16px; background: var(--surface2);
     border: 1px solid var(--olive-dim); border-radius: 8px; font-size: 12px; color: var(--olive);
-    display: none;
+    display: none; z-index: 60; box-shadow: 0 4px 16px rgba(0,0,0,0.35); text-align: center;
   }
   .toast.show { display: block; }
 
@@ -396,6 +397,27 @@
     padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
     background: var(--surface); margin-bottom: 8px; font-size: 13px; color: var(--chalk);
   }
+  .login-email-form {
+    display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+    margin-bottom: 8px;
+  }
+  .login-email-input {
+    padding: 9px 10px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 13px; font-family: inherit;
+  }
+  .login-email-actions { display: flex; gap: 8px; }
+  .login-email-actions .icon-btn { flex: 1; justify-content: center; }
+  .login-forgot-btn {
+    align-self: flex-start; background: none; border: none; padding: 2px 0;
+    font-size: 12px; text-decoration: underline;
+  }
+  .login-password-row { display: flex; gap: 6px; align-items: center; }
+  .login-password-row .login-email-input { flex: 1; }
+  .login-eye-btn { padding: 9px 10px; }
+  .login-password-match { font-size: 11px; margin-top: -4px; min-height: 14px; }
+  .login-password-match.ok { color: var(--olive); }
+  .login-password-match.bad { color: var(--rust); }
   .library-plan-label {
     font-size: 15px; font-weight: 500; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.3px;
   }
@@ -482,6 +504,7 @@
     <button class="rest-timer-btn rest-timer-skip" data-role="rest-skip">Überspringen</button>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
 // ---------- EXERCISE DATABASE ----------
@@ -792,7 +815,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.18.0";
+const APP_VERSION = "1.19.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1241,6 +1264,13 @@ let profileActive = false;
 let libraryActive = false;
 let libraryInfoOpenKey = null;
 
+// Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
+// currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
+// das separate <script type="module"> am Skriptende) gesetzt/geloescht, nie direkt. In
+// dieser Phase beruehrt Login weder state noch persist()/loadState() - rein additiv.
+let currentUser = null;
+let loginEmailFormOpen = false;
+
 let saveTimer = null;
 
 // ---------- REST TIMER ----------
@@ -1683,7 +1713,6 @@ function renderFocusMode() {
         <button class="focusmode-nav-btn" data-role="focus-skip">Überspringen ⇥</button>
         ${nextBtnHTML}
       </div>
-      <div class="toast" id="toast"></div>
     </div>
   `;
 }
@@ -1829,7 +1858,59 @@ function renderProfileView() {
         <button class="icon-btn" data-role="import-trigger">⭱ Import</button>
       </div>
       <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
+      <div class="home-section-label" style="margin-top:18px;">Konto</div>
+      ${accountSectionHTML()}
     </div>
+  `;
+}
+
+const GOOGLE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+</svg>`;
+
+function accountSectionHTML() {
+  if (currentUser) {
+    return `
+      <div class="profile-row">
+        <span>Eingeloggt als ${escapeAttr(currentUser.displayName || currentUser.email || "Konto")}</span>
+        <button class="icon-btn" data-role="logout">Ausloggen</button>
+      </div>
+    `;
+  }
+  const emailFormHTML = loginEmailFormOpen ? `
+    <div class="login-email-form">
+      <input type="text" id="login-displayname-input" class="login-email-input" placeholder="Anzeigename (optional, nur für Registrierung)" autocomplete="nickname" />
+      <input type="email" id="login-email-input" class="login-email-input" placeholder="E-Mail" autocomplete="email" />
+      <div class="login-password-row">
+        <input type="password" id="login-password-input" class="login-email-input" placeholder="Passwort" autocomplete="current-password" data-role="login-password-live-check" />
+        <button type="button" class="icon-btn login-eye-btn" data-role="password-visibility-toggle" data-target="login-password-input" title="Passwort anzeigen/verbergen">👁</button>
+      </div>
+      <div class="login-password-row">
+        <input type="password" id="login-password-confirm-input" class="login-email-input" placeholder="Passwort bestätigen (nur für Registrierung)" autocomplete="new-password" data-role="login-password-live-check" />
+        <button type="button" class="icon-btn login-eye-btn" data-role="password-visibility-toggle" data-target="login-password-confirm-input" title="Passwort anzeigen/verbergen">👁</button>
+      </div>
+      <div id="login-password-match-msg" class="login-password-match"></div>
+      <div class="login-email-actions">
+        <button class="icon-btn" data-role="login-email-submit">Einloggen</button>
+        <button class="icon-btn" data-role="signup-email-submit">Registrieren</button>
+      </div>
+      <button class="icon-btn login-forgot-btn" data-role="login-forgot-password">Passwort vergessen?</button>
+    </div>
+  ` : "";
+  return `
+    <p class="dim" style="margin:0 0 10px;">Optional: mit einem Konto kannst du dich (bald) geräteübergreifend synchronisieren. Ohne Login bleibt alles wie bisher — deine Daten liegen nur auf diesem Gerät.</p>
+    <div class="profile-row">
+      <span>Mit Google einloggen</span>
+      <button class="icon-btn" data-role="login-google">${GOOGLE_ICON_SVG} Mit Google anmelden</button>
+    </div>
+    <div class="profile-row">
+      <span>Mit E-Mail einloggen/registrieren</span>
+      <button class="icon-btn" data-role="login-email-toggle">${loginEmailFormOpen ? "Schließen" : "E-Mail"}</button>
+    </div>
+    ${emailFormHTML}
   `;
 }
 
@@ -2100,7 +2181,6 @@ function render() {
       ${cardsHTML}
       ${stretchSectionHTML(dayMeta.type)}
       <button class="finish-btn" data-role="finish" data-day="${day}">Training abschließen →</button>
-      <div class="toast" id="toast"></div>
     </div>
   `;
 }
@@ -2233,6 +2313,24 @@ function importData(file) {
   reader.readAsText(file);
 }
 
+// ---------- KONTO / LOGIN (Phase A: nur Auth, kein Firestore-Datensync) ----------
+function friendlyAuthError(err) {
+  const code = err && err.code;
+  const messages = {
+    "auth/invalid-email": "Ungültige E-Mail-Adresse.",
+    "auth/user-not-found": "Kein Konto mit dieser E-Mail gefunden.",
+    "auth/wrong-password": "Falsches Passwort.",
+    "auth/invalid-credential": "E-Mail oder Passwort falsch.",
+    "auth/email-already-in-use": "Für diese E-Mail existiert bereits ein Konto — versuch stattdessen einzuloggen.",
+    "auth/weak-password": "Passwort zu schwach (mindestens 6 Zeichen).",
+    "auth/missing-password": "Bitte ein Passwort eingeben.",
+    "auth/popup-closed-by-user": "Google-Login abgebrochen.",
+    "auth/network-request-failed": "Keine Verbindung — Login braucht Internet.",
+  };
+  if (code && messages[code]) return messages[code];
+  return "Login fehlgeschlagen" + (code ? ` (${code})` : "") + ".";
+}
+
 function showToast(msg) {
   const toast = document.getElementById("toast");
   if (toast) {
@@ -2351,6 +2449,72 @@ document.addEventListener("click", (e) => {
   if (profileExit) {
     profileActive = false;
     render();
+    return;
+  }
+
+  const loginGoogle = e.target.closest('[data-role="login-google"]');
+  if (loginGoogle) {
+    if (!window.FretzeCloud) { showToast("Login gerade nicht verfügbar (offline?)."); return; }
+    window.FretzeCloud.signInGoogle().catch(err => showToast(friendlyAuthError(err)));
+    return;
+  }
+
+  const loginEmailToggle = e.target.closest('[data-role="login-email-toggle"]');
+  if (loginEmailToggle) {
+    loginEmailFormOpen = !loginEmailFormOpen;
+    render();
+    return;
+  }
+
+  const loginEmailSubmit = e.target.closest('[data-role="login-email-submit"]');
+  if (loginEmailSubmit) {
+    if (!window.FretzeCloud) { showToast("Login gerade nicht verfügbar (offline?)."); return; }
+    const email = document.getElementById("login-email-input").value.trim();
+    const password = document.getElementById("login-password-input").value;
+    window.FretzeCloud.signInEmail(email, password).catch(err => showToast(friendlyAuthError(err)));
+    return;
+  }
+
+  const signupEmailSubmit = e.target.closest('[data-role="signup-email-submit"]');
+  if (signupEmailSubmit) {
+    if (!window.FretzeCloud) { showToast("Login gerade nicht verfügbar (offline?)."); return; }
+    const email = document.getElementById("login-email-input").value.trim();
+    const password = document.getElementById("login-password-input").value;
+    const passwordConfirm = document.getElementById("login-password-confirm-input").value;
+    const displayName = document.getElementById("login-displayname-input").value.trim();
+    if (password !== passwordConfirm) { showToast("Passwörter stimmen nicht überein."); return; }
+    window.FretzeCloud.signUpEmail(email, password, displayName || null).then(user => {
+      currentUser = user;
+      loginEmailFormOpen = false;
+      render();
+      showToast(`Konto erstellt, eingeloggt als ${user.displayName || user.email}.`);
+    }).catch(err => showToast(friendlyAuthError(err)));
+    return;
+  }
+
+  const forgotPassword = e.target.closest('[data-role="login-forgot-password"]');
+  if (forgotPassword) {
+    if (!window.FretzeCloud) { showToast("Gerade nicht verfügbar (offline?)."); return; }
+    const email = document.getElementById("login-email-input").value.trim();
+    if (!email) { showToast("Bitte zuerst deine E-Mail-Adresse eingeben."); return; }
+    window.FretzeCloud.resetPassword(email)
+      .then(() => showToast("Falls ein Konto mit dieser E-Mail existiert, haben wir eine E-Mail zum Zurücksetzen geschickt."))
+      .catch(err => showToast(friendlyAuthError(err)));
+    return;
+  }
+
+  const logoutBtn = e.target.closest('[data-role="logout"]');
+  if (logoutBtn) {
+    if (window.FretzeCloud) window.FretzeCloud.signOutUser();
+    return;
+  }
+
+  const pwVisibilityToggle = e.target.closest('[data-role="password-visibility-toggle"]');
+  if (pwVisibilityToggle) {
+    // Kein render() hier - die Eingabefelder sind unkontrolliert (kein state dahinter), ein
+    // render() wuerde die HTML-Vorlage neu aufbauen und damit bereits Eingetipptes loeschen.
+    const input = document.getElementById(pwVisibilityToggle.dataset.target);
+    if (input) input.type = input.type === "password" ? "text" : "password";
     return;
   }
 
@@ -2693,6 +2857,26 @@ document.addEventListener("input", (e) => {
     return;
   }
 
+  const pwLiveCheck = e.target.closest('[data-role="login-password-live-check"]');
+  if (pwLiveCheck) {
+    const pw = document.getElementById("login-password-input");
+    const confirmField = document.getElementById("login-password-confirm-input");
+    const msg = document.getElementById("login-password-match-msg");
+    if (pw && confirmField && msg) {
+      if (!confirmField.value) {
+        msg.textContent = "";
+        msg.className = "login-password-match";
+      } else if (pw.value === confirmField.value) {
+        msg.textContent = "✓ Passwörter stimmen überein";
+        msg.className = "login-password-match ok";
+      } else {
+        msg.textContent = "✕ Passwörter stimmen nicht überein";
+        msg.className = "login-password-match bad";
+      }
+    }
+    return;
+  }
+
   const draftLabel = e.target.closest('[data-role="draft-label"]');
   if (draftLabel) {
     state.planDraft.label = draftLabel.value;
@@ -2762,6 +2946,21 @@ document.addEventListener("change", (e) => {
   }
 });
 
+// Firebase laedt per <script type="module"> (siehe Skriptende) asynchron und komplett
+// unabhaengig vom ersten Rendern - genau wie loadExerciseLibrary() unten. Schlaegt das
+// Laden fehl (offline, CDN nicht erreichbar), feuert "fretzecloud-ready" nie: Login-Buttons
+// bleiben sichtbar, aber ohne Funktion (siehe die window.FretzeCloud-Checks oben), kein Absturz.
+window.addEventListener("fretzecloud-ready", () => {
+  window.FretzeCloud.onAuthChange((user) => {
+    const wasLoggedIn = !!currentUser;
+    currentUser = user;
+    if (user) loginEmailFormOpen = false;
+    render();
+    if (user && !wasLoggedIn) showToast(`Eingeloggt als ${user.email || user.displayName || "Konto"}.`);
+    if (!user && wasLoggedIn) showToast("Ausgeloggt.");
+  });
+});
+
 render();
 loadExerciseLibrary();
 
@@ -2770,6 +2969,63 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW-Registrierung fehlgeschlagen", e));
   });
 }
+</script>
+
+<!-- Konto/Login (Phase A, seit v1.19.0): eigener <script type="module">-Block, da das
+     Firebase-JS-SDK per CDN-ESM-Import geladen wird, waehrend das Haupt-Script oben bewusst
+     ein klassisches Script bleibt (kein Umbau der gesamten App auf ES-Module). Exponiert nur
+     eine schlanke Wrapper-API auf window.FretzeCloud - derselbe Isolationsgedanke wie bei
+     PROXY_URL fuer den Gemini-Worker. Beruehrt in dieser Phase weder state noch Firestore. -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail,
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+
+  // Firebase-Web-Config ist bewusst oeffentlich (anders als der Gemini-API-Key) - Sicherheit
+  // kommt ueber Firebase Auth + spaetere Firestore Security Rules, nicht ueber Geheimhaltung
+  // dieser Werte. Siehe CLAUDE.md "Konto/Login" fuer den Hintergrund.
+  const firebaseConfig = {
+    apiKey: "AIzaSyAlfxzDTi18iGPIR4xzo_2-XpCo7tHYw0Y",
+    authDomain: "fretze-pumpt.firebaseapp.com",
+    projectId: "fretze-pumpt",
+    storageBucket: "fretze-pumpt.firebasestorage.app",
+    messagingSenderId: "1039659812800",
+    appId: "1:1039659812800:web:9366de3308e15b2765aa25",
+  };
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    window.FretzeCloud = {
+      signInGoogle: () => signInWithPopup(auth, googleProvider),
+      signInEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
+      // Setzt bei Bedarf einen selbstgewaehlten Anzeigenamen direkt nach dem Anlegen des Kontos
+      // und liefert (anders als signInEmail) die fertigen Nutzerdaten zurueck, statt sich auf
+      // onAuthChange zu verlassen - das erste onAuthChange-Feuern koennte sonst noch den alten
+      // (leeren) Anzeigenamen zeigen, da updateProfile() erst danach ablaeuft.
+      signUpEmail: async (email, password, displayName) => {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        if (displayName) await updateProfile(cred.user, { displayName });
+        return { uid: cred.user.uid, email: cred.user.email, displayName: cred.user.displayName };
+      },
+      resetPassword: (email) => sendPasswordResetEmail(auth, email),
+      signOutUser: () => signOut(auth),
+      onAuthChange: (cb) => onAuthStateChanged(auth, (user) => {
+        cb(user ? { uid: user.uid, email: user.email, displayName: user.displayName } : null);
+      }),
+    };
+    window.dispatchEvent(new CustomEvent("fretzecloud-ready"));
+  } catch (e) {
+    // Offline beim allerersten Laden oder CDN nicht erreichbar - graceful, kein Absturz.
+    // window.FretzeCloud bleibt undefined, die Login-Buttons im Profil pruefen das vor
+    // jedem Aufruf und zeigen stattdessen einen Toast statt einer Exception.
+    console.warn("Firebase konnte nicht initialisiert werden:", e);
+  }
 </script>
 </body>
 </html>
