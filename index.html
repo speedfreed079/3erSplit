@@ -815,7 +815,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.19.0";
+const APP_VERSION = "1.20.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1270,6 +1270,15 @@ let libraryInfoOpenKey = null;
 // dieser Phase beruehrt Login weder state noch persist()/loadState() - rein additiv.
 let currentUser = null;
 let loginEmailFormOpen = false;
+let editNameOpen = false;
+
+// Admin-Panel (seit v1.20.0): reines Sichtbarkeits-Gate fuer jetzt - zeigt nur einen
+// Platzhalter-Screen. Die eigentliche Nutzerverwaltung (Konten auflisten/loeschen) braucht
+// privilegierten Backend-Zugriff (Firebase Admin SDK, das NIE im Client-JS laufen darf - sonst
+// koennte jeder Nutzer diese Funktionen selbst aufrufen) und haengt an Phase B (Firestore) -
+// beides bewusst als eigene, spaetere Planungsrunde zurueckgestellt, siehe PROJEKTLOG.md.
+const ADMIN_EMAIL = "frederik.ruehmann@gmail.com";
+let adminViewActive = false;
 
 let saveTimer = null;
 
@@ -1467,7 +1476,18 @@ function textSizeLabel(size) {
 // Platzhalter fuer die kuenftige Login-Funktion: sobald sich Nutzer anmelden koennen, soll
 // hier "${Vorname}s Trainingsbuch" (bzw. ohne zusaetzliches "s" bei Namen, die schon auf
 // s/x/z enden, z.B. "Tobias Trainingsbuch") stehen statt des generischen Textes.
+// Deutsche Genitiv-Bildung: Namen, die bereits auf s/x/z enden, bekommen kein zusaetzliches
+// "s" (z.B. "Tobias" bleibt "Tobias", statt des falschen "Tobiass") - alle anderen Namen
+// bekommen ein einfaches "s" ohne Apostroph angehaengt (z.B. "Frederik" -> "Fredericks").
+function possessiveName(name) {
+  if (!name) return null;
+  return /[sxz]$/i.test(name) ? name : `${name}s`;
+}
+
 function headerSubtitleText() {
+  if (currentUser && currentUser.displayName) {
+    return `${possessiveName(currentUser.displayName)} Trainingsbuch`;
+  }
   return "Trainingsbuch";
 }
 
@@ -1873,16 +1893,36 @@ const GOOGLE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 18 18" xmlns="
 
 function accountSectionHTML() {
   if (currentUser) {
+    const editNameHTML = editNameOpen ? `
+      <div class="login-email-form">
+        <input type="text" id="edit-name-input" class="login-email-input" placeholder="Anzeigename" value="${escapeAttr(currentUser.displayName || "")}" />
+        <div class="login-email-actions">
+          <button class="icon-btn" data-role="edit-name-submit">Speichern</button>
+          <button class="icon-btn" data-role="edit-name-cancel">Abbrechen</button>
+        </div>
+      </div>
+    ` : "";
     return `
       <div class="profile-row">
         <span>Eingeloggt als ${escapeAttr(currentUser.displayName || currentUser.email || "Konto")}</span>
         <button class="icon-btn" data-role="logout">Ausloggen</button>
       </div>
+      <div class="profile-row">
+        <span>Anzeigename</span>
+        <button class="icon-btn" data-role="edit-name-toggle">${editNameOpen ? "Schließen" : "✎ Ändern"}</button>
+      </div>
+      ${editNameHTML}
+      ${currentUser.email === ADMIN_EMAIL ? `
+        <div class="profile-row">
+          <span>Admin-Panel</span>
+          <button class="icon-btn" data-role="admin-enter">🛠 Öffnen</button>
+        </div>
+      ` : ""}
     `;
   }
   const emailFormHTML = loginEmailFormOpen ? `
     <div class="login-email-form">
-      <input type="text" id="login-displayname-input" class="login-email-input" placeholder="Anzeigename (optional, nur für Registrierung)" autocomplete="nickname" />
+      <input type="text" id="login-displayname-input" class="login-email-input" placeholder="Anzeigename (nur für Registrierung)" autocomplete="nickname" />
       <input type="email" id="login-email-input" class="login-email-input" placeholder="E-Mail" autocomplete="email" />
       <div class="login-password-row">
         <input type="password" id="login-password-input" class="login-email-input" placeholder="Passwort" autocomplete="current-password" data-role="login-password-live-check" />
@@ -1956,6 +1996,18 @@ function renderLibraryView() {
     </div>
     <div class="focusmode-content">
       ${sections}
+    </div>
+  `;
+}
+
+function renderAdminView() {
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="admin-exit">✕ Schließen</button>
+      <span class="focusmode-progress">🛠 Admin-Panel</span>
+    </div>
+    <div class="focusmode-content">
+      <p class="dim">Nutzerverwaltung folgt in einer späteren Version — das braucht einen abgesicherten Server-Zugriff (nicht direkt im Browser möglich) und hängt am geplanten Firestore-Datensync.</p>
     </div>
   `;
 }
@@ -2061,6 +2113,11 @@ function render() {
 
   if (profileActive) {
     document.getElementById("app").innerHTML = renderProfileView();
+    return;
+  }
+
+  if (adminViewActive) {
+    document.getElementById("app").innerHTML = renderAdminView();
     return;
   }
 
@@ -2482,8 +2539,9 @@ document.addEventListener("click", (e) => {
     const password = document.getElementById("login-password-input").value;
     const passwordConfirm = document.getElementById("login-password-confirm-input").value;
     const displayName = document.getElementById("login-displayname-input").value.trim();
+    if (!displayName) { showToast("Bitte einen Anzeigenamen eingeben."); return; }
     if (password !== passwordConfirm) { showToast("Passwörter stimmen nicht überein."); return; }
-    window.FretzeCloud.signUpEmail(email, password, displayName || null).then(user => {
+    window.FretzeCloud.signUpEmail(email, password, displayName).then(user => {
       currentUser = user;
       loginEmailFormOpen = false;
       render();
@@ -2506,6 +2564,49 @@ document.addEventListener("click", (e) => {
   const logoutBtn = e.target.closest('[data-role="logout"]');
   if (logoutBtn) {
     if (window.FretzeCloud) window.FretzeCloud.signOutUser();
+    return;
+  }
+
+  const editNameToggle = e.target.closest('[data-role="edit-name-toggle"]');
+  if (editNameToggle) {
+    editNameOpen = !editNameOpen;
+    render();
+    return;
+  }
+
+  const editNameCancel = e.target.closest('[data-role="edit-name-cancel"]');
+  if (editNameCancel) {
+    editNameOpen = false;
+    render();
+    return;
+  }
+
+  const adminEnter = e.target.closest('[data-role="admin-enter"]');
+  if (adminEnter) {
+    profileActive = false;
+    adminViewActive = true;
+    render();
+    return;
+  }
+
+  const adminExit = e.target.closest('[data-role="admin-exit"]');
+  if (adminExit) {
+    adminViewActive = false;
+    render();
+    return;
+  }
+
+  const editNameSubmit = e.target.closest('[data-role="edit-name-submit"]');
+  if (editNameSubmit) {
+    if (!window.FretzeCloud) { showToast("Gerade nicht verfügbar (offline?)."); return; }
+    const name = document.getElementById("edit-name-input").value.trim();
+    if (!name) { showToast("Bitte einen Anzeigenamen eingeben."); return; }
+    window.FretzeCloud.updateDisplayName(name).then(user => {
+      currentUser = user;
+      editNameOpen = false;
+      render();
+      showToast("Anzeigename aktualisiert.");
+    }).catch(err => showToast(friendlyAuthError(err)));
     return;
   }
 
@@ -2955,6 +3056,7 @@ window.addEventListener("fretzecloud-ready", () => {
     const wasLoggedIn = !!currentUser;
     currentUser = user;
     if (user) loginEmailFormOpen = false;
+    if (!user) { editNameOpen = false; adminViewActive = false; }
     render();
     if (user && !wasLoggedIn) showToast(`Eingeloggt als ${user.email || user.displayName || "Konto"}.`);
     if (!user && wasLoggedIn) showToast("Ausgeloggt.");
@@ -3014,6 +3116,11 @@ if ("serviceWorker" in navigator) {
         return { uid: cred.user.uid, email: cred.user.email, displayName: cred.user.displayName };
       },
       resetPassword: (email) => sendPasswordResetEmail(auth, email),
+      updateDisplayName: async (name) => {
+        if (!auth.currentUser) throw new Error("Nicht eingeloggt.");
+        await updateProfile(auth.currentUser, { displayName: name });
+        return { uid: auth.currentUser.uid, email: auth.currentUser.email, displayName: auth.currentUser.displayName };
+      },
       signOutUser: () => signOut(auth),
       onAuthChange: (cb) => onAuthStateChanged(auth, (user) => {
         cb(user ? { uid: user.uid, email: user.email, displayName: user.displayName } : null);
