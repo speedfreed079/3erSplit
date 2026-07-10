@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-10 (Teil 50): Recherche-Prompt für die 22 Bänder-Übungserklärungen vorbereitet
+
+- Deep-Research-Prompt für die 22 offenen Übungserklärungen des Bänder-Plans erstellt: `01_Recherchen/02_Uebungserklaerungen/Recherche-Prompt-SmartWorkout-Baender.md` (Nutzer führt die Recherche selbst in einer separaten Gemini-Deep-Research-Session aus, gleicher Workflow wie bisher).
+- Bittet explizit um bänderspezifische Ausführungs-/Fehler-/Sicherheitshinweise (Vorspannung am tiefsten Punkt, akkommodierende Widerstandskurve, Materialprüfung vor dem Satz) statt der allgemeinen Freihantel-Hinweise — genau der Unterschied, der eine Wiederverwendung der bestehenden `exercise-library.json`-Einträge ausschließt (siehe v1.24.0).
+- **Nächster Schritt**: Ergebnis abwarten, dann Integration analog zu v1.17.0 (UL/FB/BroSplit) bzw. der noch ausstehenden Calisthenics-Übungserklärungen.
+
 ## v1.24.0 — 2026-07-10 (Teil 49): Sechster Plan — Widerstandsbänder (SmartWorkout)
 
 - Das Ergebnis des in Teil 48 vorbereiteten Deep-Research-Prompts lag bereits korrekt im Ordner `01_Recherchen/01_Trainingsplaene/` (Dateiname noch der rohe Recherche-Titel) — umbenannt zu `SmartWorkout-Baender-Trainingsplan.md`, gründlich gelesen und als sechster Plan integriert.
