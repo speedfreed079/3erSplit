@@ -862,7 +862,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.21.0";
+const APP_VERSION = "1.22.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1263,10 +1263,11 @@ function loadState() {
         planDraft: parsed.planDraft || null,
         weightSuggestions: parsed.weightSuggestions || {},
         gymWeightSuggestions: parsed.gymWeightSuggestions || {},
+        updatedAt: parsed.updatedAt || null,
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null };
 }
 
 let state = loadState();
@@ -1466,6 +1467,7 @@ async function fetchAiSuggestions(day, exId) {
 }
 
 function persist() {
+  state.updatedAt = Date.now();
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
@@ -1473,7 +1475,79 @@ function persist() {
     } catch (e) {
       console.error("Speichern fehlgeschlagen", e);
     }
+    if (currentUser && window.FretzeCloud) {
+      window.FretzeCloud.saveState(currentUser.uid, state).catch(() => {});
+    }
   }, 300);
+}
+
+// Fuehrt zwei Tagebuch-Arrays konfliktfrei zusammen (Dedupe per timestamp, chronologisch
+// sortiert) - state.journal ist ein anhaengendes Array, daher verlustfrei vereinbar, anders
+// als die uebrigen state-Felder (siehe reconcileCloudState).
+function mergeJournals(a, b) {
+  const map = new Map();
+  [...(a || []), ...(b || [])].forEach((entry) => {
+    if (entry && entry.timestamp != null) map.set(entry.timestamp, entry);
+  });
+  return Array.from(map.values()).sort((x, y) => x.timestamp - y.timestamp);
+}
+
+// Synchronisiert state mit Firestore bei jedem Login und bei jedem Reload mit bereits
+// bestehender Firebase-Session (derselbe fretzecloud-ready/onAuthChange-Callback deckt beide
+// Faelle ab). state.journal wird ueber beide Geraete zusammengefuehrt (siehe mergeJournals,
+// Nutzerentscheidung: Trainingsdaten sollen nie stillschweigend verloren gehen). Alle anderen
+// Felder folgen einfachem Last-Write-Wins nach updatedAt - bewusst keine Feld-fuer-Feld-Merge,
+// gleiche "state als ein Blob"-Konvention wie ueberall sonst in der App.
+async function reconcileCloudState(uid) {
+  if (!window.FretzeCloud) return;
+  try {
+    const cloud = await window.FretzeCloud.loadState(uid);
+    if (!cloud) {
+      // Kein Cloud-Dokument -> erster Login auf diesem Konto: lokalen Stand hochladen.
+      // Deckt zugleich "bestehende lokale Daten beim ersten Login migrieren" ab.
+      state.updatedAt = state.updatedAt || Date.now();
+      await window.FretzeCloud.saveState(uid, state);
+      return;
+    }
+    const localTs = state.updatedAt || 0;
+    const cloudTs = cloud.updatedAt || 0;
+    const mergedJournal = mergeJournals(state.journal, cloud.journal);
+    if (cloudTs > localTs) {
+      state = {
+        currentDay: cloud.currentDay || "pushA",
+        sessions: cloud.sessions || {},
+        history: cloud.history || {},
+        swaps: cloud.swaps || {},
+        notes: cloud.notes || {},
+        lastWeights: cloud.lastWeights || {},
+        lastCompletedDay: cloud.lastCompletedDay || null,
+        lastCompletedDate: cloud.lastCompletedDate || null,
+        theme: cloud.theme || "sepia",
+        currentPlan: cloud.currentPlan || "ppl",
+        textSize: cloud.textSize || "normal",
+        gyms: cloud.gyms || [],
+        currentGymId: cloud.currentGymId || null,
+        gymLastWeights: cloud.gymLastWeights || {},
+        gymHistory: cloud.gymHistory || {},
+        journal: mergedJournal,
+        customPlans: cloud.customPlans || [],
+        planDraft: cloud.planDraft || null,
+        weightSuggestions: cloud.weightSuggestions || {},
+        gymWeightSuggestions: cloud.gymWeightSuggestions || {},
+        updatedAt: cloudTs,
+      };
+      applyPlan(state.currentPlan);
+      if (!DAYS.find((d) => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
+      render();
+    } else {
+      state.journal = mergedJournal;
+    }
+    // Zusammengefuehrtes Tagebuch immer zurueckschreiben, unabhaengig davon wer "gewonnen" hat -
+    // sonst wuerde die andere Seite ihre eigenen, dem Gewinner unbekannten Eintraege verlieren.
+    await window.FretzeCloud.saveState(uid, state);
+  } catch (e) {
+    console.warn("Cloud-Sync fehlgeschlagen", e);
+  }
 }
 
 function getSetsFor(dayId, ex) {
@@ -2400,6 +2474,7 @@ function importData(file) {
         planDraft: incoming.planDraft || null,
         weightSuggestions: incoming.weightSuggestions || {},
         gymWeightSuggestions: incoming.gymWeightSuggestions || {},
+        updatedAt: incoming.updatedAt || null,
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -3102,7 +3177,7 @@ window.addEventListener("fretzecloud-ready", () => {
   window.FretzeCloud.onAuthChange((user) => {
     const wasLoggedIn = !!currentUser;
     currentUser = user;
-    if (user) loginEmailFormOpen = false;
+    if (user) { loginEmailFormOpen = false; reconcileCloudState(user.uid); }
     if (!user) { editNameOpen = false; adminViewActive = false; }
     render();
     if (user && !wasLoggedIn) showToast(`Eingeloggt als ${user.email || user.displayName || "Konto"}.`);
@@ -3120,11 +3195,12 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
-<!-- Konto/Login (Phase A, seit v1.19.0): eigener <script type="module">-Block, da das
-     Firebase-JS-SDK per CDN-ESM-Import geladen wird, waehrend das Haupt-Script oben bewusst
-     ein klassisches Script bleibt (kein Umbau der gesamten App auf ES-Module). Exponiert nur
-     eine schlanke Wrapper-API auf window.FretzeCloud - derselbe Isolationsgedanke wie bei
-     PROXY_URL fuer den Gemini-Worker. Beruehrt in dieser Phase weder state noch Firestore. -->
+<!-- Konto/Login: eigener <script type="module">-Block, da das Firebase-JS-SDK per CDN-ESM-Import
+     geladen wird, waehrend das Haupt-Script oben bewusst ein klassisches Script bleibt (kein
+     Umbau der gesamten App auf ES-Module). Exponiert nur eine schlanke Wrapper-API auf
+     window.FretzeCloud - derselbe Isolationsgedanke wie bei PROXY_URL fuer den Gemini-Worker.
+     Seit v1.22.0 (Phase B) auch Firestore-Datensync (saveState/loadState) - siehe
+     reconcileCloudState() im Haupt-Script fuer die Merge-Logik. -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import {
@@ -3132,6 +3208,9 @@ if ("serviceWorker" in navigator) {
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail,
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc,
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   // Firebase-Web-Config ist bewusst oeffentlich (anders als der Gemini-API-Key) - Sicherheit
   // kommt ueber Firebase Auth + spaetere Firestore Security Rules, nicht ueber Geheimhaltung
@@ -3148,6 +3227,7 @@ if ("serviceWorker" in navigator) {
   try {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const googleProvider = new GoogleAuthProvider();
 
     window.FretzeCloud = {
@@ -3172,6 +3252,14 @@ if ("serviceWorker" in navigator) {
       onAuthChange: (cb) => onAuthStateChanged(auth, (user) => {
         cb(user ? { uid: user.uid, email: user.email, displayName: user.displayName } : null);
       }),
+      // Seit v1.22.0 (Phase B): Firestore-Spiegel des kompletten state-Blobs unter users/{uid}.
+      // JSON-Rundreise vor setDoc sanitisiert undefined-Felder (Firestore wirft sonst, anders
+      // als JSON.stringify beim lokalen persist()).
+      saveState: (uid, stateObj) => setDoc(doc(db, "users", uid), JSON.parse(JSON.stringify(stateObj))),
+      loadState: async (uid) => {
+        const snap = await getDoc(doc(db, "users", uid));
+        return snap.exists() ? snap.data() : null;
+      },
     };
     window.dispatchEvent(new CustomEvent("fretzecloud-ready"));
   } catch (e) {
