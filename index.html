@@ -738,12 +738,65 @@ const CALI_EXERCISES = {
   ],
 };
 
+// Sechster Plan (seit v1.24.0): Oberkörper/Unterkörper-Split fuer das "SmartWorkout Elite"-
+// Widerstandsbaender-Set (7 Baender 5-25kg stapelbar, Bar, Griffe, Tueranker, Fussmanschetten).
+// Anders als beim Calisthenics-Plan gibt es hier echte, kontinuierliche Widerstandsprogression
+// (mehr/staerkere Baender kombinieren) - deshalb normale gewichtsbasierte Progression
+// (compound/weightSuggestions) wie bei den Gym-Plaenen statt der alts-Zweckentfremdung fuer
+// Progressionsstufen. compound:true nur fuer die kanonischen Grunduebungen in ihrer Bar-Variante
+// (Bankdruecken, Rudern mit der Bar, Schulterdruecken, Kniebeugen, Rumaenisches Kreuzheben,
+// Kreuzheben) - unilaterale/Tueranker-Varianten und Latzug/Isolationsuebungen bleiben
+// unflagged, gleiche Konvention wie in den bestehenden Gym-Plaenen. Noch kein libraryId: die
+// Recherche markiert bei jeder Uebung einen relevanten Technik-Unterschied zur Freihantel-
+// Version (andere Widerstandskurve), braucht also einen eigenen, spaeteren Recherche-Durchgang
+// fuer die Uebungsdatenbank (gleiche Luecke wie bei Calisthenics vor der eigenen Recherche).
+const BAND_DAYS = [
+  { id: "bandUpperA", label: "Oberkörper A", sub: "Brust, Rücken, Schultern, Arme" },
+  { id: "bandLowerA", label: "Unterkörper A", sub: "Kniedominant, Hamstrings, Core", type: "legs" },
+  { id: "bandUpperB", label: "Oberkörper B", sub: "Brust-/Rücken-Variation, Schultern posterior, Arme" },
+  { id: "bandLowerB", label: "Unterkörper B", sub: "Unilateral, hüftdominant, Core", type: "legs" },
+];
+
+const BAND_EXERCISES = {
+  bandUpperA: [
+    { id: "bdua1", name: "Bankdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "6-8", alts: [], compound: true },
+    { id: "bdua2", name: "Vorgebeugtes Rudern mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
+    { id: "bdua3", name: "Schulterdrücken mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
+    { id: "bdua4", name: "Latzug kniend mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdua5", name: "Seitheben mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdua6", name: "Trizepsdrücken über Kopf mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
+  ],
+  bandLowerA: [
+    { id: "bdla1", name: "Kniebeugen mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true },
+    { id: "bdla2", name: "Rumänisches Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [], compound: true },
+    { id: "bdla3", name: "Beinbeuger stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdla4", name: "Hüft-Abduktion mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdla5", name: "Core-Rotations-Holzfäller mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [], core: true },
+  ],
+  bandUpperB: [
+    { id: "bdub1", name: "Fliegende mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdub2", name: "Einarmiges Rudern mit Türanker und Griff (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdub3", name: "Latzug eng mit Türanker und der SmartWorkout Bar (Bänder)", sets: 3, reps: "8-10", alts: [] },
+    { id: "bdub4", name: "Seitheben vorgebeugt mit Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdub5", name: "Bizeps-Curls mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdub6", name: "Trizepsdrücken mit Türanker und Griffen (Bänder)", sets: 3, reps: "12-15", alts: [] },
+  ],
+  bandLowerB: [
+    { id: "bdlb1", name: "Ausfallschritte mit der SmartWorkout Bar (Bänder)", sets: 3, reps: "10-12", alts: [] },
+    { id: "bdlb2", name: "Kreuzheben mit der SmartWorkout Bar (Bänder)", sets: 4, reps: "6-8", alts: [], compound: true },
+    { id: "bdlb3", name: "Beinstrecken stehend mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdlb4", name: "Glute Kickbacks mit Türanker und Fußmanschette (Bänder)", sets: 3, reps: "12-15", alts: [] },
+    { id: "bdlb5", name: "Pallof Press mit Türanker und Griffen (Bänder)", sets: 3, reps: "10-12", alts: [], core: true },
+  ],
+};
+
 const PLANS = [
   { id: "ppl", label: "Push/Pull/Legs", days: PPL_DAYS, exercises: PPL_EXERCISES },
   { id: "upperLower", label: "Upper/Lower", days: UL_DAYS, exercises: UL_EXERCISES },
   { id: "fullbody", label: "Ganzkörper", days: FB_DAYS, exercises: FB_EXERCISES },
   { id: "broSplit", label: "Bro-Split", days: BRO_DAYS, exercises: BRO_EXERCISES },
   { id: "calisthenics", label: "Zuhause/Calisthenics", days: CALI_DAYS, exercises: CALI_EXERCISES },
+  { id: "baender", label: "Bänder (SmartWorkout)", days: BAND_DAYS, exercises: BAND_EXERCISES },
 ];
 
 let DAYS = PPL_DAYS;
@@ -862,7 +915,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.23.0";
+const APP_VERSION = "1.24.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
