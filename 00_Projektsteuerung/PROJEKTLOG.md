@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-10 (Teil 40): v1.19.0 live verifiziert (Google-Login)
+
+- Nach dem Deploy von v1.19.0: `speedfreed079.github.io` in der Firebase Console unter Authentication → Settings → Autorisierte Domains ergänzt (vorher nur `localhost`/`fretze-pumpt.firebaseapp.com` — ohne diesen Eintrag hätte `signInWithPopup` auf der echten Domain nicht funktioniert).
+- Google-Login auf der Live-Seite (https://speedfreed079.github.io/3erSplit/) vom Nutzer erfolgreich getestet: Popup öffnet sich, nach Kontoauswahl "Eingeloggt als ..." sichtbar, keine Konsolenfehler. Damit ist Phase A (Konto/Login, siehe v1.19.0) vollständig verifiziert, inkl. Produktivbetrieb.
+- Kein Code geändert, daher kein Versions-Bump.
+
 ## v1.19.0 — 2026-07-10 (Teil 39): Konto/Login Phase A (Firebase Auth, ohne Firestore-Sync)
 
 - Auslöser für die schon länger geplante Login-Funktion (siehe Feature-Roadmap) ist jetzt konkret; nach eigener Planungsrunde (Plan-Datei, vom Nutzer freigegeben) wurde bewusst nur **Phase A** umgesetzt: Firebase Auth anbinden, ohne `state`/`persist()`/`loadState()` anzufassen — Nullrisiko für bestehende Trainingsdaten. Firestore-Datensync (Phase B) und Security Rules (Phase C) folgen in eigenen, späteren Schritten.
