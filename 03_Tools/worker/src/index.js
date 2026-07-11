@@ -199,7 +199,10 @@ async function identityToolkitList(env) {
   );
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.error?.message || `Identity Toolkit Fehler (${res.status})`);
-  return (data.userInfo || []).map((u) => ({
+  // DownloadAccountResponse (v1 API) nennt das Feld "users", nicht "userInfo" (das war die
+  // aeltere relyingparty-API-Version) - per Google-Doku verifiziert, nicht nur aus dem
+  // Gedaechtnis uebernommen, nachdem das erste Deployment eine leere Liste lieferte.
+  return (data.users || []).map((u) => ({
     uid: u.localId,
     email: u.email || "",
     displayName: u.displayName || "",
