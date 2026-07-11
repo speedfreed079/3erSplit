@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-11 (Teil 83): 8 Signature-Maschinen & Functional-Training-Übungen integriert
+
+- Ergebnis von `Recherche-Prompt-Signature-Maschinen-Functional.md` (Teil 81) lag als `Biomechanischer Fitness-Übungskatalog.md` vor, alle 8 Übungen eingepflegt: Reverse Hyperextension, Belt-Squat-Maschine, Nackenmaschine, Kniende Beincurl-Maschine (Signature-Maschinen) sowie Kettlebell Swing, Schlittenschieben, Schlittenziehen, Battle Ropes (Functional Training).
+- `exercise-library.json` wächst von 123 auf **131 Einträge**. `muscleGroup` bei der Nackenmaschine ohne sauberen Keyword-Treffer (kein dediziertes "Nacken"-Bucket in den 10 festen Kategorien) — der posterioren Nackenstreckung am nächsten liegend "Rücken" zugeordnet, analog zur bereits vorhandenen Rückenstrecker-Maschine.
+- Wie beim letzten Batch bewusst **keine** Verknüpfung in `PLANS`/`EXERCISES` — direkt nutzbar über Freitext-Tausch, "+ Eigene Übung" und den Übungs-Picker (inkl. dem neu gebauten ℹ-Vorschau in v1.46.0).
+- Kein `APP_VERSION`-Bump nötig (`exercise-library.json` wird separat vom App-Bundle geladen).
+- Verifiziert: Node-Skript parst/validiert die 8 neuen Einträge vor dem Schreiben (Feldanzahl, `muscleGroup`, keine Kollision mit den bestehenden 123 Keys).
+
 ## v1.46.0 — 2026-07-11 (Teil 82): Übungs-Picker mit ℹ-Erklärung + Physio-Anbindung, Bibliothek nach Muskelgruppe
 
 - Nutzer hat den Übungs-Picker (v1.44.0) ausprobiert — reichte noch nicht: keine Möglichkeit, eine Übung vor der Auswahl zu erklären; "Übungen durchsuchen" gruppierte nach Plan→Tag statt nach Muskel; der Physio-Bereich hatte noch kein Datenbank-Auswahl-Panel (nur das ältere Freitext+Datalist-Feld aus v1.42.0, vor dem Picker gebaut).

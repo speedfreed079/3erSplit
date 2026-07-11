@@ -2583,5 +2583,177 @@
     "safety": "Da die Schienenführung keine natürliche Bogenbewegung (\"Reverse-C\") der Schultergelenke erlaubt, müssen die mechanischen Sicherheitsstopper zwingend knapp über Brusthöhe eingestellt werden, um Verletzungen bei Muskelversagen zu verhindern.",
     "image": null,
     "muscleGroup": "Brust"
+  },
+  "reverse-hyperextension": {
+    "name": "Reverse Hyperextension (Maschine)",
+    "muscles": {
+      "primary": "Großer Gesäßmuskel",
+      "secondary": "Langer Rückenstrecker, Hintere Oberschenkelmuskulatur"
+    },
+    "steps": [
+      "Bauchlings auf das Polster der Maschine legen und die Griffe fest greifen, während das Becken frei über die vordere Kante des Polsters hinausragt.",
+      "Die Beine gestreckt nach unten hängen lassen und die Fußgelenke stabil zwischen den Polsterrollen oder in den Schlaufen fixieren.",
+      "Die Beine durch eine kontrollierte Kontraktion von Gesäß und Oberschenkelrückseite nach oben hinten führen, bis der Unterkörper mit dem Oberkörper eine gerade Linie bildet.",
+      "Die Endposition für eine Sekunde unter maximaler Muskelspannung halten, ohne die Wirbelsäule übermäßig zu strecken.",
+      "Die Beine langsam und unter konstanter Muskelspannung wieder in die Ausgangsposition absenken, um eine kontrollierte Dehnung im Lendenbereich zuzulassen."
+    ],
+    "mistakes": [
+      "Schwunghaftes Hochreißen der Beine, was schädliche Scherkräfte in der Lendenwirbelsäule erzeugt und den Muskelreiz minimiert.",
+      "Überstreckung des unteren Rückens weit über die parallele Linie zum Oberkörper hinaus.",
+      "Vollständiger Verlust der Muskelspannung in der exzentrischen Phase beim Absenken der Beine."
+    ],
+    "safety": "Im Gegensatz zur herkömmlichen Rückenstrecker-Maschine, bei der sich der Oberkörper gegen fixierte Beine bewegt, bewegen sich hier die Beine und die Hüfte gegen einen fixierten Oberkörper, was eine spinale Dekompression bewirkt.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "belt-squat-maschine": {
+    "name": "Belt-Squat-Maschine",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel",
+      "secondary": "Großer Gesäßmuskel, Hintere Oberschenkelmuskulatur"
+    },
+    "steps": [
+      "Mittig auf die Plattform der Maschine stellen, den gepolsterten Hüftgürtel tief um das Becken legen und fest mit dem Zugmechanismus verbinden.",
+      "Einen schulterbreiten Stand einnehmen, die Fußspitzen leicht nach außen drehen und den Oberkörper vollständig aufrichten.",
+      "Die Kniebeugenbewegung durch ein kontrolliertes Absenken des Gesäßes einleiten, bis die Oberschenkel mindestens parallel zum Boden stehen, während die Hände leicht die Haltegriffe umfassen.",
+      "Den Rumpf stabil halten und den Oberkörper während der gesamten Abwärtsphase aufrecht halten.",
+      "Sich kraftvoll über die Fersen nach oben drücken, bis die Knie und die Hüfte gestreckt sind, ohne die Kniegelenke vollständig einzurasten."
+    ],
+    "mistakes": [
+      "Der Hüftgürtel wird zu hoch (über dem Beckenkamm) platziert, was zu einer ungünstigen Hebelwirkung und einer Stauchung der Lendenwirbelsäule führt.",
+      "Einbrechen der Knie nach innen (Knievalgus) während der Aufwärtsphase.",
+      "Übermäßiges Vorbeugen des Oberkörpers, wodurch der spezifische Oberschenkelfokus verloren geht."
+    ],
+    "safety": "Da die Last über den Gürtel direkt auf die Hüfte übertragen wird, entfällt die axiale Kompression der Wirbelsäule vollständig, was ein maximal schweres Beintraining bei gleichzeitiger Rückenentlastung ermöglicht.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "nackenmaschine": {
+    "name": "Nackenmaschine",
+    "muscles": {
+      "primary": "Nackenstrecker (Hintere Halsmuskulatur)",
+      "secondary": "Oberer Kapuzenmuskel, Schulterblattheber"
+    },
+    "steps": [
+      "Aufrecht auf den Sitz der Maschine setzen, das Becken fest an die Rückenlehne drücken und den Brustkorb mittels Gurten oder Polstern fixieren.",
+      "Das hintere Kopfpolster so einstellen, dass es mittig am Hinterkopf knapp über den Ohren anliegt, während der Blick geradeaus gerichtet ist.",
+      "Den Kopf durch eine kontrollierte Aktivierung der tiefen Nackenmuskulatur langsam nach hinten bewegen (strecken), ohne die Schultern nach oben zu ziehen.",
+      "Am Endpunkt der Bewegung kurz halten und den Kopf anschließend langsam und kontrolliert wieder nach vorne führen, bis das Kinn leicht Richtung Brustbein sinkt."
+    ],
+    "mistakes": [
+      "Vorschieben des Kinns während der Streckung (\"Schildkrötenhaltung\"), was die obere Halswirbelsäule komprimiert.",
+      "Ausweichen mit dem Oberkörper durch Aufreißen des Brustkorbs oder Hohlkreuzbildung in der Lendenwirbelsäule.",
+      "Ruckartige Bewegungen mit zu hoher Last, die die sensiblen Strukturen der Halswirbelsäule gefährden."
+    ],
+    "safety": "Zur Vermeidung von Gefäßkompressionen oder Spannungskopfschmerzen ist der Widerstand feinstufig zu wählen und das Training bei stechenden Schmerzen im Bereich der Schädelbasis sofort abzubrechen.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "kniende-beincurl-maschine": {
+    "name": "Kniende Beincurl-Maschine",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur",
+      "secondary": "Großer Gesäßmuskel, Wadenmuskulatur"
+    },
+    "steps": [
+      "Knielings auf dem Polster positionieren, die Knöchel sicher unter den hinteren gepolsterten Rollen einrasten und die Füße fest an der Platte abstützen.",
+      "Das Brustpolster der Maschine auf Höhe des Brustbeins einstellen und die Haltegriffe mit leicht gebeugten Armen fest greifen.",
+      "Unter Aufrechterhaltung einer geraden Linie von den Knien bis zu den Schultern den Oberkörper langsam und kontrolliert nach vorne absenken.",
+      "Kurz vor dem Erreichen der vollständigen Kniestreckung (etwa parallel zum Boden) die exzentrische Bewegung kontrolliert stoppen.",
+      "Den Oberkörper ausschließlich durch die konzentrische Kontraktion der hinteren Oberschenkelmuskulatur wieder in die vertikale Ausgangsposition nach oben ziehen."
+    ],
+    "mistakes": [
+      "Beugen der Hüfte (Abknicken im Gesäß) während der Bewegung, was die Oberschenkelrückseite entlastet.",
+      "Unkontrolliertes Durchfallenlassen des Oberkörpers im unteren Drittel der Bewegung.",
+      "Zu starkes Ziehen mit den Armen an den Haltegriffen, um den konzentrischen Wendepunkt zu überwinden."
+    ],
+    "safety": "Im Gegensatz zum freien Nordic-Hamstring-Curl, der nur das eigene Körpergewicht und eine manuelle Fixierung nutzt, bietet diese Maschine eine einstellbare Unterstützung über den gesamten Bewegungsverlauf, was Überlastungen am biomechanischen Schwachpunkt der Kniestreckung verhindert.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "kettlebell-swing": {
+    "name": "Kettlebell Swing",
+    "muscles": {
+      "primary": "Großer Gesäßmuskel",
+      "secondary": "Hintere Oberschenkelmuskulatur, Langer Rückenstrecker"
+    },
+    "steps": [
+      "In einem schulterbreiten Stand etwa eine Fußlänge hinter der Kettlebell aufstellen, die Hüfte weit nach hinten schieben (Hüftscharnier) und den Griff mit beiden Händen fassen.",
+      "Die Kettlebell mit geradem Rücken explosiv nach hinten zwischen den Beinen hindurchziehen, um die hintere Muskelkette vorzuspannen.",
+      "Die Hüfte kraftvoll und schnell nach vorne strecken, um die Kettlebell allein durch diesen Impuls bis auf Brusthöhe nach oben schwingen zu lassen.",
+      "Am höchsten Punkt die Gesäßmuskulatur und den Rumpf maximal anspannen, während die Arme locker gestreckt bleiben.",
+      "Das Gewicht im freien Fall zurückschwingen lassen und die erneute Hüftbeugung erst einleiten, wenn die Oberarme fast den Rumpf berühren."
+    ],
+    "mistakes": [
+      "Ausführen der Bewegung als Kniebeuge (Kniebeugung statt Hüftbeugung), was die Quadrizeps- statt der Gesäßaktivität erhöht.",
+      "Aktives Hochreißen der Kettlebell mit der Kraft der Schultern und Arme statt des Impulses aus der Hüftstreckung.",
+      "Überstreckung der Lendenwirbelsäule am obersten Punkt durch mangelnde Rumpf- und Gesäßspannung."
+    ],
+    "safety": "Wegen der enormen ballistischen Fliehkräfte darf die Bewegung am höchsten Punkt nur bis zur Brusthöhe geführt werden (russische Variante), um eine unkontrollierte hyperextensive Kompression der Lendenwirbelsäule zu verhindern.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "schlittenschieben-sled-push": {
+    "name": "Schlittenschieben (Sled Push)",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel",
+      "secondary": "Großer Gesäßmuskel, Wadenmuskulatur"
+    },
+    "steps": [
+      "Mit dem Gesicht zum Schlitten aufstellen, die Hände fest an den vertikalen Holmen positionieren und den Oberkörper in einen Winkel von etwa 45 Grad neigen.",
+      "Den Rumpf maximal anspannen, den Rücken absolut gerade halten und den Kopf in Verlängerung der Wirbelsäule positionieren.",
+      "Den Schlitten durch kraftvolles Abdrücken über den Mittelfuß und die Zehenspitzen in Vorwärtsbewegung versetzen.",
+      "In einer gleichmäßigen Laufbewegung Schritt für Schritt nach vorne marschieren, wobei die Knie aktiv nach oben gezogen werden und die Hüfte bei jedem Schritt vollständig streckt."
+    ],
+    "mistakes": [
+      "Rundrückenbildung während der Druckphase, besonders bei hoher Ermüdung oder zu schwerem Gewicht.",
+      "Unvollständige Streckung der Hüfte beim Vorwärtsschritt, was die Effizienz der Kraftübertragung mindert.",
+      "Permanenter Blick nach unten auf die Füße, was die Hals- und Brustwirbelsäule in eine unphysiologische Fehlstellung bringt."
+    ],
+    "safety": "Da der schwere Widerstand dynamisch überrannt werden muss, führt ein Zusammenbrechen der Rumpfspannung bei einsetzender Erschöpfung sofort zu einer asymmetrischen Bandscheibenbelastung, weshalb die Bewegung bei Kontrollverlust sofort abzubrechen ist.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "schlittenziehen-sled-pull": {
+    "name": "Schlittenziehen (Sled Pull)",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur",
+      "secondary": "Großer Gesäßmuskel, Wadenmuskulatur"
+    },
+    "steps": [
+      "Den Zuggurt sicher um die Hüfte legen oder die Griffe der Zugseile fest mit beiden Händen greifen und sich vom Schlitten abgewandt (bzw. zugewandt beim Rückwärtsziehen) positionieren.",
+      "Eine leichte Vorneigung (bzw. Rückneigung beim Rückwärtsziehen) einnehmen und maximale Ganzkörperspannung aufbauen.",
+      "Den Schlitten durch kraftvolles Vorwärtsschreiten (oder Rückwärtsschreiten) gleichmäßig und ohne Ruck in Bewegung setzen.",
+      "Die Schritte bewusst über den gesamten Fuß abrollen und die Hüfte bei jedem Schritt aktiv gegen den Zugwiderstand strecken."
+    ],
+    "mistakes": [
+      "Ruckartiges Anreißen des Schlittens statt einer kontinuierlichen Zugbewegung, was Muskel- und Sehnenzerrungen begünstigt.",
+      "Kollabieren der aufrechten Körperhaltung und Einrunden der Wirbelsäule unter Last.",
+      "Instabile Fuß- und Kniegelenke, die zu einer asymmetrischen Achsenbelastung führen."
+    ],
+    "safety": "Um Stoßbelastungen auf die Kniegelenke und plötzliche Zerrungen im Bereich der Oberschenkelrückseite zu vermeiden, muss die Zugspannung während der Schritte absolut kontinuierlich gehalten werden.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "battle-ropes": {
+    "name": "Battle Ropes (Wellenschlag)",
+    "muscles": {
+      "primary": "Vorderer Schultermuskel",
+      "secondary": "Schräge Bauchmuskeln, Oberer Kapuzenmuskel"
+    },
+    "steps": [
+      "Einen schulterbreiten Stand einnehmen, leicht in die Knie gehen, um das Becken zu stabilisieren, und die Seilenden fest greifen.",
+      "Den Oberkörper leicht nach vorne neigen, die Brust stolz aufrichten und die Schultern aktiv nach hinten-unten ziehen.",
+      "Die Arme abwechselnd oder gleichzeitig explosiv nach oben und unten bewegen, um gleichmäßige Wellen im Seil zu erzeugen.",
+      "Die Schwingungsbewegung isoliert aus den Armen und Schultern steuern, während der Rumpf absolut starr und stabil bleibt."
+    ],
+    "mistakes": [
+      "Hochziehen der Schultern zu den Ohren bei einsetzender Erschöpfung, was das Gelenk überlastet.",
+      "Mitschwingen des gesamten Oberkörpers (Ausweichbewegung), wodurch die stabilisierende Rumpfmuskulatur entlastet wird.",
+      "Vollständig gestreckte Knie, was die Basis instabil macht und zu unkontrollierten Ausweichbewegungen im Becken führt."
+    ],
+    "safety": "Da die hochfrequenten Peitschenbewegungen extreme Zugkräfte auf die Sehnen der Rotatorenmanschette ausüben, muss der Schultergürtel während der gesamten Belastung aktiv nach hinten-unten fixiert bleiben, um ein akutes Impingement-Syndrom zu verhindern.",
+    "image": null,
+    "muscleGroup": "Schultern"
   }
 }
