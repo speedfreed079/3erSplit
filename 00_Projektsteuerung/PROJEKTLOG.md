@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-11 (Teil 74): Notiz — Recherche-Prompt für fehlende Maschinen-Übungen vorbereitet
+
+- Nutzer-Frage: ob klassische Gym-Maschinen (Technogym & Co.) in der Übungsdatenbank fehlen. Analyse: von 113 Einträgen sind bereits ~32 (28%) Maschinen-/Kabelzug-basiert (Beinpresse, Latzug, Butterfly, Beinstrecker/-beuger-Maschine, Kabelrudern u.a.) — die Lücke ist kleiner als vermutet, aber real: keine Adduktoren-/Abduktorenmaschine, keine pin-loaded Rudermaschine, keine Smith-Machine, keine Schulterpresse-/Bizeps-/Trizeps-Maschine, keine Klimmzug-/Dip-Assistenzmaschine.
+- Bewusst **herstellerneutral** gehalten (keine Markennamen wie "Technogym") — die Bewegung ist geräteübergreifend gleich, Nutzer besuchen unterschiedliche Gym-Ketten mit unterschiedlichen Herstellern.
+- Neuer Prompt `01_Recherchen/02_Uebungserklaerungen/Recherche-Prompt-Maschinen.md` (gleiches Format/Vier-Felder-Schema wie die bisherigen Prompts) für die 10 identifizierten Lücken vorbereitet, noch nicht ausgeführt.
+- Zweite Nutzer-Anmerkung im selben Gespräch (freier Übungstausch/eigene Übungen zu bestehenden Plänen hinzufügen, unabhängig von `alts`/KI) ist als eigenständiges, noch zu planendes Feature vermerkt — nicht Teil dieses Recherche-Schritts, wartet auf Priorisierung durch den Nutzer.
+- Kein Code geändert, daher kein Versions-Bump.
+
 ## v1.42.0 — 2026-07-11 (Teil 73): Physio-Übungen mit eigenem Fälligkeits-Rhythmus
 
 - Nutzer-Anlass: seine Physiotherapeutin hat ihm Rücken-Übungen verordnet, die alle 2 Tage gemacht werden sollen — unabhängig davon, welcher PPL-Tag gerade dran ist oder ob überhaupt ein Trainingstag ansteht (die PPL-Rotation ist selbst schon unregelmäßig wegen eingebauter Ruhetage). Einfach in einen PPL-Tag eingetragen, liefen die Physio-Übungen am eigenen Rhythmus vorbei.
