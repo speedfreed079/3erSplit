@@ -983,7 +983,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.41.0";
+const APP_VERSION = "1.42.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1446,10 +1446,11 @@ function loadState() {
         weightSuggestions: parsed.weightSuggestions || {},
         gymWeightSuggestions: parsed.gymWeightSuggestions || {},
         updatedAt: parsed.updatedAt || null,
+        physio: parsed.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null } };
 }
 
 let state = loadState();
@@ -1507,6 +1508,12 @@ let profileActive = false;
 // wie eine aufklappbare Inhaltsuebersicht.
 let libraryActive = false;
 let libraryInfoOpenKey = null;
+
+// Physio-Ansicht (seit v1.42.0): gleiches ephemeres View-Flag-Muster wie journalViewActive/
+// libraryActive oben. physioManageOpen ist das Auf/Zu-Flag fuer das Uebungslisten-Verwalten-Panel
+// (gleiche Konvention wie gymManageOpen).
+let physioViewActive = false;
+let physioManageOpen = false;
 
 // Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
 // currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
@@ -1882,6 +1889,16 @@ function ensureDaySets(dayId, ex) {
     state.sessions[dayId][ex.id] = buildInitialSets(ex.id, ex.sets);
   }
   return state.sessions[dayId][ex.id];
+}
+
+// Loest eine Uebungs-Definition anhand von day/exId auf - anders als getSetsFor/ensureDaySets
+// (die ein fertiges ex-Objekt entgegennehmen) muessen die Satz-Click-/Input-Handler das
+// ex-Objekt selbst erst nachschlagen. EXERCISES ist nur nach echten Plan-Tag-IDs geschluesselt,
+// daher der Sonderfall fuer den reservierten Physio-Pseudo-Tag (state.physio.exercises statt
+// EXERCISES["physio"], das es nicht gibt) - seit v1.42.0.
+function findExerciseById(day, exId) {
+  if (day === PHYSIO_DAY_ID) return state.physio.exercises.find(x => x.id === exId);
+  return EXERCISES[day].find(x => x.id === exId);
 }
 
 function tallyHTML(count) {
@@ -2605,6 +2622,109 @@ function renderAdminView() {
   `;
 }
 
+// Physio-Ansicht (seit v1.42.0): folgt dem gleichen focusmode-topbar/-content-Muster wie
+// renderJournalView()/renderLibraryView(). Uebungs-Karten sind eine abgespeckte Variante der
+// Trainings-Karten in render() (kein ℹ/⟲ - freie PT-Uebungen haben keine Bibliothekserklaerung
+// oder Alternativen), nutzen aber setsRowsHTML/tallyHTML/historyLineHTML unveraendert.
+function physioExerciseCardHTML(ex) {
+  const sets = getSetsFor(PHYSIO_DAY_ID, ex);
+  const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
+  const hist = getHistoryEntry(ex.id);
+  const noteKey = `${PHYSIO_DAY_ID}:${ex.id}`;
+  const note = state.notes[noteKey] || "";
+  const editMode = editModeKeys.has(noteKey);
+  return `
+    <div class="card">
+      <div class="card-top">
+        <div style="flex:1;">
+          <div class="card-title-row">
+            <h3>${escapeAttr(ex.name)}</h3>
+          </div>
+          <div class="target-line">${ex.sets} Sätze × ${escapeAttr(ex.reps)} Wdh.</div>
+          ${historyLineHTML(ex.id, hist)}
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button class="swap-btn ${editMode ? "active" : ""}" title="${editMode ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="edit-toggle" data-day="${PHYSIO_DAY_ID}" data-exid="${ex.id}">✎</button>
+        </div>
+      </div>
+      ${setsRowsHTML(PHYSIO_DAY_ID, ex, sets, editMode)}
+      <div class="set-footer">
+        ${tallyHTML(doneCount)}
+        <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
+      </div>
+      <textarea class="note-input" rows="1" placeholder="Notiz (Technik, Schmerzen …)"
+        data-role="note" data-day="${PHYSIO_DAY_ID}" data-exid="${ex.id}">${note}</textarea>
+    </div>
+  `;
+}
+
+function physioManagePanelHTML() {
+  const rowsHTML = state.physio.exercises.map(ex => `
+    <div class="draft-ex-row">
+      <input class="draft-ex-name" type="text" placeholder="Übungsname"
+        value="${escapeAttr(ex.name)}" data-role="physio-ex-name" data-exid="${escapeAttr(ex.id)}" />
+      <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+        value="${ex.sets}" data-role="physio-ex-sets" data-exid="${escapeAttr(ex.id)}" />
+      <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 15)"
+        value="${escapeAttr(ex.reps)}" data-role="physio-ex-reps" data-exid="${escapeAttr(ex.id)}" />
+      <button class="draft-remove-btn" data-role="physio-remove-ex" data-exid="${escapeAttr(ex.id)}">✕</button>
+    </div>
+  `).join("");
+  return `
+    <div class="card">
+      <div class="plan-row">
+        <label class="plan-label" for="physio-interval-input">Intervall (Tage)</label>
+        <input id="physio-interval-input" class="draft-ex-sets" type="number" min="1"
+          value="${state.physio.intervalDays}" data-role="physio-interval" />
+      </div>
+      ${rowsHTML}
+      <button class="draft-add-btn" data-role="physio-add-ex">+ Übung hinzufügen</button>
+    </div>
+  `;
+}
+
+function renderPhysioView() {
+  const { due, daysSince } = physioDueInfo();
+  const statusText = daysSince === null
+    ? "Noch keine Physio-Einheit erfasst."
+    : due
+      ? `🩺 Fällig seit ${daysSince - state.physio.intervalDays} Tag(en) (zuletzt vor ${daysSince} Tagen)`
+      : `Zuletzt vor ${daysSince} Tag(en) — noch ${state.physio.intervalDays - daysSince} Tag(e) bis zur nächsten Einheit`;
+
+  const hasExercises = state.physio.exercises.length > 0;
+  const cardsHTML = hasExercises ? state.physio.exercises.map(physioExerciseCardHTML).join("") : "";
+  const emptyHint = hasExercises ? "" : `<p class="dim">Noch keine Physio-Übungen angelegt. Über "⚙ Übungen verwalten" hinzufügen.</p>`;
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="physio-exit">✕ Schließen</button>
+      <span class="focusmode-progress">🩺 Physio</span>
+    </div>
+    <div class="focusmode-content">
+      <p class="dim">${statusText}</p>
+      <button class="home-create-btn" data-role="physio-manage-toggle">⚙ Übungen verwalten</button>
+      ${physioManageOpen ? physioManagePanelHTML() : ""}
+      ${emptyHint}
+      ${cardsHTML}
+      ${hasExercises ? `<button class="finish-btn" data-role="finish-physio">✓ Physio abschließen</button>` : ""}
+    </div>
+  `;
+}
+
+// Home-Screen-Banner: nur sichtbar wenn tatsaechlich faellig - der Startbildschirm soll nicht mit
+// einem Dauer-Hinweis zugestellt werden, wenn Physio noch gar nicht ansteht.
+function physioBannerHTML() {
+  if (state.physio.exercises.length === 0) return "";
+  const { due, daysSince } = physioDueInfo();
+  if (!due) return "";
+  return `
+    <div class="today-banner">
+      <div class="today-banner-text">🩺 Physio-Übungen fällig${daysSince !== null ? ` (zuletzt vor ${daysSince} Tagen)` : ""}</div>
+      <button class="today-banner-btn" data-role="physio-enter">Los geht's</button>
+    </div>
+  `;
+}
+
 function renderHomeScreen() {
   const recDay = getRecommendedDay();
   const recDayMeta = DAYS.find(d => d.id === recDay);
@@ -2628,10 +2748,12 @@ function renderHomeScreen() {
     </div>
     <div class="focusmode-content">
       <button class="home-continue-btn" data-role="home-continue">▶ Weiter mit ${escapeAttr(currentPlanMeta ? currentPlanMeta.label : "")} – ${escapeAttr(recDayMeta ? recDayMeta.label : "")}</button>
+      ${physioBannerHTML()}
       <div class="home-section-label">Plan wählen</div>
       ${plansHTML}
       <button class="home-create-btn" data-role="plan-builder-enter">+ Neuen Plan erstellen</button>
       <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
+      <button class="home-create-btn" data-role="physio-enter">🩺 Physio-Übungen</button>
     </div>
   `;
 }
@@ -2732,6 +2854,11 @@ function render() {
 
   if (libraryActive) {
     setAppHTML(renderLibraryView());
+    return;
+  }
+
+  if (physioViewActive) {
+    setAppHTML(renderPhysioView());
     return;
   }
 
@@ -2908,6 +3035,55 @@ function finishSession(dayId, wellbeing, sessionNote) {
   showToast("Training gespeichert. Gewichte bleiben für nächstes Mal vorbefüllt.");
 }
 
+// ---------- PHYSIO ----------
+// Physio-Uebungen (seit v1.42.0) laufen bewusst komplett entkoppelt von der Plan-/Tag-Rotation
+// (DAYS/EXERCISES) - eine feste, von der Physiotherapeutin vorgegebene Uebungsliste, die auf
+// einem eigenen rollierenden Intervall faellig wird ("alle N Tage"), unabhaengig davon welcher
+// PPL-Tag gerade ansteht. Laeuft als reservierter Pseudo-Tag mit der ID "physio" durch dieselben
+// generischen, bereits day-parametrisierten Funktionen wie ein echter Trainingstag
+// (getSetsFor/ensureDaySets/setsRowsHTML/getHistoryEntry/getLastWeights) - keine davon musste
+// geaendert werden, sie waren nie an DAYS/EXERCISES gebunden.
+const PHYSIO_DAY_ID = "physio";
+
+// Reine Ableitung aus state.physio.lastDoneAt (Unix-Timestamp, nicht der de-DE-Anzeige-String wie
+// state.lastCompletedDate - Faelligkeits-Mathematik braucht echte Tages-Differenzen).
+function physioDueInfo() {
+  if (!state.physio.lastDoneAt) return { due: true, daysSince: null };
+  const daysSince = Math.floor((Date.now() - state.physio.lastDoneAt) / 86400000);
+  return { due: daysSince >= state.physio.intervalDays, daysSince };
+}
+
+// Schlanke Variante von finishSession() ohne die trainingsspezifischen Teile (kein
+// Wellbeing-Modal, kein Journal-Eintrag, keine Gewichts-Progressions-Vorschlaege) - Reha-Uebungen
+// mit fester PT-Vorgabe brauchen keinen "mehr Gewicht"-Vorschlag, und Physio-Sessions sollen
+// bewusst nicht das Wochenvolumen-Dashboard/den Streak-Zaehler beeinflussen (beide lesen nur
+// state.journal, das hier unangetastet bleibt).
+function finishPhysioSession() {
+  const daySets = state.sessions[PHYSIO_DAY_ID] || {};
+  let anyEntered = false;
+  const today = new Date().toLocaleDateString("de-DE");
+  state.physio.exercises.forEach(ex => {
+    const sets = daySets[ex.id];
+    if (!sets) return;
+    const entered = sets.filter(s => s.weight || s.reps);
+    if (entered.length === 0) return;
+    anyEntered = true;
+    const last = entered[entered.length - 1];
+    setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
+  });
+  if (!anyEntered) {
+    showToast("Keine Übung eingetragen.");
+    return;
+  }
+  state.physio.lastDoneAt = Date.now();
+  const resetDay = {};
+  state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
+  state.sessions[PHYSIO_DAY_ID] = resetDay;
+  persist();
+  render();
+  showToast("Physio gespeichert.");
+}
+
 // ---------- EXPORT / IMPORT ----------
 function buildBackupPayload() {
   return {
@@ -2967,6 +3143,7 @@ function importData(file) {
             weightSuggestions: incoming.weightSuggestions || {},
             gymWeightSuggestions: incoming.gymWeightSuggestions || {},
             updatedAt: incoming.updatedAt || null,
+            physio: incoming.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
           };
           applyPlan(state.currentPlan);
           if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -3208,6 +3385,7 @@ document.addEventListener("click", (e) => {
     homeScreenActive = false;
     profileActive = false;
     libraryActive = false;
+    physioViewActive = false;
     journalViewActive = true;
     render();
     return;
@@ -3233,6 +3411,7 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     profileActive = false;
     libraryActive = false;
+    physioViewActive = false;
     homeScreenActive = true;
     render();
     return;
@@ -3251,6 +3430,7 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     homeScreenActive = false;
     libraryActive = false;
+    physioViewActive = false;
     profileActive = true;
     render();
     return;
@@ -3379,9 +3559,58 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     profileActive = false;
     homeScreenActive = false;
+    physioViewActive = false;
     libraryInfoOpenKey = null;
     libraryActive = true;
     render();
+    return;
+  }
+
+  const physioEnter = e.target.closest('[data-role="physio-enter"]');
+  if (physioEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    profileActive = false;
+    homeScreenActive = false;
+    libraryActive = false;
+    physioViewActive = true;
+    render();
+    return;
+  }
+
+  const physioExit = e.target.closest('[data-role="physio-exit"]');
+  if (physioExit) {
+    physioViewActive = false;
+    render();
+    return;
+  }
+
+  const physioManageToggle = e.target.closest('[data-role="physio-manage-toggle"]');
+  if (physioManageToggle) {
+    physioManageOpen = !physioManageOpen;
+    render();
+    return;
+  }
+
+  const physioAddEx = e.target.closest('[data-role="physio-add-ex"]');
+  if (physioAddEx) {
+    state.physio.exercises.push({ id: `physio_${Date.now()}`, name: "", sets: 3, reps: "" });
+    persist();
+    render();
+    return;
+  }
+
+  const physioRemoveEx = e.target.closest('[data-role="physio-remove-ex"]');
+  if (physioRemoveEx) {
+    state.physio.exercises = state.physio.exercises.filter(ex => ex.id !== physioRemoveEx.dataset.exid);
+    persist();
+    render();
+    return;
+  }
+
+  const finishPhysio = e.target.closest('[data-role="finish-physio"]');
+  if (finishPhysio) {
+    finishPhysioSession();
     return;
   }
 
@@ -3652,7 +3881,7 @@ document.addEventListener("click", (e) => {
   const setWarmupToggle = e.target.closest('[data-role="set-warmup-toggle"]');
   if (setWarmupToggle) {
     const { day, exid, idx } = setWarmupToggle.dataset;
-    const ex = EXERCISES[day].find(x => x.id === exid);
+    const ex = findExerciseById(day, exid);
     const sets = ensureDaySets(day, ex);
     sets[idx].isWarmup = !sets[idx].isWarmup;
     persist();
@@ -3663,7 +3892,7 @@ document.addEventListener("click", (e) => {
   const setCouldMoreToggle = e.target.closest('[data-role="set-couldmore-toggle"]');
   if (setCouldMoreToggle) {
     const { day, exid, idx } = setCouldMoreToggle.dataset;
-    const ex = EXERCISES[day].find(x => x.id === exid);
+    const ex = findExerciseById(day, exid);
     const sets = ensureDaySets(day, ex);
     sets[idx].couldDoMore = !sets[idx].couldDoMore;
     persist();
@@ -3690,7 +3919,7 @@ document.addEventListener("click", (e) => {
   const doneBtn = e.target.closest('[data-role="set-done"]');
   if (doneBtn) {
     const { day, exid, idx } = doneBtn.dataset;
-    const ex = EXERCISES[day].find(x => x.id === exid);
+    const ex = findExerciseById(day, exid);
     const sets = ensureDaySets(day, ex);
     const nowDone = !sets[idx].done;
     sets[idx].done = nowDone;
@@ -3743,7 +3972,7 @@ document.addEventListener("input", (e) => {
   const field = e.target.closest('[data-role="set-field"]');
   if (field) {
     const { day, exid, idx, field: f } = field.dataset;
-    const ex = EXERCISES[day].find(x => x.id === exid);
+    const ex = findExerciseById(day, exid);
     const sets = ensureDaySets(day, ex);
     sets[idx][f] = field.value;
     persist();
@@ -3753,6 +3982,37 @@ document.addEventListener("input", (e) => {
   if (note) {
     const key = `${note.dataset.day}:${note.dataset.exid}`;
     state.notes[key] = note.value;
+    persist();
+    return;
+  }
+
+  const physioExName = e.target.closest('[data-role="physio-ex-name"]');
+  if (physioExName) {
+    const ex = state.physio.exercises.find(x => x.id === physioExName.dataset.exid);
+    if (ex) ex.name = physioExName.value;
+    persist();
+    return;
+  }
+
+  const physioExSets = e.target.closest('[data-role="physio-ex-sets"]');
+  if (physioExSets) {
+    const ex = state.physio.exercises.find(x => x.id === physioExSets.dataset.exid);
+    if (ex) ex.sets = Number(physioExSets.value) || 1;
+    persist();
+    return;
+  }
+
+  const physioExReps = e.target.closest('[data-role="physio-ex-reps"]');
+  if (physioExReps) {
+    const ex = state.physio.exercises.find(x => x.id === physioExReps.dataset.exid);
+    if (ex) ex.reps = physioExReps.value;
+    persist();
+    return;
+  }
+
+  const physioInterval = e.target.closest('[data-role="physio-interval"]');
+  if (physioInterval) {
+    state.physio.intervalDays = Math.max(1, Number(physioInterval.value) || 1);
     persist();
     return;
   }
@@ -3853,7 +4113,7 @@ document.addEventListener("change", (e) => {
   const repsField = e.target.closest('[data-role="set-field"][data-field="reps"]');
   if (repsField) {
     const { day, exid, idx } = repsField.dataset;
-    const ex = EXERCISES[day].find(x => x.id === exid);
+    const ex = findExerciseById(day, exid);
     const sets = ex ? ensureDaySets(day, ex) : null;
     const s = sets ? sets[idx] : null;
     if (s && !s.done && String(s.reps).trim() !== "") {
