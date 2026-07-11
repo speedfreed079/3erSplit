@@ -101,6 +101,109 @@ async function callGemini(apiKey, promptText) {
   }
 }
 
+// ---------- KI-TRAININGSPLAN-CHAT ----------
+// Seit v1.47.0: ein Chat, der wie ein Fitnesstrainer ein kurzes Interview fuehrt und daraus
+// einen Trainingsplan erstellt. Der Gesprächsverlauf bleibt bewusst komplett im Client (wird bei
+// jeder Anfrage komplett mitgeschickt) statt in einem neuen Server-Speicher - der Worker bleibt
+// dadurch weiterhin ein zustandsloser Relay, kein Cloudflare KV/Durable Object noetig.
+function buildPlanChatSystemInstruction(exerciseNames) {
+  const namesList = exerciseNames.length ? exerciseNames.join(", ") : "(keine Liste verfügbar)";
+  return `Du bist ein erfahrener, freundlicher Fitness-Trainer, der über einen Chat ein kurzes Interview führt, um einen passenden Trainingsplan zu erstellen.
+
+Stelle EINE Frage nach der anderen (nicht mehrere auf einmal). Frage nach: Trainingsziel (Kraftaufbau/Muskelaufbau/Abnehmen/Ausdauer), Erfahrungslevel, verfügbare Tage pro Woche, verfügbares Equipment (Gym/Zuhause/Bänder/nur Körpergewicht), Zeit pro Einheit, und eventuellen Einschränkungen/Verletzungen. Halte die Fragen kurz und locker, auf Deutsch.
+
+Sobald du genug Informationen hast (nach etwa 4-6 Fragen, oder wenn der Nutzer "Plan erstellen"/"fertig" sagt oder danach fragt), erstelle einen konkreten Trainingsplan statt einer weiteren Frage.
+
+Bevorzuge bei der Übungsauswahl exakt diese Namen aus der App-eigenen Übungsdatenbank (Schreibweise 1:1 übernehmen, wenn eine passt): ${namesList}. Wenn keine passende Übung in der Liste existiert, ist ein eigener, sinnvoller Übungsname auch in Ordnung.
+
+Antworte IMMER ausschließlich als valides JSON, ohne weiteren Text, in genau einem der folgenden zwei Formate:
+
+Für eine Rückfrage:
+{"type": "question", "text": "deine Frage hier"}
+
+Für den fertigen Plan:
+{"type": "plan", "label": "Name des Plans", "days": [{"label": "Tag-Name (z.B. Push, Pull, Ganzkörper A)", "exercises": [{"name": "Übungsname", "sets": 3, "reps": "8-10"}]}]}
+
+sets ist eine Zahl, reps ein String wie "8-10" oder "12". Erstelle einen realistischen Plan mit 1-6 Trainingstagen je nach Angaben des Nutzers, pro Tag 4-8 Übungen.`;
+}
+
+async function callGeminiChatOnce(apiKey, systemInstruction, contents) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemInstruction }] },
+      contents,
+      generationConfig: { responseMimeType: "application/json" },
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    const err = new Error(friendlyGeminiError(res.status, errText));
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Gemini-Antwort enthielt keinen Text");
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    throw new Error("Gemini-Antwort war kein valides JSON");
+  }
+  if (!parsed || (parsed.type !== "question" && parsed.type !== "plan")) {
+    throw new Error("Gemini-Antwort hatte kein erwartetes Format (type: question/plan)");
+  }
+  return parsed;
+}
+
+async function callGeminiChat(apiKey, systemInstruction, contents) {
+  try {
+    return await callGeminiChatOnce(apiKey, systemInstruction, contents);
+  } catch (e) {
+    if (!isRetryableStatus(e.status)) throw e;
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return await callGeminiChatOnce(apiKey, systemInstruction, contents);
+  }
+}
+
+async function handlePlanChatRequest(request, env) {
+  let payload;
+  try {
+    payload = await request.json();
+  } catch (e) {
+    return jsonResponse({ error: "Ungültiges JSON im Request-Body" }, 400);
+  }
+
+  const { messages, exerciseNames } = payload || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return jsonResponse({ error: "Feld 'messages' fehlt oder ist leer" }, 400);
+  }
+  if (!env.GEMINI_API_KEY) {
+    return jsonResponse({ error: "Server ist nicht korrekt konfiguriert (kein API-Key)" }, 500);
+  }
+
+  const systemInstruction = buildPlanChatSystemInstruction(Array.isArray(exerciseNames) ? exerciseNames : []);
+  const contents = messages
+    .filter((m) => m && typeof m.text === "string" && (m.role === "user" || m.role === "model"))
+    .map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
+  if (contents.length === 0) {
+    return jsonResponse({ error: "Feld 'messages' enthielt keine gültigen Einträge" }, 400);
+  }
+
+  try {
+    const reply = await callGeminiChat(env.GEMINI_API_KEY, systemInstruction, contents);
+    return jsonResponse(reply);
+  } catch (e) {
+    return jsonResponse({ error: e.message || "Unbekannter Fehler" }, 502);
+  }
+}
+
 // ---------- ADMIN ----------
 // Nutzer sperren/entsperren/loeschen braucht das Firebase Admin SDK, das NIE im Client-JS laufen
 // darf. Das firebase-admin-NPM-Paket laeuft aber selbst serverseitig nicht in Cloudflare Workers
@@ -289,6 +392,9 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/admin") {
       return handleAdminRequest(request, env);
+    }
+    if (url.pathname === "/plan-chat") {
+      return handlePlanChatRequest(request, env);
     }
 
     let payload;

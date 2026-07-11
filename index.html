@@ -585,6 +585,21 @@
   }
   .ex-picker-row.active .ex-picker-check { border-color: var(--olive); background: var(--olive); }
 
+  /* KI-Trainingsplan-Chat (seit v1.47.0) */
+  .chat-messages { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .chat-message {
+    max-width: 85%; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.4;
+    white-space: pre-wrap;
+  }
+  .chat-message.model { align-self: flex-start; background: var(--surface2); color: var(--chalk); border-bottom-left-radius: 3px; }
+  .chat-message.user { align-self: flex-end; background: var(--rust); color: #fff; border-bottom-right-radius: 3px; }
+  .chat-message.error { align-self: flex-start; background: transparent; border: 1px solid var(--rust-dim); color: var(--rust); }
+  .chat-input-row { display: flex; gap: 6px; align-items: flex-end; }
+  .chat-input {
+    flex: 1; min-width: 0; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 13px; font-family: inherit; resize: none;
+  }
+
   .rest-timer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
     background: var(--surface2); border-top: 1px solid var(--rust);
@@ -1021,13 +1036,15 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.46.0";
+const APP_VERSION = "1.47.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 // Admin-Panel (seit v1.45.0): gleicher Worker wie PROXY_URL, eigener Pfad - der Worker
 // unterscheidet per Pfad-Weiche zwischen dem bestehenden Gemini-Proxy und den Admin-Endpunkten.
 const ADMIN_API_URL = `${PROXY_URL}/admin`;
+// KI-Trainingsplan-Chat (seit v1.47.0): gleiches Muster, dritter Pfad am selben Worker.
+const AI_PLAN_CHAT_API_URL = `${PROXY_URL}/plan-chat`;
 
 // Google-Drive-Backup (seit v1.28.0): eigene, dedizierte OAuth-Client-ID, bewusst NICHT die von
 // Firebase Auth wiederverwendet (gleiches Isolationsprinzip wie ueberall sonst in der App - jede
@@ -1592,6 +1609,12 @@ let exPickerGroupOpen = new Set();
 // Seit v1.46.0: ℹ-Erklaerung direkt im Picker (einzelner Key wie libraryInfoOpenKey - nie
 // mehrere Panels gleichzeitig offen).
 let exPickerInfoOpenKey = null;
+
+// KI-Trainingsplan-Chat (seit v1.47.0): ephemer wie aiSuggestions/restTimer - der Gesprächs-
+// verlauf wird bewusst NICHT persistiert, ein Verlassen/Neubetreten startet den Chat neu.
+let aiPlanChatActive = false;
+let aiPlanMessages = []; // [{role: "user"|"model", text}]
+let aiPlanLoading = false;
 
 // Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
 // currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
@@ -2932,6 +2955,7 @@ function renderHomeScreen() {
       <div class="home-section-label">Plan wählen</div>
       ${plansHTML}
       <button class="home-create-btn" data-role="plan-builder-enter">+ Neuen Plan erstellen</button>
+      <button class="home-create-btn" data-role="ai-plan-chat-enter">🤖 KI-Trainingsplan erstellen</button>
       <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
       <button class="home-create-btn" data-role="physio-enter">🩺 Physio-Übungen</button>
     </div>
@@ -3057,6 +3081,105 @@ function renderExercisePicker() {
   `;
 }
 
+// KI-Trainingsplan-Chat (seit v1.47.0): Fitness-Trainer-Interview per Chat, das am Ende einen
+// Plan liefert. Der generierte Plan wird NICHT ueber eine eigene Vorschau-UI gezeigt, sondern
+// landet direkt in state.planDraft und oeffnet den bestehenden Plan-Builder (siehe
+// applyAiGeneratedPlan()) - der komplette Review/Edit/Speichern-Teil ist dadurch kostenlos
+// wiederverwendet, keine neue UI dafuer noetig.
+function renderAiPlanChatView() {
+  const messagesHTML = aiPlanMessages.map(m => `
+    <div class="chat-message ${escapeAttr(m.role)}">${escapeAttr(m.text)}</div>
+  `).join("");
+  const loadingHTML = aiPlanLoading ? `<div class="chat-message model">…</div>` : "";
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="ai-plan-chat-exit">✕ Schließen</button>
+      <span class="focusmode-progress">🤖 KI-Trainingsplan</span>
+    </div>
+    <div class="focusmode-content">
+      <div class="chat-messages">
+        ${messagesHTML}
+        ${loadingHTML}
+      </div>
+      <div class="focusmode-nav" style="flex-direction:column; align-items:stretch;">
+        <button class="focusmode-nav-btn" data-role="ai-plan-chat-finish" ${aiPlanLoading ? "disabled" : ""}>✓ Plan jetzt erstellen</button>
+        <div class="chat-input-row">
+          <textarea class="chat-input" rows="1" placeholder="Antwort eingeben…" data-role="ai-plan-chat-input" ${aiPlanLoading ? "disabled" : ""}></textarea>
+          <button class="focusmode-nav-btn primary" style="flex:0 0 auto; padding:9px 16px;" data-role="ai-plan-chat-send" ${aiPlanLoading ? "disabled" : ""}>Senden</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Baut aus der KI-Antwort ein state.planDraft-Objekt und prueft es mit dem bestehenden,
+// unveraenderten validatePlanDraft() (keine Duplizierung der Regeln) - bei Erfolg oeffnet sich
+// der bestehende Plan-Builder zum Review/Bearbeiten/Speichern, bei Misserfolg bleibt der Chat
+// offen. libraryIdForName() verknuepft Uebungen automatisch mit der Datenbank, wenn die KI einen
+// Namen exakt aus der mitgeschickten Liste uebernommen hat (gleiche Kulanz wie im Plan-Builder).
+function applyAiGeneratedPlan(aiPlan) {
+  if (!aiPlan || typeof aiPlan.label !== "string" || !Array.isArray(aiPlan.days)) return false;
+  const draft = {
+    editingPlanId: null,
+    label: aiPlan.label,
+    days: aiPlan.days.map(d => ({
+      label: typeof d?.label === "string" ? d.label : "Tag",
+      exercises: Array.isArray(d?.exercises) ? d.exercises.map(ex => {
+        const name = typeof ex?.name === "string" ? ex.name : "";
+        const matchedId = name ? libraryIdForName(name) : null;
+        return {
+          name,
+          sets: Number(ex?.sets) || 3,
+          reps: typeof ex?.reps === "string" ? ex.reps : "8-10",
+          ...(matchedId ? { libraryId: matchedId } : {}),
+        };
+      }) : [],
+    })),
+  };
+  if (!validatePlanDraft(draft)) return false;
+  state.planDraft = draft;
+  planBuilderActive = true;
+  aiPlanChatActive = false;
+  persist();
+  render();
+  return true;
+}
+
+async function sendAiPlanChatMessage(text) {
+  aiPlanMessages.push({ role: "user", text });
+  aiPlanLoading = true;
+  render();
+  try {
+    const res = await fetch(AI_PLAN_CHAT_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: aiPlanMessages,
+        exerciseNames: Object.values(exerciseLibrary).map(e => e.name),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler (${res.status})`);
+    aiPlanLoading = false;
+    if (data.type === "question" && typeof data.text === "string") {
+      aiPlanMessages.push({ role: "model", text: data.text });
+      render();
+    } else if (data.type === "plan") {
+      if (!applyAiGeneratedPlan(data)) {
+        aiPlanMessages.push({ role: "error", text: "Der Plan konnte nicht übernommen werden (unerwartetes Format). Magst du es nochmal anders beschreiben oder \"Plan jetzt erstellen\" erneut versuchen?" });
+        render();
+      }
+    } else {
+      aiPlanMessages.push({ role: "error", text: "Unerwartete Antwort erhalten. Bitte nochmal versuchen." });
+      render();
+    }
+  } catch (e) {
+    aiPlanLoading = false;
+    aiPlanMessages.push({ role: "error", text: e.message || "Da ist etwas schiefgelaufen. Bitte nochmal versuchen." });
+    render();
+  }
+}
+
 // Seit v1.30.0: ersetzt alle direkten `#app`.innerHTML-Zuweisungen in render() - fuegt einen
 // sanften Fade-in beim View-Wechsel hinzu (Reaktion auf Feedback, dass der harte innerHTML-
 // Sprung beim Wechseln zwischen Ansichten "flasht"). CSS-Keyframe statt Inline-Opacity+rAF,
@@ -3081,6 +3204,11 @@ function render() {
 
   if (exPickerActive) {
     setAppHTML(renderExercisePicker());
+    return;
+  }
+
+  if (aiPlanChatActive) {
+    setAppHTML(renderAiPlanChatView());
     return;
   }
 
@@ -4000,6 +4128,44 @@ document.addEventListener("click", (e) => {
     planBuilderActive = true;
     persist();
     render();
+    return;
+  }
+
+  const aiPlanChatEnter = e.target.closest('[data-role="ai-plan-chat-enter"]');
+  if (aiPlanChatEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    profileActive = false;
+    homeScreenActive = false;
+    libraryActive = false;
+    aiPlanMessages = [{ role: "model", text: "Hallo! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?" }];
+    aiPlanLoading = false;
+    aiPlanChatActive = true;
+    render();
+    return;
+  }
+
+  const aiPlanChatExit = e.target.closest('[data-role="ai-plan-chat-exit"]');
+  if (aiPlanChatExit) {
+    aiPlanChatActive = false;
+    render();
+    return;
+  }
+
+  const aiPlanChatSend = e.target.closest('[data-role="ai-plan-chat-send"]');
+  if (aiPlanChatSend) {
+    if (aiPlanLoading) return;
+    const input = document.querySelector('[data-role="ai-plan-chat-input"]');
+    const text = input ? input.value.trim() : "";
+    if (!text) return;
+    sendAiPlanChatMessage(text);
+    return;
+  }
+
+  const aiPlanChatFinish = e.target.closest('[data-role="ai-plan-chat-finish"]');
+  if (aiPlanChatFinish) {
+    if (aiPlanLoading) return;
+    sendAiPlanChatMessage("Bitte erstelle jetzt einen passenden Trainingsplan basierend auf unserem bisherigen Gespräch.");
     return;
   }
 
