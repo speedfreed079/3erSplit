@@ -533,14 +533,27 @@
     flex: 1; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border);
     background: var(--bg); color: var(--chalk); font-size: 14px;
   }
-  .draft-ex-row { display: grid; grid-template-columns: 2fr 70px 90px 28px 28px; gap: 6px; margin-bottom: 6px; }
-  .draft-ex-name, .draft-ex-sets, .draft-ex-reps {
+  /* Seit v1.45.1: zweizeiliges Layout statt eines einzelnen 5-Spalten-Grids (2fr 70px 90px 28px
+     28px) - auf manchen mobilen Browsern kollabierte die "2fr"-Namensspalte fast auf 0 (vermutlich
+     ein Zusammenspiel aus der zoom-basierten Textgroessen-Skalierung mit CSS-Grid-fr-Einheiten;
+     per Nutzer-Screenshot entdeckt, in der Desktop-Playwright-Pruefung nicht sichtbar gewesen).
+     Feste px-Spalten in der unteren Zeile sind robuster als eine fr-Einheit neben ihnen. */
+  .draft-ex-row { margin-bottom: 10px; }
+  .draft-ex-name {
+    display: block; width: 100%; box-sizing: border-box; margin-bottom: 6px;
     padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border);
-    background: var(--bg); color: var(--chalk); font-size: 13px; width: 100%;
+    background: var(--bg); color: var(--chalk); font-size: 13px;
   }
+  .draft-ex-bottom-row { display: flex; gap: 6px; align-items: stretch; }
+  .draft-ex-sets, .draft-ex-reps {
+    padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--chalk); font-size: 13px; box-sizing: border-box; min-width: 0;
+  }
+  .draft-ex-sets { width: 70px; flex-shrink: 0; }
+  .draft-ex-reps { width: 90px; flex-shrink: 0; }
   .draft-remove-btn {
     background: transparent; border: 1px solid var(--border); border-radius: 6px;
-    color: var(--rust); cursor: pointer;
+    color: var(--rust); cursor: pointer; flex-shrink: 0;
   }
   .draft-add-btn {
     width: 100%; padding: 9px; margin-top: 4px; border-radius: 7px; border: 1px dashed var(--border);
@@ -548,7 +561,7 @@
   }
   /* Reihenfolge-Pfeile (seit v1.44.0) - zwei gestapelte kleine Buttons statt Drag&Drop, da diese
      Zero-Build-App keine Bibliothek fuer touch-zuverlaessiges Drag&Drop einbindet. */
-  .draft-ex-move { display: flex; flex-direction: column; gap: 2px; }
+  .draft-ex-move { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
   .draft-ex-move button {
     width: 28px; height: 17px; padding: 0; font-size: 9px; line-height: 1;
     border: 1px solid var(--border); border-radius: 3px; background: transparent;
@@ -1006,7 +1019,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.45.0";
+const APP_VERSION = "1.45.1";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2790,11 +2803,13 @@ function physioManagePanelHTML() {
     <div class="draft-ex-row">
       <input class="draft-ex-name" type="text" placeholder="Übungsname"
         value="${escapeAttr(ex.name)}" data-role="physio-ex-name" data-exid="${escapeAttr(ex.id)}" />
-      <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
-        value="${ex.sets}" data-role="physio-ex-sets" data-exid="${escapeAttr(ex.id)}" />
-      <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 15)"
-        value="${escapeAttr(ex.reps)}" data-role="physio-ex-reps" data-exid="${escapeAttr(ex.id)}" />
-      <button class="draft-remove-btn" data-role="physio-remove-ex" data-exid="${escapeAttr(ex.id)}">✕</button>
+      <div class="draft-ex-bottom-row">
+        <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+          value="${ex.sets}" data-role="physio-ex-sets" data-exid="${escapeAttr(ex.id)}" />
+        <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 15)"
+          value="${escapeAttr(ex.reps)}" data-role="physio-ex-reps" data-exid="${escapeAttr(ex.id)}" />
+        <button class="draft-remove-btn" data-role="physio-remove-ex" data-exid="${escapeAttr(ex.id)}">✕</button>
+      </div>
     </div>
   `).join("");
   return `
@@ -2822,11 +2837,13 @@ function extraManagePanelHTML(day) {
     <div class="draft-ex-row">
       <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Übungsname"
         value="${escapeAttr(ex.name)}" data-role="extra-ex-name" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
-      <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
-        value="${ex.sets}" data-role="extra-ex-sets" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
-      <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
-        value="${escapeAttr(ex.reps)}" data-role="extra-ex-reps" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
-      <button class="draft-remove-btn" data-role="extra-remove-ex" data-day="${day}" data-exid="${escapeAttr(ex.id)}">✕</button>
+      <div class="draft-ex-bottom-row">
+        <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+          value="${ex.sets}" data-role="extra-ex-sets" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+        <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
+          value="${escapeAttr(ex.reps)}" data-role="extra-ex-reps" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+        <button class="draft-remove-btn" data-role="extra-remove-ex" data-day="${day}" data-exid="${escapeAttr(ex.id)}">✕</button>
+      </div>
     </div>
   `).join("");
   return `
@@ -2932,14 +2949,16 @@ function renderPlanBuilder() {
       <div class="draft-ex-row">
         <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Übungsname"
           value="${escapeAttr(ex.name)}" data-role="draft-ex-name" data-day="${dayIdx}" data-ex="${exIdx}" />
-        <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
-          value="${ex.sets}" data-role="draft-ex-sets" data-day="${dayIdx}" data-ex="${exIdx}" />
-        <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
-          value="${escapeAttr(ex.reps)}" data-role="draft-ex-reps" data-day="${dayIdx}" data-ex="${exIdx}" />
-        <button class="draft-remove-btn" data-role="draft-remove-ex" data-day="${dayIdx}" data-ex="${exIdx}">✕</button>
-        <div class="draft-ex-move">
-          <button data-role="draft-move-ex-up" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach oben verschieben" ${exIdx === 0 ? "disabled" : ""}>▲</button>
-          <button data-role="draft-move-ex-down" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach unten verschieben" ${exIdx === day.exercises.length - 1 ? "disabled" : ""}>▼</button>
+        <div class="draft-ex-bottom-row">
+          <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+            value="${ex.sets}" data-role="draft-ex-sets" data-day="${dayIdx}" data-ex="${exIdx}" />
+          <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
+            value="${escapeAttr(ex.reps)}" data-role="draft-ex-reps" data-day="${dayIdx}" data-ex="${exIdx}" />
+          <button class="draft-remove-btn" data-role="draft-remove-ex" data-day="${dayIdx}" data-ex="${exIdx}">✕</button>
+          <div class="draft-ex-move">
+            <button data-role="draft-move-ex-up" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach oben verschieben" ${exIdx === 0 ? "disabled" : ""}>▲</button>
+            <button data-role="draft-move-ex-down" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach unten verschieben" ${exIdx === day.exercises.length - 1 ? "disabled" : ""}>▼</button>
+          </div>
         </div>
       </div>
     `).join("");

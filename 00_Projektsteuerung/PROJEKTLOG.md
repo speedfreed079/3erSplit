@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.45.1 — 2026-07-11 (Teil 80): Layout-Bug im Plan-Builder behoben (Übungsname kaum sichtbar)
+
+- Nutzer-Screenshot vom eigenen Handy zeigte: in der Übungszeile des Plan-Builders (`.draft-ex-row`) war das Namensfeld auf einen winzigen, praktisch leeren Streifen zusammengeschrumpft, während Sätze/Wiederholungen deutlich zu breit wirkten — auf Desktop-Breite (auch in der eigenen Playwright-Prüfung von v1.44.0) war das nicht sichtbar, nur auf dem echten mobilen Viewport.
+- Ursache: `.draft-ex-row` war ein einzelnes CSS-Grid mit `grid-template-columns: 2fr 70px 90px 28px 28px` — eine flexible `fr`-Einheit direkt neben mehreren festen Pixel-Spalten. Auf manchen mobilen Browsern (vermutlich im Zusammenspiel mit der `zoom`-basierten Textgrößen-Skalierung, siehe `data-textsize` in `CLAUDE.md`) wurde die `2fr`-Spalte fast auf 0 kollabiert.
+- Fix: zweizeiliges Layout statt einem 5-Spalten-Grid — Übungsname jetzt als eigene volle Zeile oben (`display:block; width:100%`), Sätze/Wiederholungen/Entfernen/Verschieben-Pfeile darunter in einer Flexbox-Zeile mit ausschließlich festen Breiten (keine `fr`-Einheit mehr im Spiel). Robuster gegen genau diese Klasse von Browser-Eigenheiten.
+- Betraf alle drei Wiederverwendungen der `.draft-ex-row`-Klasse: den Plan-Builder selbst, die Physio-Übungen-Verwaltung (v1.42.0) und die "Extra-Übung"-Verwaltung (v1.43.0) — alle drei Stellen mit demselben Muster gefixt.
+- Verifiziert: Playwright mit einem 393px-Viewport (iPhone-15-Breite, dem Bug-Report am nächsten) statt der bisherigen Desktop-Breite — Namensfeld jetzt 327px breit (vorher am echten Gerät nur ein schmaler Streifen), Text vollständig lesbar.
+
 ## v1.45.0 — 2026-07-11 (Teil 79): Admin-Panel — Nutzer sperren/entsperren/löschen
 
 - Der Admin-Bereich (seit v1.20.0 reiner Platzhalter) bekommt echte Funktionalität: Konten auflisten, sperren/entsperren, löschen (inkl. der zugehörigen Firestore-Trainingsdaten — bewusst kompletter Löschvorgang statt nur Login-Sperre "für später", explizite Nutzerentscheidung).
