@@ -2,6 +2,12 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-11 (Teil 81): Notiz — Recherche-Prompt für Signature-Maschinen & Functional Training vorbereitet
+
+- Nutzer-Vermutung: viele Nutzer trainieren in Budget-Ketten wie McFIT — eigene Web-Recherche bestätigt: McFIT nutzt gym80-Geräte mit "Signature"-Maschinen (Reverse Hyper, Belt Squat, Nackenmaschine, Inner Chest Press, Rowing Bench) plus einen Functional-Training-Bereich (Kettlebells, Sled, Battle Ropes) — beides bisher nicht in der Datenbank.
+- Neuer Prompt `01_Recherchen/02_Uebungserklaerungen/Recherche-Prompt-Signature-Maschinen-Functional.md` für die 8 identifizierten Lücken (4 Signature-Maschinen, 4 Functional-Training-Übungen), noch nicht ausgeführt. "Inner Chest Press"/"Rowing Bench" bewusst nicht übernommen — überschneiden sich zu stark mit bereits vorhandenen Einträgen (Butterfly/Pec Deck bzw. Rudermaschine sitzend/T-Bar Row Chest-Supported).
+- Kein Code geändert, daher kein Versions-Bump.
+
 ## v1.45.1 — 2026-07-11 (Teil 80): Layout-Bug im Plan-Builder behoben (Übungsname kaum sichtbar)
 
 - Nutzer-Screenshot vom eigenen Handy zeigte: in der Übungszeile des Plan-Builders (`.draft-ex-row`) war das Namensfeld auf einen winzigen, praktisch leeren Streifen zusammengeschrumpft, während Sätze/Wiederholungen deutlich zu breit wirkten — auf Desktop-Breite (auch in der eigenen Playwright-Prüfung von v1.44.0) war das nicht sichtbar, nur auf dem echten mobilen Viewport.
