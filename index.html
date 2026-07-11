@@ -492,11 +492,6 @@
   .library-plan-label {
     font-size: 15px; font-weight: 500; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.3px;
   }
-  .library-day { margin-bottom: 14px; }
-  .library-day-label {
-    font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
-  }
   .library-ex-row { padding: 8px 0; border-bottom: 1px solid var(--border); }
   .library-ex-row:last-child { border-bottom: none; }
   .library-ex-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -569,13 +564,20 @@
   }
   .draft-ex-move button:disabled { opacity: 0.3; cursor: default; }
   /* Uebungs-Picker (seit v1.44.0): Auswahl-Zeilen als Buttons statt natives Checkbox-Element -
-     konsistent mit jedem anderen Toggle in dieser App (warmup-toggle/couldmore-toggle/edit-toggle). */
+     konsistent mit jedem anderen Toggle in dieser App (warmup-toggle/couldmore-toggle/edit-toggle).
+     Seit v1.46.0: eigener .ex-picker-row-wrap-Container (Border/min-height wanderten hierher),
+     da ein zweiter ℹ-Button als Geschwister-Element neben dem Auswahl-Button noetig wurde -
+     zwei Buttons koennen nicht ineinander verschachtelt sein. */
+  .ex-picker-row-wrap {
+    display: flex; align-items: stretch; gap: 6px; min-height: 44px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ex-picker-row-wrap:last-child { border-bottom: none; }
   .ex-picker-row {
-    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px;
-    text-align: left; padding: 8px; border: none; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+    text-align: left; padding: 8px; border: none;
     background: transparent; color: var(--chalk); cursor: pointer; font-size: 13px;
   }
-  .ex-picker-row:last-child { border-bottom: none; }
   .ex-picker-row.active { background: var(--surface2); }
   .ex-picker-check {
     width: 20px; height: 20px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 4px;
@@ -1019,7 +1021,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.45.1";
+const APP_VERSION = "1.46.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1581,9 +1583,15 @@ let extraManageOpen = false;
 // planBuilderActive bleibt waehrend der Picker offen ist unangetastet, render() prueft
 // exPickerActive VOR planBuilderActive (gleiches Prinzip wie physioViewActive vor homeScreenActive).
 let exPickerActive = false;
-let exPickerDayIdx = null;
+// Seit v1.46.0: exPickerDayIdx (reine Zahl) wurde zu exPickerTarget verallgemeinert, damit der
+// Picker auch aus dem Physio-Bereich heraus aufrufbar ist, nicht nur aus dem Plan-Builder -
+// { kind: "planDraft", dayIdx } oder { kind: "physio" }. Siehe ex-picker-confirm-Handler.
+let exPickerTarget = null;
 let exPickerSelected = new Set();
 let exPickerGroupOpen = new Set();
+// Seit v1.46.0: ℹ-Erklaerung direkt im Picker (einzelner Key wie libraryInfoOpenKey - nie
+// mehrere Panels gleichzeitig offen).
+let exPickerInfoOpenKey = null;
 
 // Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
 // currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
@@ -2660,23 +2668,23 @@ function libraryExerciseRowHTML(ex) {
   `;
 }
 
+// Seit v1.46.0: gruppiert nach Muskelgruppe statt Plan→Tag - iteriert direkt exerciseLibrary
+// statt getAllPlans(), damit jede echte Datenbank-Uebung genau einmal erscheint (vorher tauchte
+// dieselbe Uebung mehrfach auf, wenn sie in mehreren Plaenen vorkam) und Freitext-Uebungen ohne
+// libraryId (die sowieso keine ℹ-Erklaerung haben) gar nicht erst mitgezeigt werden.
+// libraryExerciseRowHTML() bleibt unveraendert wiederverwendbar - der Bibliotheks-Key ist bereits
+// global eindeutig und funktioniert direkt als id fuer den bestehenden libraryInfoOpenKey-Toggle.
 function renderLibraryView() {
-  const sections = getAllPlans().map(plan => {
-    const daysHTML = plan.days.map(day => {
-      const exercises = plan.exercises[day.id] || [];
-      if (exercises.length === 0) return "";
-      return `
-        <div class="library-day">
-          <div class="library-day-label">${escapeAttr(day.label)}</div>
-          ${exercises.map(libraryExerciseRowHTML).join("")}
-        </div>
-      `;
-    }).join("");
-    if (!daysHTML.trim()) return "";
+  const sections = MUSCLE_GROUPS.map(group => {
+    const entries = Object.entries(exerciseLibrary).filter(([, e]) => e.muscleGroup === group);
+    if (entries.length === 0) return "";
+    const rowsHTML = entries
+      .map(([key, e]) => libraryExerciseRowHTML({ id: key, name: e.name, libraryId: key }))
+      .join("");
     return `
       <div class="card">
-        <h3 class="library-plan-label">${escapeAttr(plan.label)}</h3>
-        ${daysHTML}
+        <h3 class="library-plan-label">${escapeAttr(group)}</h3>
+        ${rowsHTML}
       </div>
     `;
   }).join("");
@@ -2821,6 +2829,7 @@ function physioManagePanelHTML() {
       </div>
       ${rowsHTML}
       <button class="draft-add-btn" data-role="physio-add-ex">+ Übung hinzufügen</button>
+      <button class="draft-add-btn" data-role="ex-picker-enter" data-kind="physio">📚 Aus Datenbank wählen</button>
     </div>
   `;
 }
@@ -3007,11 +3016,16 @@ function renderExercisePicker() {
     const selectedCount = entries.filter(([key]) => exPickerSelected.has(key)).length;
     const rowsHTML = isOpen ? entries.map(([key, e]) => {
       const isSelected = exPickerSelected.has(key);
+      const infoOpen = exPickerInfoOpenKey === key;
       return `
-        <button class="ex-picker-row ${isSelected ? "active" : ""}" data-role="ex-picker-toggle" data-libid="${escapeAttr(key)}">
-          <span class="ex-picker-check">${isSelected ? "✓" : ""}</span>
-          <span>${escapeAttr(e.name)}</span>
-        </button>
+        <div class="ex-picker-row-wrap">
+          <button class="ex-picker-row ${isSelected ? "active" : ""}" data-role="ex-picker-toggle" data-libid="${escapeAttr(key)}">
+            <span class="ex-picker-check">${isSelected ? "✓" : ""}</span>
+            <span>${escapeAttr(e.name)}</span>
+          </button>
+          <button class="swap-btn" data-role="ex-picker-info-toggle" data-libid="${escapeAttr(key)}" title="Übung erklären">ℹ</button>
+        </div>
+        ${infoOpen ? exerciseInfoPanelHTML({ libraryId: key }) : ""}
       `;
     }).join("") : "";
     return `
@@ -3991,8 +4005,10 @@ document.addEventListener("click", (e) => {
 
   const exPickerEnter = e.target.closest('[data-role="ex-picker-enter"]');
   if (exPickerEnter) {
-    exPickerDayIdx = Number(exPickerEnter.dataset.day);
+    const kind = exPickerEnter.dataset.kind || "planDraft";
+    exPickerTarget = kind === "physio" ? { kind: "physio" } : { kind: "planDraft", dayIdx: Number(exPickerEnter.dataset.day) };
     exPickerSelected = new Set();
+    exPickerInfoOpenKey = null;
     exPickerActive = true;
     render();
     return;
@@ -4001,6 +4017,7 @@ document.addEventListener("click", (e) => {
   const exPickerCancel = e.target.closest('[data-role="ex-picker-cancel"]');
   if (exPickerCancel) {
     exPickerActive = false;
+    exPickerInfoOpenKey = null;
     render();
     return;
   }
@@ -4009,6 +4026,14 @@ document.addEventListener("click", (e) => {
   if (exPickerGroupToggle) {
     const group = exPickerGroupToggle.dataset.group;
     if (exPickerGroupOpen.has(group)) exPickerGroupOpen.delete(group); else exPickerGroupOpen.add(group);
+    render();
+    return;
+  }
+
+  const exPickerInfoToggle = e.target.closest('[data-role="ex-picker-info-toggle"]');
+  if (exPickerInfoToggle) {
+    const key = exPickerInfoToggle.dataset.libid;
+    exPickerInfoOpenKey = exPickerInfoOpenKey === key ? null : key;
     render();
     return;
   }
@@ -4023,17 +4048,28 @@ document.addEventListener("click", (e) => {
 
   const exPickerConfirm = e.target.closest('[data-role="ex-picker-confirm"]');
   if (exPickerConfirm) {
-    if (exPickerSelected.size === 0) return;
-    const dayIdx = exPickerDayIdx;
+    if (exPickerSelected.size === 0 || !exPickerTarget) return;
+    // Seit v1.46.0: Ziel-Liste haengt vom Aufrufer ab (Plan-Builder-Tag oder Physio) - fuer
+    // Physio wird sofort eine id gemintet (live genutzt, kein Speichern-Schritt dazwischen wie
+    // beim Plan-Entwurf) und reps bleibt leer (gleicher Default wie physio-add-ex, PT-Uebungen
+    // haben keinen "Standard"-Wiederholungsbereich).
+    const targetList = exPickerTarget.kind === "physio"
+      ? state.physio.exercises
+      : state.planDraft.days[exPickerTarget.dayIdx].exercises;
     MUSCLE_GROUPS.forEach(group => {
       Object.entries(exerciseLibrary)
         .filter(([key, entry]) => entry.muscleGroup === group && exPickerSelected.has(key))
         .forEach(([key, entry]) => {
-          state.planDraft.days[dayIdx].exercises.push({ name: entry.name, sets: 3, reps: "8-10", libraryId: key });
+          if (exPickerTarget.kind === "physio") {
+            targetList.push({ id: `physio_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: entry.name, sets: 3, reps: "", libraryId: key });
+          } else {
+            targetList.push({ name: entry.name, sets: 3, reps: "8-10", libraryId: key });
+          }
         });
     });
     exPickerActive = false;
     exPickerSelected = new Set();
+    exPickerInfoOpenKey = null;
     persist();
     render();
     return;
