@@ -983,7 +983,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.42.0";
+const APP_VERSION = "1.43.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1133,6 +1133,13 @@ function findExerciseDefById(exId) {
       const found = plan.exercises[dayId].find(ex => ex.id === exId);
       if (found) return found;
     }
+  }
+  // Seit v1.43.0: Extra-Uebungen (frei zu bestehenden Tagen hinzugefuegt) sind kein Teil
+  // irgendeines Plans, muessen daher separat durchsucht werden - sonst zaehlen sie im
+  // Wochenvolumen-Dashboard dauerhaft als "nicht zuordenbar".
+  for (const dayId of Object.keys(state.extraExercises)) {
+    const found = state.extraExercises[dayId].find(ex => ex.id === exId);
+    if (found) return found;
   }
   return null;
 }
@@ -1447,10 +1454,11 @@ function loadState() {
         gymWeightSuggestions: parsed.gymWeightSuggestions || {},
         updatedAt: parsed.updatedAt || null,
         physio: parsed.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
+        extraExercises: parsed.extraExercises || {},
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null } };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
 }
 
 let state = loadState();
@@ -1514,6 +1522,10 @@ let libraryInfoOpenKey = null;
 // (gleiche Konvention wie gymManageOpen).
 let physioViewActive = false;
 let physioManageOpen = false;
+// Seit v1.43.0: Auf/Zu-Flag fuer das "+ Eigene Uebung"-Verwalten-Panel in der Kartenansicht
+// (gleiche Konvention wie physioManageOpen/gymManageOpen). Wird beim Tag-Wechsel zurueckgesetzt
+// (day-tab-Handler), gleiche Konvention wie swapOpenKey/warmupOpen.
+let extraManageOpen = false;
 
 // Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
 // currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
@@ -1898,7 +1910,10 @@ function ensureDaySets(dayId, ex) {
 // EXERCISES["physio"], das es nicht gibt) - seit v1.42.0.
 function findExerciseById(day, exId) {
   if (day === PHYSIO_DAY_ID) return state.physio.exercises.find(x => x.id === exId);
-  return EXERCISES[day].find(x => x.id === exId);
+  const inPlan = EXERCISES[day].find(x => x.id === exId);
+  if (inPlan) return inPlan;
+  // Seit v1.43.0: frei zum Tag hinzugefuegte Extra-Uebungen sind nicht Teil von EXERCISES[day].
+  return (state.extraExercises[day] || []).find(x => x.id === exId);
 }
 
 function tallyHTML(count) {
@@ -2136,6 +2151,11 @@ function swapPanelHTML(day, ex, swapKey) {
         ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
         ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
       </div>
+      <div class="swap-freetext-row" style="display:flex; gap:6px; margin-top:8px;">
+        <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Eigene Übung eintragen…"
+          data-role="swap-freetext-input" />
+        <button class="swap-opt-btn" style="flex-shrink:0;" data-role="swap-freetext-submit" data-day="${day}" data-exid="${ex.id}">Übernehmen</button>
+      </div>
       ${aiSuggestHTML(day, ex, swapKey)}
     </div>
   `;
@@ -2198,7 +2218,7 @@ function renderFocusMode() {
   const day = state.currentDay;
   const dayMeta = DAYS.find(d => d.id === day);
   const exId = focusQueue[focusPos];
-  const ex = EXERCISES[day].find(x => x.id === exId);
+  const ex = findExerciseById(day, exId);
   const swapKey = `${day}:${ex.id}`;
   const displayName = state.swaps[swapKey] || ex.name;
   const sets = getSetsFor(day, ex);
@@ -2212,7 +2232,7 @@ function renderFocusMode() {
   const historyHTML = historyLineHTML(ex.id, hist);
 
   const isLast = focusPos >= focusQueue.length - 1;
-  const nextEx = !isLast ? EXERCISES[day].find(x => x.id === focusQueue[focusPos + 1]) : null;
+  const nextEx = !isLast ? findExerciseById(day, focusQueue[focusPos + 1]) : null;
   const nextDisplayName = nextEx ? (state.swaps[`${day}:${nextEx.id}`] || nextEx.name) : null;
 
   const nextHTML = nextEx
@@ -2229,6 +2249,7 @@ function renderFocusMode() {
       <span class="focusmode-progress">${focusPos + 1}/${focusQueue.length} · ${dayMeta.label}</span>
     </div>
     <div class="focusmode-content">
+      ${planBuilderExerciseNamesDatalist()}
       <div class="card">
         <div class="card-top">
           <div style="flex:1; min-width:0;">
@@ -2683,6 +2704,33 @@ function physioManagePanelHTML() {
   `;
 }
 
+// "+ Eigene Übung" (seit v1.43.0): frei zu einem bestehenden Trainingstag hinzugefuegte
+// Uebungen, unabhaengig davon ob eingebauter Plan (PPL etc., die sonst fix sind) oder eigener
+// Plan. Gleiches Verwalten-Panel-Muster wie physioManagePanelHTML() - list="exercise-name-list"
+// + libraryIdForName() (1:1 aus dem Plan-Builder uebernommen, Zeile ~2779) verknuepft bei exakter
+// Namensuebereinstimmung automatisch mit der Datenbank (ℹ-Erklaerung + Wochenvolumen-Zuordnung),
+// Freitext bleibt weiterhin moeglich.
+function extraManagePanelHTML(day) {
+  const list = state.extraExercises[day] || [];
+  const rowsHTML = list.map(ex => `
+    <div class="draft-ex-row">
+      <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Übungsname"
+        value="${escapeAttr(ex.name)}" data-role="extra-ex-name" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+      <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+        value="${ex.sets}" data-role="extra-ex-sets" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+      <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
+        value="${escapeAttr(ex.reps)}" data-role="extra-ex-reps" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+      <button class="draft-remove-btn" data-role="extra-remove-ex" data-day="${day}" data-exid="${escapeAttr(ex.id)}">✕</button>
+    </div>
+  `).join("");
+  return `
+    <div class="card">
+      ${rowsHTML}
+      <button class="draft-add-btn" data-role="extra-add-ex" data-day="${day}">+ Übung hinzufügen</button>
+    </div>
+  `;
+}
+
 function renderPhysioView() {
   const { due, daysSince } = physioDueInfo();
   const statusText = daysSince === null
@@ -2879,7 +2927,10 @@ function render() {
 
   const day = state.currentDay;
   const dayMeta = DAYS.find(d => d.id === day);
-  const exercises = EXERCISES[day];
+  // Seit v1.43.0: EXERCISES[day] plus frei hinzugefuegte Extra-Uebungen fuer diesen Tag - der
+  // restliche Karten-Render-Code danach ist bereits generisch pro ex-Objekt, braucht keine
+  // weitere Anpassung.
+  const exercises = [...EXERCISES[day], ...(state.extraExercises[day] || [])];
 
   const tabsHTML = DAYS.map(d => `
     <button class="tab-btn ${d.id === day ? "active" : ""}" data-role="day-tab" data-day="${d.id}">${d.label}</button>
@@ -2963,11 +3014,14 @@ function render() {
     ${renderTodayBanner()}
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
+      ${planBuilderExerciseNamesDatalist()}
       <div class="focus-line">Fokus: <span>${dayMeta.sub}</span></div>
       <button class="focusmode-enter-btn" data-role="focus-enter" data-day="${day}">▶ Trainingsmodus starten</button>
       ${warmupSectionHTML(dayMeta.type)}
       ${cardsHTML}
       ${stretchSectionHTML(dayMeta.type)}
+      <button class="home-create-btn" data-role="extra-manage-toggle">+ Eigene Übung</button>
+      ${extraManageOpen ? extraManagePanelHTML(day) : ""}
       <button class="finish-btn" data-role="finish" data-day="${day}">Training abschließen →</button>
     </div>
   `);
@@ -2977,7 +3031,11 @@ function finishSession(dayId, wellbeing, sessionNote) {
   const daySets = state.sessions[dayId] || {};
   const today = new Date().toLocaleDateString("de-DE");
   const journalExercises = [];
-  EXERCISES[dayId].forEach(ex => {
+  // Seit v1.43.0: EXERCISES[dayId] plus frei hinzugefuegte Extra-Uebungen dieses Tages - sonst
+  // wuerden Extra-Uebungen weder ins Tagebuch/die Gewichtsprogression einfliessen noch (unten)
+  // ihre Saetze nach Abschluss zurueckgesetzt.
+  const dayExercises = [...EXERCISES[dayId], ...(state.extraExercises[dayId] || [])];
+  dayExercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
     const enteredSets = sets.filter(s => s.weight || s.reps);
@@ -3027,7 +3085,7 @@ function finishSession(dayId, wellbeing, sessionNote) {
   state.lastCompletedDay = dayId;
   state.lastCompletedDate = today;
   const resetDay = {};
-  EXERCISES[dayId].forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
+  dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
   state.sessions[dayId] = resetDay;
   stopRestTimer();
   persist();
@@ -3144,6 +3202,7 @@ function importData(file) {
             gymWeightSuggestions: incoming.gymWeightSuggestions || {},
             updatedAt: incoming.updatedAt || null,
             physio: incoming.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
+            extraExercises: incoming.extraExercises || {},
           };
           applyPlan(state.currentPlan);
           if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -3309,7 +3368,7 @@ document.addEventListener("click", (e) => {
   const focusEnter = e.target.closest('[data-role="focus-enter"]');
   if (focusEnter) {
     const day = focusEnter.dataset.day;
-    focusQueue = EXERCISES[day].map(ex => ex.id);
+    focusQueue = [...EXERCISES[day], ...(state.extraExercises[day] || [])].map(ex => ex.id);
     focusPos = 0;
     focusInfoOpen = false;
     focusSwapOpen = false;
@@ -3614,6 +3673,34 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  const extraManageToggle = e.target.closest('[data-role="extra-manage-toggle"]');
+  if (extraManageToggle) {
+    extraManageOpen = !extraManageOpen;
+    render();
+    return;
+  }
+
+  const extraAddEx = e.target.closest('[data-role="extra-add-ex"]');
+  if (extraAddEx) {
+    const day = extraAddEx.dataset.day;
+    if (!state.extraExercises[day]) state.extraExercises[day] = [];
+    state.extraExercises[day].push({ id: `extra_${Date.now()}`, name: "", sets: 3, reps: "", alts: [], core: false });
+    persist();
+    render();
+    return;
+  }
+
+  const extraRemoveEx = e.target.closest('[data-role="extra-remove-ex"]');
+  if (extraRemoveEx) {
+    const day = extraRemoveEx.dataset.day;
+    if (state.extraExercises[day]) {
+      state.extraExercises[day] = state.extraExercises[day].filter(ex => ex.id !== extraRemoveEx.dataset.exid);
+    }
+    persist();
+    render();
+    return;
+  }
+
   const libraryExit = e.target.closest('[data-role="library-exit"]');
   if (libraryExit) {
     libraryActive = false;
@@ -3763,6 +3850,7 @@ document.addEventListener("click", (e) => {
     infoOpenKey = null;
     warmupOpen = false;
     stretchOpen = false;
+    extraManageOpen = false;
     persist();
     render();
     return;
@@ -3854,6 +3942,23 @@ document.addEventListener("click", (e) => {
   if (swapSelect) {
     const key = `${swapSelect.dataset.day}:${swapSelect.dataset.exid}`;
     state.swaps[key] = swapSelect.dataset.alt;
+    swapOpenKey = null;
+    focusSwapOpen = false;
+    persist();
+    render();
+    return;
+  }
+
+  const swapFreetextSubmit = e.target.closest('[data-role="swap-freetext-submit"]');
+  if (swapFreetextSubmit) {
+    const input = document.querySelector('[data-role="swap-freetext-input"]');
+    const value = input ? input.value.trim() : "";
+    if (!value) {
+      showToast("Bitte einen Übungsnamen eingeben.");
+      return;
+    }
+    const key = `${swapFreetextSubmit.dataset.day}:${swapFreetextSubmit.dataset.exid}`;
+    state.swaps[key] = value;
     swapOpenKey = null;
     focusSwapOpen = false;
     persist();
@@ -4013,6 +4118,40 @@ document.addEventListener("input", (e) => {
   const physioInterval = e.target.closest('[data-role="physio-interval"]');
   if (physioInterval) {
     state.physio.intervalDays = Math.max(1, Number(physioInterval.value) || 1);
+    persist();
+    return;
+  }
+
+  const extraExName = e.target.closest('[data-role="extra-ex-name"]');
+  if (extraExName) {
+    const list = state.extraExercises[extraExName.dataset.day] || [];
+    const ex = list.find(x => x.id === extraExName.dataset.exid);
+    if (ex) {
+      ex.name = extraExName.value;
+      // Nur automatisch verknuepfen, wenn der Name exakt einem Datenbank-Eintrag entspricht
+      // (z.B. per Datalist-Vorschlag gewaehlt) - bei Freitext bleibt libraryId leer, gleiche
+      // Kulanz wie beim Plan-Builder (draft-ex-name-Handler).
+      const matchedId = libraryIdForName(extraExName.value);
+      if (matchedId) ex.libraryId = matchedId; else delete ex.libraryId;
+    }
+    persist();
+    return;
+  }
+
+  const extraExSets = e.target.closest('[data-role="extra-ex-sets"]');
+  if (extraExSets) {
+    const list = state.extraExercises[extraExSets.dataset.day] || [];
+    const ex = list.find(x => x.id === extraExSets.dataset.exid);
+    if (ex) ex.sets = Number(extraExSets.value) || 1;
+    persist();
+    return;
+  }
+
+  const extraExReps = e.target.closest('[data-role="extra-ex-reps"]');
+  if (extraExReps) {
+    const list = state.extraExercises[extraExReps.dataset.day] || [];
+    const ex = list.find(x => x.id === extraExReps.dataset.exid);
+    if (ex) ex.reps = extraExReps.value;
     persist();
     return;
   }
