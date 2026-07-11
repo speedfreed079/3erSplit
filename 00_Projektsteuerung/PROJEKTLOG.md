@@ -2,6 +2,11 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.43.1 — 2026-07-11 (Teil 77): Header-Button "Anleitung" → "Hilfe"
+
+- Nutzer-Feedback: die 4 Header-Buttons (Start/Tagebuch/Profil/Anleitung) sollten annähernd gleich breit sein — "Anleitung" war spürbar länger als die anderen drei Labels.
+- `index.html`: Button-Text und Tooltip von "❓ Anleitung"/"Anleitung öffnen" auf "❓ Hilfe"/"Hilfe öffnen" geändert. `howto.html`s eigener Seitentitel/Überschrift ("Anleitung") bewusst unverändert gelassen — die Umbenennung betraf laut Nutzer nur die Breite der Header-Buttons, nicht den Namen der Hilfeseite selbst.
+
 ## 2026-07-11 (Teil 76): 10 fehlende Maschinen-Übungen in die Datenbank integriert
 
 - Ergebnis von `Recherche-Prompt-Maschinen.md` (Teil 74) lag als `Biomechanischer Übungskatalog Krafttraining.md` vor, gründlich gelesen und alle 10 Übungen eingepflegt (Adduktoren-/Abduktorenmaschine, Rudermaschine sitzend, Rückenstrecker-Maschine, Schulterpresse-/Bizeps-Curl-/Trizeps-Maschine, assistierte Klimmzug-/Dip-Maschine, Kniebeuge und Bankdrücken in der Smith-Machine).
