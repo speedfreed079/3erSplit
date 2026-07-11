@@ -898,60 +898,57 @@ async function loadExerciseLibrary() {
   render();
 }
 
-// Quelle: 01_Recherchen/03_Aufwaermen/Aufwaermprogramm.md (Gemini Deep Research). Pro Tagestyp (push/pull/legs), nicht pro Einzeltag.
+// Ueberarbeitet in v1.40.0, Quelle: 01_Recherchen/03_Aufwaermen/Wissenschaftliches Aufwaermen im
+// Krafttraining.md (Gemini Deep Research) - abgeloest die urspruengliche Aufwaermprogramm.md-Version
+// (v1.4.0/v1.5.2). Cardio-Geraet jetzt fest pro Tagestyp zugeordnet (Crosstrainer/Rudern/Fahrrad statt
+// nur Rudern), Band-Aktivierung nur noch bei Push/Pull (am Beintag laut Recherche redundant zur
+// Kniebeugen-Belastung selbst), Rampenschema auf 3 Stufen vom Arbeitsgewicht vereinfacht (statt 4
+// Stufen vom 1RM). Pro Tagestyp (push/pull/legs), nicht pro Einzeltag.
 const WARMUP = {
   push: {
-    general: "2-3 Min. moderates Rudern auf dem Ergometer zur Erhöhung der Körperkerntemperatur.",
+    general: "5 Min. auf dem Crosstrainer bei moderater Intensität (RPE ca. 5) — aktiviert Schultergürtel, Ellbogen, Hüfte und Knie gleichmäßig.",
     mobilization: [
       { text: "Brustwirbelsäulen-Rotation im Vierfüßlerstand", reps: "10 Wdh. pro Seite", cue: "Im Vierfüßlerstand eine Hand hinter den Kopf legen, den Ellbogen kontrolliert nach oben zur Decke rotieren und mit dem Blick folgen, dann zurück und Seite wechseln." },
-      { text: "Schulter-Dislokation mit elastischem Band", reps: "12 Wdh.", cue: "Das Band schulterbreit vor dem Körper mit gestreckten Armen halten und über den Kopf nach hinten führen, bis es hinter dem Rücken ankommt, dann kontrolliert zurück." },
-      { text: "Dynamischer herabschauender Hund in die Planke", reps: "10 Wdh.", cue: "Aus der Plank-Position das Becken nach oben in den herabschauenden Hund schieben, Fersen Richtung Boden drücken, dann kontrolliert zurück in die Planke." },
+      { text: "Prone Blackburns (Armkreisen in Bauchlage)", reps: "10 kontrollierte Durchgänge", cue: "In Bauchlage die Arme gestreckt über den Kopf führen, Daumen zeigen nach oben. Die Arme in einem weiten Bogen seitlich zum Gesäß führen, dabei die Schulterblätter aktiv zusammenziehen." },
+      { text: "Dynamischer Ausfallschritt mit Oberkörperrotation", reps: "8 Wdh. pro Seite", cue: "Einen weiten Ausfallschritt nach vorne machen, das hintere Knie leicht absenken. Den Oberkörper kontrolliert zur Seite des vorderen Beins rotieren, kurz halten und zurückkehren." },
     ],
     activation: [
-      { text: "Band Pull-Aparts", reps: "1 x 15 Wdh.", cue: "Das Band mit gestreckten Armen vor der Brust halten und durch Zusammenziehen der Schulterblätter auseinanderziehen, dann langsam zurückführen." },
-      { text: "Kontrollierte Liegestütze mit Fokus auf die Scapula-Aktivität", reps: "1 x 10 Wdh.", cue: "Normale Liegestütz-Position; am obersten Punkt zusätzlich die Schulterblätter aktiv auseinanderdrücken (Push-up-Plus), erst danach absenken." },
+      { text: "Band External Rotation", reps: "1-2 Sätze à 12-15 Wdh.", cue: "Den Ellbogen eng am Körper im 90-Grad-Winkel halten, das Band mit leichtem Widerstand vor dem Bauch greifen und den Unterarm kontrolliert nach außen rotieren, dann langsam zurückführen." },
     ],
     rampSets: [
-      { pct: "50%", reps: "8 Wdh." },
-      { pct: "70%", reps: "5 Wdh." },
-      { pct: "80%", reps: "3 Wdh." },
-      { pct: "90%", reps: "1 Wdh." },
+      { pct: "30-40%", reps: "6-8 Wdh." },
+      { pct: "60%", reps: "3-4 Wdh." },
+      { pct: "80%", reps: "1-2 Wdh." },
     ],
   },
   pull: {
-    general: "2-3 Min. auf dem Ruderergometer bei moderater Intensität zur Mobilisierung des Oberkörpers.",
+    general: "5 Min. auf dem Ruderergometer bei moderater Intensität (RPE ca. 5) — bahnt die Retraktion der Schulterblätter an und erwärmt die hintere Muskelkette.",
     mobilization: [
-      { text: "Katze-Kuh-Bewegung zur Mobilisierung der Wirbelsäule", reps: "12 Wdh.", cue: "Im Vierfüßlerstand abwechselnd den Rücken rund nach oben (Katze) und hohl nach unten (Kuh) bewegen, im Rhythmus der Atmung." },
-      { text: "Scapular Pull-ups (kontrolliertes Heben und Senken im Hang)", reps: "10 Wdh.", cue: "Im Hang an der Stange mit gestreckten Armen nur die Schulterblätter nach unten ziehen und wieder lösen, ohne die Ellbogen zu beugen." },
-      { text: "Spiderman Lunge mit Oberkörperrotation", reps: "8 Wdh. pro Seite", cue: "Aus dem Ausfallschritt nach vorne die innere Hand am Boden ablegen, den Oberkörper zur vorderen Beinseite aufdrehen und den Arm nach oben strecken." },
+      { text: "Katze-Kuh-Bewegung im Vierfüßlerstand", reps: "10 langsame Zyklen", cue: "Im Vierfüßlerstand den Rücken kontrolliert runden (Katzenbuckel, Kopf senken) und anschließend sanft durchhängen lassen (Kuh-Position, Kopf leicht anheben)." },
+      { text: "Faden einfädeln (Thread the Needle)", reps: "10 Wdh. pro Seite", cue: "Aus dem Vierfüßlerstand einen Arm unter dem Körper zur Gegenseite durchschieben, bis die Schulter fast den Boden berührt, dann denselben Arm weit nach oben zur Decke aufrotieren." },
+      { text: "Schulterblatt-Klimmzüge (Scapular Pull-ups)", reps: "10-12 kontrollierte Wdh.", cue: "An einer Klimmzugstange im weiten Obergriff hängen. Ohne die Ellbogen zu beugen, den Körper nur durch das Herunterziehen der Schulterblätter aktiv anheben, kurz halten und kontrolliert ablassen." },
     ],
     activation: [
-      { text: "Face Pulls mit dem elastischen Band", reps: "1 x 15 Wdh.", cue: "Das Band auf Gesichtshöhe befestigen, mit beiden Händen greifen und kontrolliert Richtung Gesicht ziehen, Ellbogen dabei hoch halten." },
-      { text: "Lat-Halbkreis-Zug am Kabelzug (gestreckte Arme)", reps: "1 x 12 Wdh.", cue: "Mit gestrecktem Arm den Griff in einem weiten Bogen von oben nach unten zur Hüfte ziehen, ohne den Ellbogen zu beugen." },
+      { text: "Band Pull-Aparts", reps: "1-2 Sätze à 12-15 Wdh.", cue: "Das Band mit gestreckten Armen vor der Brust halten und durch aktives Zusammenziehen der Schulterblätter auseinanderziehen, dann langsam kontrolliert zurückführen." },
     ],
     rampSets: [
-      { pct: "50%", reps: "8 Wdh." },
-      { pct: "70%", reps: "5 Wdh." },
-      { pct: "80%", reps: "3 Wdh." },
-      { pct: "90%", reps: "1 Wdh." },
+      { pct: "30-40%", reps: "6-8 Wdh." },
+      { pct: "60%", reps: "3-4 Wdh." },
+      { pct: "80%", reps: "1-2 Wdh." },
     ],
   },
   legs: {
-    general: "2-3 Min. auf dem AirBike oder Fahrradergometer bei moderater Intensität.",
+    general: "5 Min. auf dem Fahrradergometer bei moderater Intensität (RPE ca. 5) — konzentriert die Durchblutung auf Kniegelenke, Hüftgelenke und den Quadrizeps.",
     mobilization: [
-      { text: "Goblet Squat Hold (tiefer Kniebeugensitz mit leichter Hüftöffnung)", reps: "45 Sek.", cue: "Eine Kurzhantel vor der Brust halten, in die tiefe Kniebeuge absitzen und dort halten, die Knie sanft mit den Ellbogen nach außen drücken." },
-      { text: "Cossack Squats (kontrollierte seitliche Ausfallschritte)", reps: "8 Wdh. pro Seite", cue: "Breiter Stand, das Gewicht komplett auf ein gebeugtes Bein verlagern, das andere Bein bleibt gestreckt, dann zur anderen Seite wechseln." },
-      { text: "Sprunggelenks-Dorsalflexion an der Wand", reps: "10 Wdh. pro Seite", cue: "Im Ausfallschritt vor einer Wand das vordere Knie kontrolliert Richtung Wand schieben, ohne dass die Ferse abhebt." },
+      { text: "World's Greatest Stretch", reps: "6 Wdh. pro Seite", cue: "Aus dem tiefen Ausfallschritt eine Hand neben dem vorderen Fuß platzieren. Den anderen Arm weit nach oben rotieren, dem Blick folgen lassen, dann den Ellbogen tief an der Innenseite des vorderen Fußes vorbeiführen." },
+      { text: "Kosaken-Kniebeuge (Cossack Squats)", reps: "8 Wdh. pro Seite", cue: "In einen sehr breiten Stand gehen. Das Gewicht kontrolliert auf eine Seite verlagern und tief in die Kniebeuge gehen, während das andere Bein gestreckt bleibt und die Fußspitze zur Decke rotiert." },
+      { text: "Hüft-90-90-Rotation", reps: "10 Wechsel pro Seite", cue: "Aufrecht auf dem Boden sitzen, die Beine im 90-Grad-Winkel gebeugt ablegen. Die Knie kontrolliert von einer Seite zur anderen bewegen, ohne dass sich das Gesäß übermäßig vom Boden abhebt." },
     ],
-    activation: [
-      { text: "Glute Bridges mit Miniband um die Knie", reps: "1 x 15 Wdh.", cue: "Rückenlage, Knie aufgestellt, Miniband um die Oberschenkel; das Becken nach oben drücken und dabei aktiv gegen das Band nach außen drücken." },
-      { text: "Kniebeugen mit dem eigenen Körpergewicht (Air Squats)", reps: "1 x 12 Wdh.", cue: "Füße schulterbreit, kontrolliert in die Kniebeuge absenken bis die Oberschenkel etwa parallel zum Boden sind, dann aufrichten." },
-    ],
+    activation: [],
     rampSets: [
-      { pct: "50%", reps: "8 Wdh." },
-      { pct: "70%", reps: "5 Wdh." },
-      { pct: "80%", reps: "3 Wdh." },
-      { pct: "90%", reps: "1 Wdh." },
+      { pct: "30-40%", reps: "6-8 Wdh." },
+      { pct: "60%", reps: "3-4 Wdh." },
+      { pct: "80%", reps: "1-2 Wdh." },
     ],
   },
 };
@@ -981,7 +978,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.39.0";
+const APP_VERSION = "1.40.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1959,10 +1956,12 @@ function warmupSectionHTML(type) {
       <ul class="collapsible-list">
         ${w.mobilization.map(m => `<li><b>${m.text}</b> <span class="collapsible-reps">${m.reps}</span>${m.cue ? `<br/><span class="collapsible-cue">${m.cue}</span>` : ""}</li>`).join("")}
       </ul>
+      ${w.activation.length ? `
       <div class="collapsible-sublabel">Aktivierung</div>
       <ul class="collapsible-list">
         ${w.activation.map(a => `<li><b>${a.text}</b> <span class="collapsible-reps">${a.reps}</span>${a.cue ? `<br/><span class="collapsible-cue">${a.cue}</span>` : ""}</li>`).join("")}
       </ul>
+      ` : ""}
       <div class="collapsible-sublabel">Aufwärmsätze Hauptübung</div>
       <ul class="collapsible-list">
         ${w.rampSets.map(r => `<li>${r.pct} vom Arbeitsgewicht <span class="collapsible-reps">${r.reps}</span></li>`).join("")}

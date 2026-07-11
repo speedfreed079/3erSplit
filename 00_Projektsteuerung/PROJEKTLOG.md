@@ -2,6 +2,17 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.40.0 — 2026-07-11 (Teil 71): Aufwärmprogramm überarbeitet (Recherche-Synthese)
+
+- Der in Teil 69 vorbereitete Recherche-Prompt wurde vom Nutzer versehentlich zweimal ausgeführt — zwei Ergebnisse lagen vor (`Optimierung des Krafttraining-Aufwärmens.md`, unbrauchbare Zahlenwerte da als Bild-Platzhalter statt Text; `Wissenschaftliches Aufwärmen im Krafttraining.md`, sauberer Text mit konkreten Werten). Beide stimmten überein, dass dynamisches Dehnen allein als Fundament ausreicht, widersprachen sich aber bei Cardio-Geräte-Zuordnung und beim Umgang mit Aktivierung/Rampenschema — per `AskUserQuestion` explizit entschieden statt selbst geraten.
+- **Cardio-Phase**: fest pro Tagestyp zugeordnet (Crosstrainer/Push, Ruderergometer/Pull, Fahrradergometer/Legs — Bewegungsspezifität) statt bisher pauschal Rudern für alle Tage; Dauer von 2-3 auf 5 Min. angehoben (Recherche: 2-3 Min. reichen laut Version B nicht für einen echten Temperatureffekt).
+- **Mobilisation**: alle 9 Übungen (3 pro Tagestyp) durch die neu recherchierten dynamischen Dehnübungen ersetzt.
+- **Aktivierung**: an Push/Pull je auf eine gezielte Bandübung reduziert (Band External Rotation / Band Pull-Aparts, Rotatorenmanschette/Scapula-Stabilisierung — laut Recherche nicht verzichtbar); am Beintag **komplett gestrichen** (Glute-Voraktivierung sei bei einer ohnehin maximal rekrutierenden schweren Kniebeuge redundant). `warmupSectionHTML()` überspringt die "Aktivierung"-Sektion jetzt komplett, wenn das Array leer ist, statt eine leere Überschrift zu zeigen.
+- **Rampenschema**: von 4 Stufen (50/70/80/90 % vom 1RM) auf 3 Stufen vom geplanten Arbeitsgewicht des Tages vereinfacht (30-40 % / 60 % / 80 %) — laut Recherche unnötig kompliziert und teils kontraproduktiv (Laktat-Vorermüdung) für Freizeitsportler.
+- `WARMUP`-Datenblock betrifft alle Pläne mit `type: "push"/"pull"/"legs"`-Tagen (PPL, Upper/Lower, Ganzkörper, Bänder), nicht nur einen einzelnen Plan.
+- Verifiziert: `node --check` auf dem extrahierten Haupt-Script; neue `WARMUP`-Struktur per Node-Snippet geprüft (3 Mobilisationsübungen je Tagestyp, 1 Aktivierungsübung bei Push/Pull, 0 bei Legs, 3 Rampenstufen überall).
+- **Nächster Schritt**: keine offenen Recherche-Threads mehr außer KI-Dialog (eigene Planungsrunde) und Admin-Panel-Funktionalität (Backend-Entscheidung).
+
 ## v1.39.0 — 2026-07-11 (Teil 70): Calisthenics-Übungserklärungen komplett
 
 - Der in Teil 44 vorbereitete Recherche-Prompt (`Recherche-Prompt-Calisthenics.md`) wurde vom Nutzer ausgeführt; Ergebnis lag als `01_Recherchen/02_Uebungserklaerungen/Biomechanischer Übungskatalog Calisthenics.md` vor — 13 Übungen im bestehenden Datenbank-Format, gründlich gelesen und integriert.
