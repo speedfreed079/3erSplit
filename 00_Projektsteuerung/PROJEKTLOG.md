@@ -2,6 +2,17 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.41.0 — 2026-07-11 (Teil 72): Komma-Bug beim Gewichtsfeld behoben + Bearbeiten-Sperre für erledigte Sätze
+
+- Nutzer-Report per Screenshot mitten im Training: im Gewichtsfeld ließ sich nach "12," (drei Zeichen) nichts mehr eintippen. Ursache: das Feld war `type="number"`, was auf manchen mobilen Browsern jede weitere Eingabe blockiert, sobald ein Komma (deutsche Dezimalschreibweise, z.B. "12,5") einen laut Browser ungültigen Zahlenwert erzeugt — `type="number"` versteht nur den Punkt als Dezimaltrenner.
+  - Fix: Gewichtsfeld ist jetzt `type="text"` mit `inputmode="decimal"` (weiterhin Zahlentastatur, aber ohne Browser-seitige Validierung, die Kommas blockiert). Neue Helper-Funktion `parseWeightNum(str)` (ersetzt `parseFloat(s.weight)`/`parseFloat(last.weight)` an allen drei Stellen: `computePersonalRecords()`, `journalPointsFor()`, `finishSession()`s Gewichtsprogression) normalisiert Komma zu Punkt zentral, statt an jeder Stelle einzeln — sonst hätte "12,5" bei der 1RM-Berechnung/Progression stillschweigend nur als "12" gezählt.
+- Zweiter, vom Nutzer selbst vorgeschlagener Punkt aus derselben Nachricht: abgehakte Sätze zeigen Gewicht/Wiederholungen jetzt nur noch als reinen Text statt als Eingabefelder — während des Trainings tippt man sonst leicht versehentlich in bereits erledigte Kästchen hinein. Ein neues ✎-Symbol (rechts neben ⟲, Kartenansicht und Fokusmodus) schaltet die ganze Übung wieder auf editierbare Felder um, um nachträglich zu korrigieren; nochmaliges Antippen sperrt wieder.
+  - `setsRowsHTML(day, ex, sets, editMode)` bekommt einen neuen Parameter: pro Satzzeile wird bei `s.done && !editMode` ein `<span class="set-value">` statt der `<input>`s gerendert (🔥/↑/✓-Buttons bleiben immer bedienbar, nur die Zahlenfelder werden gesperrt).
+  - Kartenansicht: `editModeKeys` (ein `Set<string>`, ephemer wie `swapOpenKey`/`infoOpenKey`) erlaubt mehrere gleichzeitig entsperrte Übungen — anders als das Info-/Tausch-Panel, die bewusst exklusiv sind, gibt es hier keinen Grund, nur eine Übung gleichzeitig zum Nachtragen offen zu haben.
+  - Fokusmodus: eigenes `focusEditOpen` (Bool, kein Set, da immer nur eine Übung sichtbar ist) — wird bei jedem Übungswechsel zurückgesetzt, gleiche Konvention wie `focusInfoOpen`/`focusSwapOpen`.
+- `howto.html` aktualisiert (`#saetze`-Karte um die ✎-Sperre ergänzt, Fokusmodus-Karte erwähnt ✎ jetzt mit).
+- Verifiziert: `node -e "new Function(...)"` auf dem extrahierten Haupt-Script (Syntax-Check, kein Laufzeittest im echten Browser durch den Assistenten selbst).
+
 ## v1.40.0 — 2026-07-11 (Teil 71): Aufwärmprogramm überarbeitet (Recherche-Synthese)
 
 - Der in Teil 69 vorbereitete Recherche-Prompt wurde vom Nutzer versehentlich zweimal ausgeführt — zwei Ergebnisse lagen vor (`Optimierung des Krafttraining-Aufwärmens.md`, unbrauchbare Zahlenwerte da als Bild-Platzhalter statt Text; `Wissenschaftliches Aufwärmen im Krafttraining.md`, sauberer Text mit konkreten Werten). Beide stimmten überein, dass dynamisches Dehnen allein als Fundament ausreicht, widersprachen sich aber bei Cardio-Geräte-Zuordnung und beim Umgang mit Aktivierung/Rampenschema — per `AskUserQuestion` explizit entschieden statt selbst geraten.

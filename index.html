@@ -155,6 +155,7 @@
     display: flex; align-items: center; justify-content: center;
     min-width: 44px; min-height: 44px;
   }
+  .swap-btn.active { border-color: var(--olive); background: var(--olive); color: #fff; }
   .swap-panel {
     margin-top: 10px; padding: 10px; background: var(--surface2); border-radius: 8px;
     border: 1px solid var(--border);
@@ -245,6 +246,10 @@
     font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--bg);
     border: 1px solid var(--border); border-radius: 6px; color: var(--chalk);
     padding: 7px 8px; width: 100%;
+  }
+  .set-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--chalk);
+    padding: 7px 8px; display: block;
   }
   .warmup-toggle {
     font-family: 'JetBrains Mono', monospace; font-size: 13px;
@@ -978,7 +983,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.40.0";
+const APP_VERSION = "1.41.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1098,7 +1103,7 @@ function computePersonalRecords() {
     entry.exercises.forEach(ex => {
       ex.sets.forEach(s => {
         if (s.isWarmup) return;
-        const weight = parseFloat(s.weight);
+        const weight = parseWeightNum(s.weight);
         if (!Number.isFinite(weight)) return;
         const e1rm = estimateOneRepMax(weight, s.reps);
         const current = records[ex.exId];
@@ -1378,6 +1383,15 @@ function clearWeightSuggestion(exId) {
   }
 }
 
+// Gewichtsfeld ist type="text" statt type="number" (siehe setsRowsHTML), damit die deutsche
+// Dezimalschreibweise mit Komma ("12,5") ueberhaupt eintippbar ist - manche mobilen Browser
+// blockieren bei type="number" jede weitere Eingabe, sobald ein Komma einen ungueltigen
+// Zahlenwert erzeugt. parseFloat() allein versteht nur den Punkt als Dezimaltrenner, daher hier
+// zentral normalisiert statt an jeder parseFloat(s.weight)-Stelle einzeln.
+function parseWeightNum(str) {
+  return parseFloat(String(str ?? "").trim().replace(",", "."));
+}
+
 // Erkennt nur eindeutige Zahlen-Wiederholungsspannen ("6-8" -> {min:6,max:8}, "10" -> {min:10,max:10}).
 // Alles andere (Freitext wie "12/Seite", "max", Zeit-/Distanzangaben wie "30-45s"/"30-40m")
 // liefert bewusst null statt zu raten - die Frage wird fuer solche Uebungen einfach nicht gestellt.
@@ -1446,6 +1460,11 @@ let infoOpenKey = null;
 let warmupOpen = false;
 let stretchOpen = false;
 let gymManageOpen = false;
+// Seit v1.41.0: welche Uebungen (Kartenansicht) trotz erledigter Saetze wieder editierbare
+// Eingabefelder zeigen (Stift-Symbol, data-role "edit-toggle") - ephemer wie swapOpenKey/
+// infoOpenKey, aber ein Set statt ein einzelner Key, da mehrere Uebungen gleichzeitig zum
+// Nachtragen/Korrigieren entsperrt bleiben koennen sollen.
+let editModeKeys = new Set();
 
 // Trainingsmodus (Fokus-Ansicht): bewusst ephemer, nicht in state/localStorage - gleiche
 // Konvention wie swapOpenKey/warmupOpen/restTimer. Ein Reload mitten im Trainingsmodus setzt
@@ -1460,6 +1479,10 @@ let focusInfoOpen = false;
 // gleiche Konvention wie focusInfoOpen (jede Ansicht hat ihr eigenes ephemeres Toggle-Flag statt
 // geteilter Keys ueber Ansichten hinweg). Gegenseitig exklusiv mit focusInfoOpen.
 let focusSwapOpen = false;
+// Seit v1.41.0: Fokusmodus-Gegenstueck zu editModeKeys - nur ein Bool statt eines Sets, da der
+// Fokusmodus ohnehin immer nur eine Uebung gleichzeitig zeigt. Wird bei jedem Uebungswechsel
+// zurueckgesetzt, gleiche Konvention wie focusInfoOpen/focusSwapOpen.
+let focusEditOpen = false;
 
 // Tagebuch-Ansicht: ebenfalls ephemer, gleiche Konvention wie der Trainingsmodus oben.
 let journalViewActive = false;
@@ -2030,19 +2053,36 @@ function renderTodayBanner() {
 }
 
 // Geteilt zwischen Kartenansicht und Fokusmodus, damit beide Ansichten nie auseinanderdriften.
-function setsRowsHTML(day, ex, sets) {
-  const rowsHTML = sets.map((s, i) => `
+// editMode (seit v1.41.0): erledigte Saetze (s.done) zeigen ihr Gewicht/Wdh. standardmaessig nur
+// noch als reinen Text statt als Eingabefelder - waehrend des Trainings tippt man versehentlich
+// leicht in schon eingetragene Kaestchen hinein. Das Stift-Symbol im Kartenkopf (data-role
+// "edit-toggle"/"focus-edit-toggle") schaltet editMode fuer die ganze Uebung wieder frei, damit
+// bereits erledigte Saetze nachtraeglich korrigiert werden koennen. Gewichtsfeld ist bewusst
+// type="text" statt type="number" (siehe parseWeightNum oben) - deutsche Komma-Dezimalen wie
+// "12,5" liessen sich in type="number" auf manchen mobilen Browsern nach dem Komma nicht mehr
+// weitertippen.
+function setsRowsHTML(day, ex, sets, editMode) {
+  const rowsHTML = sets.map((s, i) => {
+    const locked = s.done && !editMode;
+    const weightCell = locked
+      ? `<span class="set-value">${escapeAttr(s.weight) || "–"}</span>`
+      : `<input class="set-input" type="text" inputmode="decimal" placeholder="0"
+          value="${escapeAttr(s.weight)}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />`;
+    const repsCell = locked
+      ? `<span class="set-value">${escapeAttr(s.reps) || "–"}</span>`
+      : `<input class="set-input" type="number" inputmode="numeric" placeholder="0"
+          value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />`;
+    return `
     <div class="set-row">
       <span class="set-idx">${i + 1}</span>
-      <input class="set-input" type="number" inputmode="decimal" placeholder="0"
-        value="${s.weight}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="weight" />
-      <input class="set-input" type="number" inputmode="numeric" placeholder="0"
-        value="${s.reps}" data-role="set-field" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" data-field="reps" />
+      ${weightCell}
+      ${repsCell}
       <button class="warmup-toggle ${s.isWarmup ? "active" : ""}" data-role="set-warmup-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.isWarmup ? "Aufwärmsatz (antippen für Arbeitssatz)" : "Als Aufwärmsatz markieren"}">🔥</button>
       <button class="couldmore-toggle ${s.couldDoMore ? "active" : ""}" data-role="set-couldmore-toggle" data-day="${day}" data-exid="${ex.id}" data-idx="${i}" title="${s.couldDoMore ? "Mehr Wdh. wären möglich gewesen (antippen zum Umschalten)" : "Wären mehr Wdh. möglich gewesen?"}">↑</button>
       <button class="done-btn ${s.done ? "done" : ""}" data-role="set-done" data-day="${day}" data-exid="${ex.id}" data-idx="${i}">${s.done ? "✓" : ""}</button>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   return `
     <div class="set-header">
@@ -2186,11 +2226,12 @@ function renderFocusMode() {
           <div style="display:flex; gap:6px; flex-shrink:0;">
             ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
             <button class="swap-btn" title="Übung tauschen" data-role="focus-swap-toggle">⟲</button>
+            <button class="swap-btn ${focusEditOpen ? "active" : ""}" title="${focusEditOpen ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="focus-edit-toggle">✎</button>
           </div>
         </div>
         ${infoPanelHTML}
         ${swapPanelContent}
-        ${setsRowsHTML(day, ex, sets)}
+        ${setsRowsHTML(day, ex, sets, focusEditOpen)}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
           <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
@@ -2218,7 +2259,7 @@ function journalPointsFor(exId) {
       if (ex.exId !== exId) return;
       ex.sets.forEach(s => {
         if (s.isWarmup) return;
-        const weight = parseFloat(s.weight);
+        const weight = parseWeightNum(s.weight);
         if (!Number.isFinite(weight)) return;
         points.push({ weight: estimateOneRepMax(weight, s.reps), timestamp: entry.timestamp });
       });
@@ -2731,6 +2772,7 @@ function render() {
 
     const info = exerciseLibrary[ex.libraryId];
     const infoPanelHTML = info && infoOpenKey === swapKey ? exerciseInfoPanelHTML(ex) : "";
+    const editMode = editModeKeys.has(swapKey);
 
     return `
       <div class="card">
@@ -2747,11 +2789,12 @@ function render() {
           <div style="display:flex; gap:6px; flex-shrink:0;">
             ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${day}" data-exid="${ex.id}">ℹ</button>` : ""}
             <button class="swap-btn" title="Übung tauschen" data-role="swap-toggle" data-day="${day}" data-exid="${ex.id}">⟲</button>
+            <button class="swap-btn ${editMode ? "active" : ""}" title="${editMode ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="edit-toggle" data-day="${day}" data-exid="${ex.id}">✎</button>
           </div>
         </div>
         ${infoPanelHTML}
         ${swapPanelContent}
-        ${setsRowsHTML(day, ex, sets)}
+        ${setsRowsHTML(day, ex, sets, editMode)}
         <div class="set-footer">
           ${tallyHTML(doneCount)}
           <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
@@ -2826,7 +2869,7 @@ function finishSession(dayId, wellbeing, sessionNote) {
       // Gewichtsprogression: nur der letzte Arbeitssatz zaehlt (gleiches Prinzip wie oben
       // bei der History), Aufwaermsaetze sind bereits durch doneSets ausgeschlossen.
       const range = parseRepRange(ex.reps);
-      const lastWeightNum = parseFloat(last.weight);
+      const lastWeightNum = parseWeightNum(last.weight);
       const lastRepsNum = parseFloat(last.reps);
       if (range && last.couldDoMore && Number.isFinite(lastWeightNum) && Number.isFinite(lastRepsNum) && lastRepsNum >= range.max) {
         setWeightSuggestion(ex.id, { weight: computeSuggestedWeight(lastWeightNum, !!ex.compound), basedOnDate: today });
@@ -3093,6 +3136,7 @@ document.addEventListener("click", (e) => {
     focusPos = 0;
     focusInfoOpen = false;
     focusSwapOpen = false;
+    focusEditOpen = false;
     focusModeActive = true;
     render();
     return;
@@ -3110,6 +3154,7 @@ document.addEventListener("click", (e) => {
     focusPos = Math.min(focusPos + 1, focusQueue.length - 1);
     focusInfoOpen = false;
     focusSwapOpen = false;
+    focusEditOpen = false;
     render();
     return;
   }
@@ -3119,6 +3164,7 @@ document.addEventListener("click", (e) => {
     focusPos = Math.max(focusPos - 1, 0);
     focusInfoOpen = false;
     focusSwapOpen = false;
+    focusEditOpen = false;
     render();
     return;
   }
@@ -3128,6 +3174,7 @@ document.addEventListener("click", (e) => {
     skipCurrent();
     focusInfoOpen = false;
     focusSwapOpen = false;
+    focusEditOpen = false;
     render();
     return;
   }
@@ -3144,6 +3191,13 @@ document.addEventListener("click", (e) => {
   if (focusSwapToggle) {
     focusSwapOpen = !focusSwapOpen;
     if (focusSwapOpen) focusInfoOpen = false;
+    render();
+    return;
+  }
+
+  const focusEditToggle = e.target.closest('[data-role="focus-edit-toggle"]');
+  if (focusEditToggle) {
+    focusEditOpen = !focusEditOpen;
     render();
     return;
   }
@@ -3501,6 +3555,14 @@ document.addEventListener("click", (e) => {
     const key = `${infoToggle.dataset.day}:${infoToggle.dataset.exid}`;
     infoOpenKey = infoOpenKey === key ? null : key;
     if (infoOpenKey) swapOpenKey = null;
+    render();
+    return;
+  }
+
+  const editToggle = e.target.closest('[data-role="edit-toggle"]');
+  if (editToggle) {
+    const key = `${editToggle.dataset.day}:${editToggle.dataset.exid}`;
+    if (editModeKeys.has(key)) editModeKeys.delete(key); else editModeKeys.add(key);
     render();
     return;
   }
