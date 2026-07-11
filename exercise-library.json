@@ -2373,5 +2373,215 @@
     "safety": "Die Übung sofort beenden, sobald die maximale Rumpfspannung nicht mehr gehalten werden kann und der untere Rücken durchzuhängen droht.",
     "image": null,
     "muscleGroup": "Bauch"
+  },
+  "adduktorenmaschine": {
+    "name": "Adduktorenmaschine",
+    "muscles": {
+      "primary": "Schenkelanzieher (Adduktoren)",
+      "secondary": "Großer Gesäßmuskel, Hüftbeuger"
+    },
+    "steps": [
+      "Die Sitzhöhe und die Rückenlehne so einstellen, dass die Kniegelenke leicht gebeugt sind und die Knieinnenseiten stabil an den Polstern anliegen.",
+      "Die seitlichen Haltegriffe fest fassen, um das Becken im Sitz zu fixieren und den Rumpf aktiv zu stabilisieren.",
+      "Die Beine kontrolliert und gleichmäßig gegen den Polsterwiderstand nach innen zusammenführen.",
+      "Die maximale Kontraktion am Bewegungsendpunkt kurz halten und die Beine langsam wieder in die Ausgangsposition zurückführen, ohne dass die Gewichte komplett aufsetzen."
+    ],
+    "mistakes": [
+      "Schwungvolles Zusammenschlagen der Polster, was die Gelenke belastet und den Muskelreiz am Umkehrpunkt eliminiert.",
+      "Anheben des Gesäßes von der Sitzfläche oder starkes Vorbeugen des Oberkörpers zur Erzeugung von Schwung.",
+      "Eine zu weit geöffnete Startposition, die die Adduktorensehnen überdehnt und das Verletzungsrisiko im Schambeinbereich erhöht."
+    ],
+    "safety": "Der Bewegungsumfang muss so gewählt werden, dass das Becken während der gesamten Ausführung stabil bleibt und keine Ausweichbewegungen im unteren Rücken stattfinden.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "abduktorenmaschine": {
+    "name": "Abduktorenmaschine",
+    "muscles": {
+      "primary": "Mittlerer Gesäßmuskel",
+      "secondary": "Kleiner Gesäßmuskel, Schenkelbindenspanner"
+    },
+    "steps": [
+      "Aufrecht auf dem Sitz Platz nehmen und das Becken sowie den gesamten Rücken fest an das Polster drücken.",
+      "Die Außenseiten der Knie stabil an den Polstern positionieren und die seitlichen Griffe greifen, um den Oberkörper zu stabilisieren.",
+      "Die Oberschenkel kontrolliert und gleichmäßig gegen den Widerstand nach außen drücken.",
+      "Die maximale Abduktionsposition unter voller Spannung kurz halten und die Beine langsam wieder in die Ausgangsposition zurückführen."
+    ],
+    "mistakes": [
+      "Abheben des Gesäßes oder des unteren Rückens von der Lehne, wodurch die Last auf die Lendenwirbelsäule übertragen wird.",
+      "Ruckartiges Aufstoßen des Gewichts mit Schwung aus der Hüfte statt einer kontrollierten Muskelkontraktion.",
+      "Unvollständiger Bewegungsumfang durch die Wahl eines zu hohen Trainingsgewichts."
+    ],
+    "safety": "Der Druck gegen die Polster muss ausschließlich über die Knie und Oberschenkel erfolgen, um schädliche Rotationskräfte auf die Kniegelenke zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Gesäß"
+  },
+  "rudermaschine-sitzend": {
+    "name": "Rudermaschine sitzend",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel (Latissimus)",
+      "secondary": "Trapezmuskel (mittlerer und unterer Anteil), hinterer Schultermuskel, Bizeps"
+    },
+    "steps": [
+      "Die Sitzhöhe so einstellen, dass sich die Griffe auf Höhe der mittleren Brust befinden und das Brustpolster festen Halt bietet, ohne den Brustkorb einzuengen.",
+      "Die Füße fest auf den Fußstützen platzieren, den Oberkörper aufrecht gegen das Brustpolster drücken und die Griffe fassen.",
+      "Die Bewegung initiieren, indem die Schulterblätter aktiv nach hinten-unten gezogen werden, gefolgt von einem eng am Körper vorbeigeführten Zug der Ellbogen.",
+      "Die Griffe so weit wie möglich nach hinten ziehen, die Kontraktion im Rücken kurz halten und das Gewicht kontrolliert wieder in die Ausgangsposition zurückführen."
+    ],
+    "mistakes": [
+      "Abheben der Brust vom Polster während der Zugphase, um mit Schwung aus dem unteren Rücken zu arbeiten.",
+      "Hochziehen der Schultern in Richtung der Ohren, was die Nackenmuskulatur überlastet und die Rückenaktivierung reduziert.",
+      "Unvollständige Streckung der Arme in der Dehnungsphase, wodurch der Bewegungsumfang verkürzt wird."
+    ],
+    "safety": "Der permanente Kontakt des Brustkorbs mit dem Polster ist zwingend einzuhalten, da dies die Lendenwirbelsäule stabilisiert und Scherkräfte eliminiert, was diese Übung biomechanisch vom freien Kabelrudern abgrenzt.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "rueckenstrecker-maschine": {
+    "name": "Rückenstrecker-Maschine",
+    "muscles": {
+      "primary": "Rückenstrecker",
+      "secondary": "Großer Gesäßmuskel, hintere Oberschenkelmuskulatur (Beinbeuger)"
+    },
+    "steps": [
+      "Auf das Sitzpolster setzen, das Gesäß vollständig nach hinten schieben und die Füße stabil auf der Fußraste fixieren.",
+      "Das verstellbare Rückenpolster so einjustieren, dass es auf Höhe der Schulterblätter aufliegt, und die Arme vor der Brust kreuzen.",
+      "Den Oberkörper aus einer kontrollierten, leicht nach vorne geneigten Position allein durch die Kraft des unteren Rückens gegen den Widerstand nach hinten drücken.",
+      "Den Oberkörper aufrichten, bis er sich in einer leichten Neigung nach hinten befindet, die Spannung kurz halten und langsam wieder in die Startposition zurückkehren."
+    ],
+    "mistakes": [
+      "Extremes Überstrecken des Oberkörpers (Hyperlordose) am Bewegungsendpunkt, was zu massiven Stauchungen der Lendenwirbelsäule führt.",
+      "Falsche Positionierung der Rolle im Nacken- oder Halswirbelbereich statt im Bereich der Brustwirbelsäule/Schulterblätter.",
+      "Ruckartiges Zurückstoßen gegen das Polster mit Schwung anstatt einer kontinuierlichen Kraftentfaltung."
+    ],
+    "safety": "Um Gelenkscherkräfte zu vermeiden, muss die Drehachse der Maschine zwingend auf Höhe des biologischen Hüftgelenks eingestellt sein.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "schulterpresse-maschine": {
+    "name": "Schulterpresse-Maschine",
+    "muscles": {
+      "primary": "Mittlerer Schultermuskel (seitlicher Deltamuskel)",
+      "secondary": "Vorderer Schultermuskel, Trizeps, Nackenmuskulatur"
+    },
+    "steps": [
+      "Die Sitzhöhe so einstellen, dass sich die Griffe zu Beginn der Bewegung etwa auf Schulter- bzw. Kinnhöhe befinden.",
+      "Den Oberkörper aufrecht an die Rückenlehne pressen, den Rumpf anspannen und ein leichtes, natürliches Hohlkreuz im unteren Rücken beibehalten.",
+      "Die Griffe kontrolliert vertikal nach oben drücken, wobei die Ellbogen leicht nach innen (in der Scapular-Ebene) geneigt bleiben.",
+      "Die Arme oben fast vollständig strecken, kurz verharren und das Gewicht anschließend langsam wieder absenken, ohne die Last komplett abzusetzen."
+    ],
+    "mistakes": [
+      "Vollständiges Durchstrecken (Einrasten) der Ellbogengelenke unter Last, was den Druck von den Muskeln auf die Gelenkkapseln verlagert.",
+      "Starkes Hohlkreuz mit Abheben des oberen Rückens von der Lehne, um die obere Brustmuskulatur zu Hilfe zu nehmen.",
+      "Weites Ausweichen der Ellbogen nach außen, was das Risiko für ein Impingement-Syndrom im Schultergelenk drastisch erhöht."
+    ],
+    "safety": "Die Abwärtsbewegung nur so weit ausführen, wie es die individuelle Schultermobilität schmerzfrei erlaubt, um ein Einklemmen der Sehnen unter dem Schulterdach zu verhindern.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "bizeps-curl-maschine": {
+    "name": "Bizeps-Curl-Maschine",
+    "muscles": {
+      "primary": "Zweiköpfiger Armbeuger (Bizeps)",
+      "secondary": "Armbeuger (Brachialis), Speichen-Armbeuger (Brachioradialis)"
+    },
+    "steps": [
+      "Die Sitzhöhe so einstellen, dass die Ellbogengelenke bei aufgelegten Armen exakt auf der Höhe der rotierenden Maschinenachse liegen.",
+      "Die Rückseite der Oberarme flach und stabil auf dem geneigten Polster positionieren, die Griffe im Untergriff fassen und den Rumpf anspannen.",
+      "Die Griffe kontrolliert und ohne Schwung durch das Beugen der Ellbogen in Richtung des Gesichts ziehen.",
+      "Am Bewegungsendpunkt die maximale Muskelkontraktion kurz halten und das Gewicht langsam wieder absenken, bis die Arme fast gestreckt sind."
+    ],
+    "mistakes": [
+      "Abheben der Ellbogen oder Oberarme vom Polster, wodurch die Schultern die Bewegung unterstützen und den Bizeps entlasten.",
+      "Ruckartiges Herablassen des Gewichts und vollständiges Durchstrecken der Ellbogen, was extremen Zug auf die Bizepssehne ausübt.",
+      "Hochziehen der Schultern während der Beugung, was den Trapezmuskel ungewollt aktiviert."
+    ],
+    "safety": "Die Oberarme müssen während des gesamten Satzes flach auf dem Polster fixiert bleiben, um die Last exklusiv auf die Ellenbogenbeuger zu isolieren.",
+    "image": null,
+    "muscleGroup": "Bizeps"
+  },
+  "trizeps-maschine": {
+    "name": "Trizeps-Maschine",
+    "muscles": {
+      "primary": "Dreiköpfiger Armstrecker (Trizeps)",
+      "secondary": "Ellbogenmuskel, vorderer Schultermuskel"
+    },
+    "steps": [
+      "Den Sitz so einstellen, dass die Ellbogen stabil auf den Polstern aufliegen und mit der Gelenkachse des Geräts fluchten.",
+      "Die Griffe im neutralen Griff fassen, die Handgelenke gerade halten und den Rücken fest an die Lehne pressen.",
+      "Die Griffe kontrolliert nach unten drücken, indem die Arme gestreckt werden, während die Oberarme fixiert auf den Polstern bleiben.",
+      "Die Arme am tiefsten Punkt fast vollständig strecken, kurz verharren und das Gewicht langsam wieder nach oben führen, bis die Unterarme parallel zum Boden sind."
+    ],
+    "mistakes": [
+      "Nach-außen-Weichen der Ellbogen unter Last, was die Gelenkkapseln des Ellbogens und der Schulter belastet.",
+      "Abknicken der Handgelenke, was die Sehnenstrukturen des Unterarms überbeansprucht.",
+      "Nutzung des Oberkörpergewichts durch Vorbeugen, um das Drücken zu erleichtern."
+    ],
+    "safety": "Die Arme am Ende der Bewegung nicht vollständig einrasten lassen, um die mechanische Last kontinuierlich auf der Muskulatur und nicht auf den Gelenkstrukturen zu halten.",
+    "image": null,
+    "muscleGroup": "Trizeps"
+  },
+  "assistierte-klimmzug-dip-maschine": {
+    "name": "Assistierte Klimmzug-/Dip-Maschine",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel (bei Klimmzügen) / Großer Brustmuskel (bei Dips)",
+      "secondary": "Bizeps (bei Klimmzügen), Trizeps (bei Dips)"
+    },
+    "steps": [
+      "Das passende Gegengewicht am Steckbrett einstellen (ein höheres Gewicht reduziert die effektive Last des eigenen Körpers).",
+      "Je nach Konstruktion entweder mit den Knien oder den Füßen mittig auf der gepolsterten Plattform Platz nehmen und die entsprechenden Griffe sicher fassen.",
+      "Den Körper kontrolliert absenken, bis die Arme (bei Klimmzügen) fast gestreckt sind oder die Ellbogen (bei Dips) einen 90-Grad-Winkel erreichen.",
+      "Den Körper kraftvoll nach oben ziehen (Klimmzug) bzw. nach oben drücken (Dip), während die Rumpfmuskulatur fest angespannt bleibt."
+    ],
+    "mistakes": [
+      "Schwungvolles Abstoßen von der Plattform in der untersten Position, was die Muskelaktivität in der kritischen Dehnungsphase minimiert.",
+      "Kollabieren der Schultern nach vorne bei Dips, was extremen Druck auf die vordere Schulterkapsel ausübt.",
+      "Unkontrolliertes Verlassen der Plattform am Satzende, wodurch das Polster ungebremst nach oben schnellt."
+    ],
+    "safety": "Vor dem Aufsteigen muss die korrekte Platzierung des Gewichtsstifts im Stapel visuell überprüft werden, um ein abruptes Durchsacken der assistierenden Plattform zu verhindern.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "kniebeuge-smith-machine": {
+    "name": "Kniebeuge in der Smith-Machine",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadrizeps)",
+      "secondary": "Großer Gesäßmuskel, hintere Oberschenkelmuskulatur"
+    },
+    "steps": [
+      "Die geführte Stange auf Schulterhöhe einjustieren, sich mittig darunter stellen (Ablage auf dem Trapezmuskel) und die Füße etwa eine halbe bis ganze Fußlänge vor der Stangenlinie platzieren.",
+      "Die Stange fest greifen, durch eine leichte Streckung der Beine und Drehen der Handgelenke entriegeln und einen schulterbreiten Stand einnehmen.",
+      "Das Gesäß kontrolliert nach hinten-unten absenken, bis die Oberschenkel mindestens parallel zum Boden stehen, während der Rücken stabil und gerade bleibt.",
+      "Aus den Fersen kraftvoll nach oben drücken, bis die Beine fast gestreckt sind, ohne die Kniegelenke einzurasten."
+    ],
+    "mistakes": [
+      "Aufstellen der Füße direkt unter der Stange (wie bei der freien Kniebeuge); dies zwingt die Knie aufgrund der starren vertikalen Bahn unphysiologisch weit nach vorne und erzeugt extremen Scherdruck im Gelenk.",
+      "Krümmen des unteren Rückens (\"Butt Wink\") am tiefsten Punkt der Kniebeuge, was die Bandscheiben belastet.",
+      "Abheben der Fersen vom Boden, wodurch die Last auf den Vorfuß und die Patellasehne verlagert wird."
+    ],
+    "safety": "Da die geführte Schiene keine natürliche dreidimensionale Ausweichbewegung des Beckens erlaubt, müssen die Füße zwingend nach vorne versetzt positioniert werden, um die Wirbelsäule in einer gesunden, neutralen Haltung zu stabilisieren.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "bankdruecken-smith-machine": {
+    "name": "Bankdrücken in der Smith-Machine",
+    "muscles": {
+      "primary": "Großer Brustmuskel (mittlerer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Trizeps"
+    },
+    "steps": [
+      "Eine Flachbank exakt mittig und parallel unter der Stange positionieren, sodass diese beim Absenken auf Höhe der mittleren Brust (Brustwarzenlinie) auftrifft.",
+      "Flach auf den Rücken legen, die Füße fest auf dem Boden platzieren, die Schulterblätter aktiv zusammenziehen und die Stange etwas über schulterbreit greifen.",
+      "Die Stange durch Drücken und Drehen der Handgelenke entriegeln und kontrolliert über ca. drei Sekunden bis kurz vor den Brustkorb absenken.",
+      "Die Stange kraftvoll nach oben drücken, bis die Arme fast gestreckt sind, ohne die Ellbogen ganz durchzurasten oder die Schultern nach vorne zu schieben."
+    ],
+    "mistakes": [
+      "Ungenaue Bankausrichtung, wodurch die Stange unphysiologisch weit oben (Richtung Hals) geführt wird und die Schultern extremen Scherkräften aussetzt.",
+      "Starkes Abspreizen der Ellbogen im 90-Grad-Winkel zur Seite, was das Risiko für ein Impingement-Syndrom im Schultergelenk drastisch erhöht.",
+      "Abprallenlassen (\"Bouncen\") der geführten Stange auf dem Brustkorb, was durch die starre Schienenmasse zu Thoraxverletzungen führen kann."
+    ],
+    "safety": "Da die Schienenführung keine natürliche Bogenbewegung (\"Reverse-C\") der Schultergelenke erlaubt, müssen die mechanischen Sicherheitsstopper zwingend knapp über Brusthöhe eingestellt werden, um Verletzungen bei Muskelversagen zu verhindern.",
+    "image": null,
+    "muscleGroup": "Brust"
   }
 }
