@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.44.0 — 2026-07-11 (Teil 78): Übungs-Picker im Plan-Builder (Muskelgruppen-Auswahl, Mehrfachauswahl, Reihenfolge ändern)
+
+- Nutzer-Feedback: die Übungsauswahl beim Erstellen/Bearbeiten eines eigenen Plans war ein reines Freitextfeld mit Datalist — bei inzwischen 123 Datenbank-Einträgen unübersichtlich. Wunsch: eine eigene Ansicht, in der Übungen nach Muskelgruppe sortiert durchsucht, mehrere auf einmal ausgewählt und übernommen werden können, danach bedienfreundlich in der Reihenfolge verschiebbar.
+- Neue Ansicht `renderExercisePicker()` (Overlay über dem Plan-Builder, `planBuilderActive` bleibt währenddessen unangetastet — `render()` prüft `exPickerActive` als allerersten Dispatch-Zweig, gleiches "gestapelte Ansichten"-Prinzip wie z.B. `physioViewActive` vor `homeScreenActive`). Akkordeon pro Muskelgruppe nutzt das `exerciseLibrary`-Feld `muscleGroup` (seit v1.18.0 fürs Wochenvolumen-Dashboard vorhanden) — keine neue Datenstruktur nötig. Auswahl-Zeilen sind Buttons mit `.active`-Zustand statt nativer Checkboxen (erstes Formular-Element dieser Art wäre ein Stilbruch gewesen — jeder andere Toggle in der App, `warmup-toggle`/`couldmore-toggle`/`edit-toggle`, ist schon ein Button). Bestätigen-Leiste wiederverwendet `.focusmode-nav`/`.focusmode-nav-btn.primary` (seit v1.30.0 `position:sticky`).
+- Einstieg: neuer Button "📚 Aus Datenbank wählen" neben "+ Übung hinzufügen" in jedem Tag — funktioniert automatisch auch beim Bearbeiten eines bestehenden eigenen Plans, da `startEditingPlan()` denselben `state.planDraft`-Mechanismus nutzt. Freitext-Feld bleibt zusätzlich bestehen, für Übungen außerhalb der Datenbank.
+- **Reihenfolge ändern**: bewusst ▲/▼-Buttons statt Drag&Drop gewählt — diese Zero-Build-App hat keine Bundling-Infrastruktur für eine Drag&Drop-Bibliothek, und touch-zuverlässiges Drag&Drop ohne Bibliothek ist auf Mobilgeräten fehleranfällig; zwei kleine gestapelte Buttons sind robust und passen zum bestehenden Muster der App (Rest-Timer ±15s, Textgrößen-Zyklus). Neue Funktion `draftMoveExercise(dayIdx, exIdx, direction)` vertauscht die Übung mit ihrem Nachbarn im Array, No-Op an den Rändern. Nur Übungen innerhalb eines Tages werden umsortiert, nicht die Tage selbst (nicht angefragt).
+- `.draft-ex-row`s Grid um eine Spalte erweitert (`2fr 70px 90px 28px 28px`) für die neuen Move-Buttons.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check; End-to-End im Browser via Playwright (Picker öffnen, Muskelgruppe aufklappen, mehrere Übungen anhaken, bestätigen → alle als neue Zeilen im Tag mit korrektem Namen/Defaults; ▲/▼ verschiebt Übungen; Plan speichern und erneut öffnen behält die Reihenfolge).
+- `howto.html` (`#eigenerplan`-Karte) aktualisiert.
+
 ## v1.43.1 — 2026-07-11 (Teil 77): Header-Button "Anleitung" → "Hilfe"
 
 - Nutzer-Feedback: die 4 Header-Buttons (Start/Tagebuch/Profil/Anleitung) sollten annähernd gleich breit sein — "Anleitung" war spürbar länger als die anderen drei Labels.

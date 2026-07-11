@@ -533,7 +533,7 @@
     flex: 1; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--border);
     background: var(--bg); color: var(--chalk); font-size: 14px;
   }
-  .draft-ex-row { display: grid; grid-template-columns: 2fr 70px 90px 28px; gap: 6px; margin-bottom: 6px; }
+  .draft-ex-row { display: grid; grid-template-columns: 2fr 70px 90px 28px 28px; gap: 6px; margin-bottom: 6px; }
   .draft-ex-name, .draft-ex-sets, .draft-ex-reps {
     padding: 7px 8px; border-radius: 6px; border: 1px solid var(--border);
     background: var(--bg); color: var(--chalk); font-size: 13px; width: 100%;
@@ -546,6 +546,29 @@
     width: 100%; padding: 9px; margin-top: 4px; border-radius: 7px; border: 1px dashed var(--border);
     background: transparent; color: var(--chalk-dim); font-size: 12px; cursor: pointer;
   }
+  /* Reihenfolge-Pfeile (seit v1.44.0) - zwei gestapelte kleine Buttons statt Drag&Drop, da diese
+     Zero-Build-App keine Bibliothek fuer touch-zuverlaessiges Drag&Drop einbindet. */
+  .draft-ex-move { display: flex; flex-direction: column; gap: 2px; }
+  .draft-ex-move button {
+    width: 28px; height: 17px; padding: 0; font-size: 9px; line-height: 1;
+    border: 1px solid var(--border); border-radius: 3px; background: transparent;
+    color: var(--chalk-dim); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .draft-ex-move button:disabled { opacity: 0.3; cursor: default; }
+  /* Uebungs-Picker (seit v1.44.0): Auswahl-Zeilen als Buttons statt natives Checkbox-Element -
+     konsistent mit jedem anderen Toggle in dieser App (warmup-toggle/couldmore-toggle/edit-toggle). */
+  .ex-picker-row {
+    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px;
+    text-align: left; padding: 8px; border: none; border-bottom: 1px solid var(--border);
+    background: transparent; color: var(--chalk); cursor: pointer; font-size: 13px;
+  }
+  .ex-picker-row:last-child { border-bottom: none; }
+  .ex-picker-row.active { background: var(--surface2); }
+  .ex-picker-check {
+    width: 20px; height: 20px; flex-shrink: 0; border: 1px solid var(--border); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;
+  }
+  .ex-picker-row.active .ex-picker-check { border-color: var(--olive); background: var(--olive); }
 
   .rest-timer-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
@@ -983,7 +1006,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.43.1";
+const APP_VERSION = "1.44.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1271,6 +1294,15 @@ function draftRemoveExercise(dayIdx, exIdx) {
   state.planDraft.days[dayIdx].exercises.splice(exIdx, 1);
 }
 
+// Reihenfolge aendern (seit v1.44.0) ueber ▲/▼-Buttons statt Drag&Drop - vertauscht die Uebung
+// mit ihrem Nachbarn, No-Op an den Raendern.
+function draftMoveExercise(dayIdx, exIdx, direction) {
+  const list = state.planDraft.days[dayIdx].exercises;
+  const targetIdx = exIdx + direction;
+  if (targetIdx < 0 || targetIdx >= list.length) return;
+  [list[exIdx], list[targetIdx]] = [list[targetIdx], list[exIdx]];
+}
+
 function validatePlanDraft(draft) {
   if (!draft.label.trim()) return false;
   if (draft.days.length === 0) return false;
@@ -1338,6 +1370,7 @@ function savePlanDraft() {
   applyPlan(plan.id);
   state.currentDay = DAYS[0].id;
   planBuilderActive = false;
+  exPickerActive = false;
   homeScreenActive = false;
   persist();
   render();
@@ -1347,6 +1380,7 @@ function savePlanDraft() {
 function cancelPlanDraft() {
   state.planDraft = null;
   planBuilderActive = false;
+  exPickerActive = false;
   persist();
   render();
 }
@@ -1526,6 +1560,14 @@ let physioManageOpen = false;
 // (gleiche Konvention wie physioManageOpen/gymManageOpen). Wird beim Tag-Wechsel zurueckgesetzt
 // (day-tab-Handler), gleiche Konvention wie swapOpenKey/warmupOpen.
 let extraManageOpen = false;
+
+// Uebungs-Picker im Plan-Builder (seit v1.44.0): "gestapelte" Ansicht ueber dem Plan-Builder -
+// planBuilderActive bleibt waehrend der Picker offen ist unangetastet, render() prueft
+// exPickerActive VOR planBuilderActive (gleiches Prinzip wie physioViewActive vor homeScreenActive).
+let exPickerActive = false;
+let exPickerDayIdx = null;
+let exPickerSelected = new Set();
+let exPickerGroupOpen = new Set();
 
 // Konto/Login (seit v1.19.0, Phase A): bewusst ephemer wie die anderen View-Flags oben -
 // currentUser wird ausschliesslich vom onAuthChange-Callback in window.FretzeCloud (siehe
@@ -2831,6 +2873,10 @@ function renderPlanBuilder() {
         <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
           value="${escapeAttr(ex.reps)}" data-role="draft-ex-reps" data-day="${dayIdx}" data-ex="${exIdx}" />
         <button class="draft-remove-btn" data-role="draft-remove-ex" data-day="${dayIdx}" data-ex="${exIdx}">✕</button>
+        <div class="draft-ex-move">
+          <button data-role="draft-move-ex-up" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach oben verschieben" ${exIdx === 0 ? "disabled" : ""}>▲</button>
+          <button data-role="draft-move-ex-down" data-day="${dayIdx}" data-ex="${exIdx}" title="Nach unten verschieben" ${exIdx === day.exercises.length - 1 ? "disabled" : ""}>▼</button>
+        </div>
       </div>
     `).join("");
     return `
@@ -2842,6 +2888,7 @@ function renderPlanBuilder() {
         </div>
         ${exercisesHTML}
         <button class="draft-add-btn" data-role="draft-add-ex" data-day="${dayIdx}">+ Übung hinzufügen</button>
+        <button class="draft-add-btn" data-role="ex-picker-enter" data-day="${dayIdx}">📚 Aus Datenbank wählen</button>
       </div>
     `;
   }).join("");
@@ -2859,6 +2906,56 @@ function renderPlanBuilder() {
       <button class="draft-add-btn" data-role="draft-add-day">+ Tag hinzufügen</button>
       <button class="finish-btn" data-role="plan-draft-save">${isEditing ? "✓ Änderungen speichern" : "✓ Plan speichern"}</button>
       ${planBuilderExerciseNamesDatalist()}
+    </div>
+  `;
+}
+
+// Uebungs-Picker (seit v1.44.0): Overlay ueber dem Plan-Builder (planBuilderActive bleibt
+// unangetastet), Akkordeon nach Muskelgruppe - nutzt das exerciseLibrary-Feld muscleGroup, das
+// seit v1.18.0 fuers Wochenvolumen-Dashboard existiert. Mehrfachauswahl per Button-Toggle
+// (exPickerSelected-Set), konsistent mit jedem anderen Toggle in dieser App (kein natives
+// Checkbox-Element). Bestaetigen fuegt alle ausgewaehlten Uebungen auf einmal in den Tag ein,
+// mit denselben Defaults wie draftAddExercise() (sets:3, reps:"8-10").
+function renderExercisePicker() {
+  const groupsHTML = MUSCLE_GROUPS.map(group => {
+    const entries = Object.entries(exerciseLibrary).filter(([, e]) => e.muscleGroup === group);
+    if (entries.length === 0) return "";
+    const isOpen = exPickerGroupOpen.has(group);
+    const selectedCount = entries.filter(([key]) => exPickerSelected.has(key)).length;
+    const rowsHTML = isOpen ? entries.map(([key, e]) => {
+      const isSelected = exPickerSelected.has(key);
+      return `
+        <button class="ex-picker-row ${isSelected ? "active" : ""}" data-role="ex-picker-toggle" data-libid="${escapeAttr(key)}">
+          <span class="ex-picker-check">${isSelected ? "✓" : ""}</span>
+          <span>${escapeAttr(e.name)}</span>
+        </button>
+      `;
+    }).join("") : "";
+    return `
+      <div class="collapsible-section">
+        <button class="collapsible-toggle" data-role="ex-picker-group-toggle" data-group="${escapeAttr(group)}">
+          <span>${escapeAttr(group)} (${entries.length})${selectedCount > 0 ? ` — ${selectedCount} ausgewählt` : ""}</span>
+          <span>${isOpen ? "▲" : "▼"}</span>
+        </button>
+        ${isOpen ? `<div class="collapsible-body">${rowsHTML}</div>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  const totalSelected = exPickerSelected.size;
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="ex-picker-cancel">✕ Abbrechen</button>
+      <span class="focusmode-progress">Übungen wählen</span>
+    </div>
+    <div class="focusmode-content">
+      ${groupsHTML}
+      <div class="focusmode-nav">
+        <button class="focusmode-nav-btn primary" data-role="ex-picker-confirm" ${totalSelected === 0 ? "disabled" : ""}>
+          ${totalSelected > 0 ? `${totalSelected} Übung${totalSelected > 1 ? "en" : ""} hinzufügen →` : "Erst Übungen auswählen"}
+        </button>
+      </div>
     </div>
   `;
 }
@@ -2884,6 +2981,11 @@ function render() {
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   if (themeColorMeta) themeColorMeta.setAttribute("content", state.theme === "sepia" ? "#a8461e" : "#c1440e");
+
+  if (exPickerActive) {
+    setAppHTML(renderExercisePicker());
+    return;
+  }
 
   if (planBuilderActive) {
     setAppHTML(renderPlanBuilder());
@@ -3764,6 +3866,56 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  const exPickerEnter = e.target.closest('[data-role="ex-picker-enter"]');
+  if (exPickerEnter) {
+    exPickerDayIdx = Number(exPickerEnter.dataset.day);
+    exPickerSelected = new Set();
+    exPickerActive = true;
+    render();
+    return;
+  }
+
+  const exPickerCancel = e.target.closest('[data-role="ex-picker-cancel"]');
+  if (exPickerCancel) {
+    exPickerActive = false;
+    render();
+    return;
+  }
+
+  const exPickerGroupToggle = e.target.closest('[data-role="ex-picker-group-toggle"]');
+  if (exPickerGroupToggle) {
+    const group = exPickerGroupToggle.dataset.group;
+    if (exPickerGroupOpen.has(group)) exPickerGroupOpen.delete(group); else exPickerGroupOpen.add(group);
+    render();
+    return;
+  }
+
+  const exPickerToggle = e.target.closest('[data-role="ex-picker-toggle"]');
+  if (exPickerToggle) {
+    const libId = exPickerToggle.dataset.libid;
+    if (exPickerSelected.has(libId)) exPickerSelected.delete(libId); else exPickerSelected.add(libId);
+    render();
+    return;
+  }
+
+  const exPickerConfirm = e.target.closest('[data-role="ex-picker-confirm"]');
+  if (exPickerConfirm) {
+    if (exPickerSelected.size === 0) return;
+    const dayIdx = exPickerDayIdx;
+    MUSCLE_GROUPS.forEach(group => {
+      Object.entries(exerciseLibrary)
+        .filter(([key, entry]) => entry.muscleGroup === group && exPickerSelected.has(key))
+        .forEach(([key, entry]) => {
+          state.planDraft.days[dayIdx].exercises.push({ name: entry.name, sets: 3, reps: "8-10", libraryId: key });
+        });
+    });
+    exPickerActive = false;
+    exPickerSelected = new Set();
+    persist();
+    render();
+    return;
+  }
+
   const draftAddDayBtn = e.target.closest('[data-role="draft-add-day"]');
   if (draftAddDayBtn) {
     draftAddDay();
@@ -3791,6 +3943,22 @@ document.addEventListener("click", (e) => {
   const draftRemoveExBtn = e.target.closest('[data-role="draft-remove-ex"]');
   if (draftRemoveExBtn) {
     draftRemoveExercise(Number(draftRemoveExBtn.dataset.day), Number(draftRemoveExBtn.dataset.ex));
+    persist();
+    render();
+    return;
+  }
+
+  const draftMoveExUp = e.target.closest('[data-role="draft-move-ex-up"]');
+  if (draftMoveExUp) {
+    draftMoveExercise(Number(draftMoveExUp.dataset.day), Number(draftMoveExUp.dataset.ex), -1);
+    persist();
+    render();
+    return;
+  }
+
+  const draftMoveExDown = e.target.closest('[data-role="draft-move-ex-down"]');
+  if (draftMoveExDown) {
+    draftMoveExercise(Number(draftMoveExDown.dataset.day), Number(draftMoveExDown.dataset.ex), 1);
     persist();
     render();
     return;
