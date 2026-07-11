@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.39.0 — 2026-07-11 (Teil 70): Calisthenics-Übungserklärungen komplett
+
+- Der in Teil 44 vorbereitete Recherche-Prompt (`Recherche-Prompt-Calisthenics.md`) wurde vom Nutzer ausgeführt; Ergebnis lag als `01_Recherchen/02_Uebungserklaerungen/Biomechanischer Übungskatalog Calisthenics.md` vor — 13 Übungen im bestehenden Datenbank-Format, gründlich gelesen und integriert.
+- `exercise-library.json` wächst von 100 auf **113 Einträge** (13 neue: Liegestütz-Familie, Pike-Push-up-Varianten, invertiertes Rudern, Pistol/Bulgarian Split Squats, Nordic Hamstring Curls, gleitende Beincurls, beide Wadenheben-Varianten, RKC Plank). Jeder neue Eintrag bekommt ein passendes `muscleGroup` aus den 10 festen Werten (für das Wochenvolumen-Dashboard), analog zur bestehenden Konvention.
+- Alle 13 Plan-Slots in `CALI_EXERCISES` bekommen das passende `libraryId` per Namensabgleich (kein manuelles Mapping nötig, Namen stimmten exakt mit dem Recherche-Ergebnis überein).
+- **Damit hat der Calisthenics-Plan jetzt als erster Nicht-PPL-Plan durchgängige ℹ-Erklärungen für alle 16 Übungen** (vorher nur 3 von 16: beide Klimmzug-Varianten + "Hängendes Beinheben", geteilt mit anderen Plänen) — schließt die letzte in `CLAUDE.md` dokumentierte Bibliothekslücke aus der ursprünglichen Feature-Wunschliste.
+- Code-Kommentar über `CALI_EXERCISES` aktualisiert (verwies noch auf die alte "nur 2 von 16"-Lücke).
+- Verifiziert: `node --check` auf dem extrahierten Haupt-Script; `exercise-library.json` als valides JSON geprüft (113 Einträge, alle 13 neuen Keys vorhanden, keine Kollision mit bestehenden).
+- **Nächster Schritt**: Aufwärmen-Recherche liegt ebenfalls vor (zweimal versehentlich ausgeführt, zwei leicht unterschiedliche Ergebnisse) — Synthese und Rückfrage an den Nutzer folgt als eigener Schritt, bevor `WARMUP` geändert wird.
+
 ## v1.38.0 — 2026-07-10 (Teil 69): howto.html gekürzt
 
 - Nutzer-Feedback: "Anleitung ist zu lang" — über die vielen Feature-Ergänzungen dieser Session war `howto.html` auf 21 TOC-Einträge mit mehreren dicht geschriebenen, teils mehrabsätzigen Karten angewachsen (v.a. `#konto` mit 3 Absätzen, `#saetze`, `#tagebuch`, `#backup`).

@@ -2100,5 +2100,278 @@
     "safety": "Der Abstand zur Tür muss so gewählt werden, dass die Rumpfmuskulatur die seitlich wirkende Kraft jederzeit sicher kontrollieren kann, ohne die Lendenwirbelsäule zu gefährden.",
     "image": null,
     "muscleGroup": "Bauch"
+  },
+  "liegestuetze-klassisch": {
+    "name": "Klassische Liegestütze (Push-ups)",
+    "muscles": {
+      "primary": "Großer Brustmuskel (mittlerer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Trizeps"
+    },
+    "steps": [
+      "Die Hände etwas über schulterbreit auf dem Boden positionieren, sodass sich die Handgelenke in der Ausgangsposition direkt unter den Schultergelenken befinden.",
+      "Die Beine gerade nach hinten ausstrecken, die Füße eng zusammenführen und den gesamten Körper durch maximale Anspannung von Rumpf und Gesäß in eine starre Linie bringen.",
+      "Den Körper kontrolliert absenken, bis die Brust fast den Boden berührt, wobei die Ellbogen in einem Winkel von etwa 45 Grad zum Oberkörper nach hinten-außen geführt werden.",
+      "Den Körper durch eine kraftvolle Streckung der Arme gleichmäßig nach oben drücken, ohne die Ellbogen am obersten Punkt komplett ruckartig einzurasten."
+    ],
+    "mistakes": [
+      "Die Ellbogen stehen im 90-Grad-Winkel nach außen ab, was den vorderen Schultergürtel und die Rotatorenmanschette überlastet.",
+      "Ein Absinken des Beckens (Hohlkreuz) durch unzureichende Anspannung der Bauch- und Gesäßmuskulatur.",
+      "Ein unvollständiger Bewegungsumfang, bei dem der Körper weder ganz abgesenkt noch im obersten Punkt vollständig herausgeschoben wird."
+    ],
+    "safety": "Die Schulterblätter während der exzentrischen Phase aktiv und kontrolliert zusammenführen, um ein Impingement im Schultergelenk effektiv zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Brust"
+  },
+  "liegestuetze-dekliniert": {
+    "name": "Deklinierte Liegestütze (Füße erhöht)",
+    "muscles": {
+      "primary": "Großer Brustmuskel (oberer Anteil)",
+      "secondary": "Vorderer Schultermuskel, Trizeps"
+    },
+    "steps": [
+      "Die Hände schulterbreit auf dem Boden platzieren und beide Füße sicher auf einer stabilen Erhöhung ablegen.",
+      "Den gesamten Körper von den Fersen bis zum Kopf durch maximale Aktivierung der Rumpfmuskulatur in eine starre, diagonale Linie bringen.",
+      "Den Oberkörper langsam absenken, bis die Nasenspitze oder die Brust fast den Boden berührt, während die Ellbogen in einem 45-Grad-Winkel nah am Rumpf verbleiben.",
+      "Den Körper kontrolliert und kraftvoll nach oben-hinten zurückdrücken, bis die Ellbogen fast vollständig gestreckt sind."
+    ],
+    "mistakes": [
+      "Hohlkreuzbildung durch Ermüdung oder mangelnde Anspannung der vorderen Bauchmuskulatur, was die Lendenwirbelsäule mechanisch komprimiert.",
+      "Seitliches Ausbrechen der Ellbogen zur Seite, was das Verletzungsrisiko im Schultergelenk drastisch erhöht.",
+      "Vorschieben des Kinns nach unten, wodurch eine tiefere Position vorgetäuscht und die Halswirbelsäule überstreckt wird."
+    ],
+    "safety": "Vor jedem Satz ist die Rutschfestigkeit der Fußauflage gründlich zu prüfen, um ein abruptes Abrutschen der Füße während der Belastungsspitze zu verhindern.",
+    "image": null,
+    "muscleGroup": "Brust"
+  },
+  "pike-pushups": {
+    "name": "Pike Push-ups",
+    "muscles": {
+      "primary": "Vorderer Schultermuskel",
+      "secondary": "Trizeps, Oberer Kapuzenmuskel"
+    },
+    "steps": [
+      "Aus dem Liegestützstütz die Füße so weit wie möglich nach vorne wandern lassen, bis das Gesäß nach oben zeigt und der Körper ein umgekehrtes „V“ bildet.",
+      "Die Hände etwas über schulterbreit aufstellen, den Kopf zwischen den Oberarmen positionieren und das Körpergewicht bewusst auf die Fußballen verlagern.",
+      "Den Kopf kontrolliert schräg nach vorne absenken, sodass die Hände und die Nasenspitze am tiefsten Punkt ein gleichschenkliges Dreieck auf dem Boden bilden.",
+      "Den Körper kraftvoll entlang dieser diagonalen Bahn nach hinten-oben wegdrücken, bis die Arme und der Rücken wieder eine gerade Linie bilden."
+    ],
+    "mistakes": [
+      "Absenken des Kopfes direkt auf einer Linie zwischen den Händen, wodurch die Übung zu einer flachen Liegestütze verformt und das Schultergelenk ungünstig belastet wird.",
+      "Seitliches Abspreizen (Flaren) der Ellbogen unter Last, was zu Schulterimpingement führen kann.",
+      "Starkes Einrunden des unteren Rückens aufgrund mangelnder Flexibilität der hinteren Oberschenkelmuskulatur."
+    ],
+    "safety": "Den Blick während der gesamten Ausführung auf die Füße gerichtet halten, um eine neutrale und druckfreie Position der Halswirbelsäule zu gewährleisten.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "pike-pushups-erhoeht": {
+    "name": "Elevated Pike Push-ups (Füße erhöht)",
+    "muscles": {
+      "primary": "Vorderer Schultermuskel",
+      "secondary": "Trizeps, Oberer Kapuzenmuskel"
+    },
+    "steps": [
+      "Die Hände schulterbreit auf dem Boden aufsetzen und die Füße auf einer stabilen Box oder einer vergleichbaren Erhöhung ablegen.",
+      "Mit den Händen so weit nach hinten wandern, bis die Hüfte fast vertikal über den Schultern steht und der Oberkörper nahezu senkrecht ausgerichtet ist.",
+      "Den Oberkörper schräg nach vorne absenken, sodass der Scheitelpunkt des Kopfes den Boden deutlich vor den Händen leicht berührt.",
+      "Den Boden kraftvoll wegdrücken und den Körper nach hinten-oben schieben, bis die Arme gestreckt und die Schultern am obersten Punkt vollständig geöffnet sind."
+    ],
+    "mistakes": [
+      "Ausweichen des Gesäßes nach hinten, wodurch die Last vom Schultergürtel auf die Brustmuskulatur verschoben wird.",
+      "Kollabieren der Rumpf- und Schulterstabilität am tiefsten Punkt der Bewegung, was zu einem unkontrollierten Absinken führt.",
+      "Unkontrolliertes Herablassen des Körpers ohne konstante Muskelspannung in den exzentrisch arbeitenden Muskeln."
+    ],
+    "safety": "Diese Übung erfordert eine fortgeschrittene Kraftbasis und sollte nur bei vollständiger Beherrschung der flachen Variante durchgeführt werden, um ein Stürzen auf den Kopf zu verhindern.",
+    "image": null,
+    "muscleGroup": "Schultern"
+  },
+  "rudern-invertiert": {
+    "name": "Invertiertes Rudern (Inverted Rows)",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel (Latissimus dorsi)",
+      "secondary": "Hinterer Schultermuskel, Trapezmuskel"
+    },
+    "steps": [
+      "Sich unter eine hüfthohe Stange legen, diese im Obergriff etwas weiter als schulterbreit greifen und die Arme vollständig strecken.",
+      "Die Beine strecken, die Fersen fest auf dem Boden aufsetzen und den Körper durch Anspannung von Rumpf und Gesäß in eine vollkommen gerade Linie bringen.",
+      "Den Brustkorb kontrolliert zur Stange heranziehen, indem die Ellbogen dicht am Körper nach hinten geführt und die Schulterblätter aktiv zusammengezogen werden.",
+      "Die Spannung am obersten Punkt kurz halten und den Körper anschließend langsam und kontrolliert wieder absenken."
+    ],
+    "mistakes": [
+      "Absinken der Hüfte oder Überstrecken des Rückens durch mangelnde Aktivierung der tiefen Rumpf- und Gesäßmuskulatur.",
+      "Hochziehen der Schultern zu den Ohren, was die Nackenmuskulatur ungünstig überlastet.",
+      "Nutzung von Schwung aus der Hüfte („Kippen“), um den Aufstieg mechanisch zu erleichtern."
+    ],
+    "safety": "Die Stange oder Aufhängung vor jedem Satz auf ihre absolute Tragfähigkeit und Rutschfestigkeit prüfen, um ein plötzliches Herabstürzen auf den Rücken zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "rudern-invertiert-breit": {
+    "name": "Invertiertes Rudern im breiten Griff",
+    "muscles": {
+      "primary": "Mittlerer Trapezmuskel",
+      "secondary": "Hinterer Schultermuskel, Rautenmuskeln"
+    },
+    "steps": [
+      "Unter der Stange positionieren und einen weiten Obergriff wählen, der etwa dem 1,5- bis 2-fachen der Schulterbreite entspricht.",
+      "Die Fersen aufsetzen, die Beine ausstrecken und den Rumpf durch maximale Spannung in Gesäß und Bauch in einer steifen Planke stabilisieren.",
+      "Den Oberkörper zur Stange ziehen, während die Ellbogen in einem Winkel von 60 bis 90 Grad weit nach außen geführt werden, bis die obere Brust die Stange fast berührt.",
+      "Die Schulterblätter am obersten Punkt maximal zusammenpressen und den Körper danach kontrolliert wieder absenken."
+    ],
+    "mistakes": [
+      "Unbewusstes Heranziehen der Ellbogen an die Flanken zur Entlastung des oberen Rückens.",
+      "Vorschieben des Kinns zur Stange hin, um Bewegungsumfang vorzutäuschen und die Halswirbelsäule zu stauchen.",
+      "Verlust der lumbopelvinen Stabilität, wodurch das Becken während der exzentrischen Phase durchhängt."
+    ],
+    "safety": "Wegen des veränderten Drehmoments im Schultergelenk ist auf eine absolut kontrollierte Ausführung ohne ruckartige Bewegungen zu achten, um Gelenkreizungen zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "pistol-squats": {
+    "name": "Pistol Squats (Einbeinige Kniebeugen)",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadrizeps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings)"
+    },
+    "steps": [
+      "Aufrecht auf einem Bein stehen, das andere Bein vollkommen gestreckt nach vorne anheben und die Arme zur Balanceerleichterung nach vorne ausstrecken.",
+      "Die Hüfte kontrolliert nach hinten-unten schieben und das Standbein tief beugen, während das freie Bein parallel zum Boden in der Luft gehalten wird.",
+      "Den Körper so tief absenken, bis das Gesäß fast die Wade berührt, wobei die Ferse des Standbeins stets festen Kontakt mit dem Boden behalten muss.",
+      "Die Ferse kraftvoll in den Boden drücken und den Oberkörper gleichmäßig wieder in den aufrechten Einbeinstand zurückführen."
+    ],
+    "mistakes": [
+      "Einwärtsknicken des Standknies (Valgusstellung) während der konzentrischen Phase, was zu einer hohen Bandbelastung im Kniegelenk führt.",
+      "Abheben der Ferse des Standbeins, was den Druck auf die Kniescheibe massiv erhöht.",
+      "Vollständiges Kollabieren des Oberkörpers nach vorne und extremes Einrunden des unteren Rückens."
+    ],
+    "safety": "Bei Instabilität im Sprung- oder Kniegelenk sollte die Übung zunächst mit Unterstützung durch Festhalten an einer stabilen Struktur (z. B. Türrahmen) durchgeführt werden, um Stürze zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "bulgarian-split-squats": {
+    "name": "Bulgarian Split Squats",
+    "muscles": {
+      "primary": "Vierköpfiger Oberschenkelmuskel (Quadrizeps)",
+      "secondary": "Großer Gesäßmuskel, Beinbeuger (Hamstrings)"
+    },
+    "steps": [
+      "Etwa einen großen Schritt vor einer stabilen Erhöhung aufstellen und den Fußrücken des hinteren Beins flach darauf ablegen.",
+      "Den Rumpf fest anspannen, den Oberkörper aufrecht halten und den Körperschwerpunkt auf die Ferse des vorderen Fußes verlagern.",
+      "Das vordere Knie langsam beugen, bis der vordere Oberschenkel mindestens parallel zum Boden steht und das hintere Knie kurz vor dem Boden stoppt.",
+      "Den Körper über das vordere Bein kraftvoll nach oben drücken, ohne das vordere Knie am obersten Punkt komplett durchzustrecken."
+    ],
+    "mistakes": [
+      "Ein zu kurzer Stand, der eine unphysiologische Scherkraft im vorderen Knie erzeugt, da das Knie zu weit über die Zehen geschoben wird.",
+      "Instabiles Einknicken des tragenden Knies nach innen (Valguskollaps) beim Aufwärtsdrücken.",
+      "Starkes Vorneigen des Oberkörpers mit rundem Rücken zur Kompensation mangelnder Kraft im Quadrizeps."
+    ],
+    "safety": "Das vordere Knie sollte stets präzise in Verlängerung der Zehenspitzen laufen, um schmerzhafte Kniegelenk-Fehlbelastungen zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "nordic-hamstring-curls": {
+    "name": "Nordic Hamstring Curls",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur (Beinbeuger)",
+      "secondary": "Großer Gesäßmuskel, Rückenstrecker"
+    },
+    "steps": [
+      "Auf den Knien positionieren und die Fersen unter einer absolut stabilen Barriere oder durch einen Partner fest auf dem Boden verankern.",
+      "Den Oberkörper und die Oberschenkel in eine gerade Linie bringen, das Gesäß maximal anspannen und die Arme bremsbereit vor der Brust halten.",
+      "Den Oberkörper langsam und kontrolliert nach vorne absenken, indem die Beinbeuger die Abwärtsbewegung exzentrisch abbremsen.",
+      "Den Sturz am tiefsten Punkt sanft mit den Händen abfedern, sich leicht vom Boden abstoßen und die Bewegung mit der Kraft der Beinbeuger rückwärts ausführen."
+    ],
+    "mistakes": [
+      "Abknicken in der Hüfte nach hinten, wodurch die Spannung auf die hintere Oberschenkelmuskulatur komplett verloren geht.",
+      "Unkontrolliertes Herabfallen ohne exzentrische Bremswirkung der Muskulatur.",
+      "Extremes Hohlkreuz (Überstreckung des unteren Rückens) während der exzentrischen Phase."
+    ],
+    "safety": "Die Knie müssen auf einer ausreichend weichen Matte positioniert werden, um schmerzhafte Druckbelastungen auf die Kniescheiben zu verhindern.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "beincurls-gleitend": {
+    "name": "Gleitende Beincurls (Sliding Leg Curls)",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur (Beinbeuger)",
+      "secondary": "Großer Gesäßmuskel, Tiefe Bauchmuskulatur"
+    },
+    "steps": [
+      "In Rückenlage die Arme flach neben dem Körper ablegen und beide Fersen auf einer gleitfähigen Unterlage aufsetzen.",
+      "Das Becken so weit anheben, bis der Rumpf und die Oberschenkel eine gerade Linie bilden (Gesäßbrücken-Position).",
+      "Die Fersen langsam und gleichmäßig nach vorne gleiten lassen, bis die Beine fast vollständig gestreckt sind, während das Gesäß knapp über dem Boden schwebt.",
+      "Die Fersen kraftvoll in Richtung Gesäß heranziehen und das Becken gleichzeitig aktiv nach oben drücken, um die Hüftstreckung beizubehalten."
+    ],
+    "mistakes": [
+      "Absinken des Gesäßes auf den Boden während der exzentrischen Gleitphase, was die Muskelspannung auflöst.",
+      "Ruckartiges Heranziehen der Fersen unter Ausnutzung von Schwung statt kontinuierlicher Muskelkraft.",
+      "Asymmetrisches Ziehen, bei dem ein Bein die Hauptarbeit übernimmt."
+    ],
+    "safety": "Auf einen glatten und absolut hindernisfreien Untergrund achten, um ein plötzliches Blockieren der Gleitbewegung und daraus resultierende Zerrungen zu vermeiden.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "wadenheben-einbeinig-stehend": {
+    "name": "Einbeiniges Wadenheben im Stehen (auf einer Erhöhung)",
+    "muscles": {
+      "primary": "Zwillingswadenmuskel",
+      "secondary": "Schollenmuskel, Fußsohlenmuskulatur"
+    },
+    "steps": [
+      "Mit dem Vorfuß eines Beins auf die Kante einer stabilen Stufe stellen, die Ferse frei hängen lassen und das andere Bein anheben.",
+      "Mit einer Hand an einer Wand abstützen, um das Gleichgewicht leicht zu sichern, ohne sich jedoch aktiv hochzuziehen.",
+      "Die Ferse kontrolliert absenken, bis eine tiefe, schmerzfreie Dehnung in der Wade und Achillessehne erreicht ist.",
+      "Den Körper über den Vorfuß explosiv nach oben drücken, bis das Sprunggelenk maximal gestreckt ist und man auf den Zehenspitzen steht."
+    ],
+    "mistakes": [
+      "Schnelles, federndes Abfedern („Bouncen“) am tiefsten Punkt, was die elastische Energie der Sehne nutzt und die Muskelarbeit minimiert.",
+      "Ein verkürzter Bewegungsumfang, bei dem weder die maximale Dehnung noch die vollständige Kontraktion erreicht wird.",
+      "Seitliches Wegknicken des Fußgelenks nach außen während der Aufwärtsbewegung."
+    ],
+    "safety": "Nur auf einer absolut rutschfesten Kante trainieren, um ein folgenschweres Abrutschen des Fußes und ein Umknicken des Sprunggelenks zu verhindern.",
+    "image": null,
+    "muscleGroup": "Waden"
+  },
+  "wadenheben-einbeinig-dehnungspause": {
+    "name": "Einbeiniges Wadenheben mit Dehnungs-Pause",
+    "muscles": {
+      "primary": "Zwillingswadenmuskel",
+      "secondary": "Schollenmuskel, Achillessehne"
+    },
+    "steps": [
+      "Mit dem Vorfuß auf einer Kante stehen, das Knie komplett durchstrecken und die Ferse langsam absenken.",
+      "Am tiefsten Punkt der exzentrischen Dehnung eine strikte Pause von 2 bis 3 Sekunden halten, um die elastische Energie der Achillessehne vollständig zu eliminieren.",
+      "Den Körper aus dem absoluten Stillstand rein über die Kraft der Wadenmuskulatur kontrolliert nach oben drücken.",
+      "Die maximale Kontraktion am höchsten Punkt für 1 Sekunde halten, bevor die kontrollierte Absenkphase eingeleitet wird."
+    ],
+    "mistakes": [
+      "Verkürzen der Dehnungsphase unter 2 Sekunden, wodurch die elastischen Kräfte der Sehne die konzentrische Phase unterstützen.",
+      "Beugen des Kniegelenks, was den Fokus fälschlicherweise auf den tiefer liegenden Schollenmuskel verschiebt.",
+      "Unkontrolliertes Absinkenlassen der Ferse ohne aktive Muskelbremsung."
+    ],
+    "safety": "Die Dehnungspause muss kontrolliert gehalten werden, da abrupte Belastungswechsel in maximal gedehnter Position das Risiko von Sehnenreizungen erhöhen.",
+    "image": null,
+    "muscleGroup": "Waden"
+  },
+  "rkc-plank": {
+    "name": "RKC Plank",
+    "muscles": {
+      "primary": "Gerade Bauchmuskulatur",
+      "secondary": "Äußere schräge Bauchmuskulatur, Gesäßmuskulatur"
+    },
+    "steps": [
+      "In den Unterarmstütz gehen, die Ellbogen direkt unter den Schultern platzieren, die Hände fest ballen und die Füße eng zusammenstellen.",
+      "Das Becken aktiv nach hinten kippen (posteriore Beckenkippung), um den unteren Rücken vollständig flach auszurichten.",
+      "Oberschenkel, Gesäß und Bauchmuskeln mit maximaler willkürlicher Kraft anspannen.",
+      "Die Ellbogen isometrisch nach hinten zu den Zehenspitzen und die Zehenspitzen nach vorne zu den Ellbogen ziehen, um eine extreme Ganzkörperspannung zu erzeugen."
+    ],
+    "mistakes": [
+      "Durchhängen des Beckens in ein Hohlkreuz, was die Lendenwirbelsäule belastet statt die Bauchmuskeln zu aktivieren.",
+      "Passives statisches Halten ohne das bewusste isometrische Zusammenziehen von Ellbogen und Füßen.",
+      "Hochstrecken des Gesäßes über Schulterhöhe, um den Hebelarm zu verkürzen."
+    ],
+    "safety": "Die Übung sofort beenden, sobald die maximale Rumpfspannung nicht mehr gehalten werden kann und der untere Rücken durchzuhängen droht.",
+    "image": null,
+    "muscleGroup": "Bauch"
   }
 }

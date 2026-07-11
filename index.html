@@ -767,12 +767,10 @@ const BRO_EXERCISES = {
 // PPL - fachlich nicht 100% deckungsgleich mit dem urspruenglichen alts-Konzept, aber die
 // bestehende Tausch-UI (data-role="swap-toggle") passt genau: Nutzer koennen sich damit selbst
 // auf die passende Schwierigkeitsstufe hoch-/runterstufen, ohne dass die App eine eigene
-// Progressions-UI fuer gewichtslose Uebungen braeuchte. Nur 2 Uebungen (die bereits aus
-// UL/FB/BroSplit bekannten Klimmzug-Varianten) bekommen ein libraryId - alle anderen
-// (Liegestuetz-Familie, Pike Push-ups, Pistol Squats, Nordic Hamstring Curls, Sliding Leg
-// Curls, Bulgarian Split Squats, invertiertes Rudern, RKC Plank) sind fuer die bestehende
-// Uebungsdatenbank neu und brauchen einen eigenen, spaeteren Recherche-Durchgang (gleiche
-// Graceful-Degradation wie bei UL/FB/BroSplit vor v1.17.0: kein libraryId = kein ℹ-Button).
+// Progressions-UI fuer gewichtslose Uebungen braeuchte. Alle 16 Uebungen haben seit v1.39.0
+// ein libraryId (2 Klimmzug-Varianten geteilt mit UL/FB/BroSplit, "Haengendes Beinheben"
+// geteilt wie gehabt, die restlichen 13 aus einem eigenen Calisthenics-Recherche-Durchgang,
+// siehe 01_Recherchen/02_Uebungserklaerungen/Biomechanischer Uebungskatalog Calisthenics.md).
 const CALI_DAYS = [
   { id: "caliUpperA", label: "Oberkörper A", sub: "Ziehen vertikal / Drücken horizontal" },
   { id: "caliLowerA", label: "Unterkörper A", sub: "Knie-dominant, einbeinig", type: "legs" },
@@ -783,27 +781,27 @@ const CALI_DAYS = [
 const CALI_EXERCISES = {
   caliUpperA: [
     { id: "cua1", name: "Klimmzüge im pronierten Griff (Pull-ups)", sets: 4, reps: "6-10", alts: ["Klimmzüge mit Fuß-Unterstützung durch Band/Stuhl", "Klimmzüge mit langsamer Negativphase oder L-Sit-Klimmzüge"], compound: true, libraryId: "klimmzuege-im-ristgriff"},
-    { id: "cua2", name: "Klassische Liegestütze (Push-ups)", sets: 3, reps: "10-15", alts: ["Liegestütze mit erhöht aufgesetzten Händen", "Archer Push-ups oder einarmige Liegestütze"]},
-    { id: "cua3", name: "Pike Push-ups", sets: 3, reps: "6-10", alts: ["Pike Push-ups mit erhöht abgesetzten Händen", "Elevated Pike Push-ups mit erhöhten Füßen"]},
-    { id: "cua4", name: "Invertiertes Rudern (Inverted Rows)", sets: 3, reps: "8-12", alts: ["Invertiertes Rudern mit gebeugten Knien", "Invertiertes Rudern mit erhöhten Beinen"]},
+    { id: "cua2", name: "Klassische Liegestütze (Push-ups)", sets: 3, reps: "10-15", alts: ["Liegestütze mit erhöht aufgesetzten Händen", "Archer Push-ups oder einarmige Liegestütze"], libraryId: "liegestuetze-klassisch"},
+    { id: "cua3", name: "Pike Push-ups", sets: 3, reps: "6-10", alts: ["Pike Push-ups mit erhöht abgesetzten Händen", "Elevated Pike Push-ups mit erhöhten Füßen"], libraryId: "pike-pushups"},
+    { id: "cua4", name: "Invertiertes Rudern (Inverted Rows)", sets: 3, reps: "8-12", alts: ["Invertiertes Rudern mit gebeugten Knien", "Invertiertes Rudern mit erhöhten Beinen"], libraryId: "rudern-invertiert"},
   ],
   caliLowerA: [
-    { id: "cla1", name: "Pistol Squats (Einbeinige Kniebeugen)", sets: 3, reps: "5-8 (pro Seite)", alts: ["Unterstützte Pistol Squats mit Festhalten an Klimmzugstange/Türrahmen", "Pistol Squats mit 1,5-Wiederholungen-Methode"]},
-    { id: "cla2", name: "Nordic Hamstring Curls", sets: 3, reps: "5-8", alts: ["Nordic Hamstring Curls mit Handunterstützung am Boden", "Freie exzentrische Nordic Hamstring Curls mit 5 Sekunden Absenkzeit"]},
-    { id: "cla3", name: "Einbeiniges Wadenheben im Stehen (auf einer Erhöhung)", sets: 3, reps: "12-15", alts: ["Beidbeiniges Wadenheben auf flachem Boden", "Einbeiniges Wadenheben mit langsamer exzentrischer Phase"]},
+    { id: "cla1", name: "Pistol Squats (Einbeinige Kniebeugen)", sets: 3, reps: "5-8 (pro Seite)", alts: ["Unterstützte Pistol Squats mit Festhalten an Klimmzugstange/Türrahmen", "Pistol Squats mit 1,5-Wiederholungen-Methode"], libraryId: "pistol-squats"},
+    { id: "cla2", name: "Nordic Hamstring Curls", sets: 3, reps: "5-8", alts: ["Nordic Hamstring Curls mit Handunterstützung am Boden", "Freie exzentrische Nordic Hamstring Curls mit 5 Sekunden Absenkzeit"], libraryId: "nordic-hamstring-curls"},
+    { id: "cla3", name: "Einbeiniges Wadenheben im Stehen (auf einer Erhöhung)", sets: 3, reps: "12-15", alts: ["Beidbeiniges Wadenheben auf flachem Boden", "Einbeiniges Wadenheben mit langsamer exzentrischer Phase"], libraryId: "wadenheben-einbeinig-stehend"},
     { id: "cla4", name: "Hängendes Beinheben (Hanging Leg Raises)", sets: 3, reps: "8-12", alts: ["Hängendes Knieheben", "Hängendes Beinheben mit gestreckten Beinen bis zur Stange"], core: true, libraryId: "beinheben-haengend"},
   ],
   caliUpperB: [
     { id: "cub1", name: "Klimmzüge im supinierten Griff (Chin-ups)", sets: 4, reps: "6-10", alts: ["Exzentrische Chin-ups", "Chin-ups mit Zusatzgewicht oder einarmige Klimmzug-Negativen"], compound: true, libraryId: "klimmzuege-im-untergriff"},
-    { id: "cub2", name: "Deklinierte Liegestütze (Füße erhöht)", sets: 3, reps: "8-12", alts: ["Klassische Liegestütze", "Archer Push-ups"]},
-    { id: "cub3", name: "Elevated Pike Push-ups (Füße erhöht)", sets: 3, reps: "6-10", alts: ["Pike Push-ups mit Füßen auf dem Boden", "Handstand-Push-ups an der Wand"]},
-    { id: "cub4", name: "Invertiertes Rudern im breiten Griff", sets: 3, reps: "10-12", alts: ["Invertiertes Rudern im engen neutralen Griff", "Invertiertes Rudern mit erhöhten Beinen und Zusatzgewicht"]},
+    { id: "cub2", name: "Deklinierte Liegestütze (Füße erhöht)", sets: 3, reps: "8-12", alts: ["Klassische Liegestütze", "Archer Push-ups"], libraryId: "liegestuetze-dekliniert"},
+    { id: "cub3", name: "Elevated Pike Push-ups (Füße erhöht)", sets: 3, reps: "6-10", alts: ["Pike Push-ups mit Füßen auf dem Boden", "Handstand-Push-ups an der Wand"], libraryId: "pike-pushups-erhoeht"},
+    { id: "cub4", name: "Invertiertes Rudern im breiten Griff", sets: 3, reps: "10-12", alts: ["Invertiertes Rudern im engen neutralen Griff", "Invertiertes Rudern mit erhöhten Beinen und Zusatzgewicht"], libraryId: "rudern-invertiert-breit"},
   ],
   caliLowerB: [
-    { id: "clb1", name: "Bulgarian Split Squats", sets: 3, reps: "8-12 (pro Seite)", alts: ["Klassische Ausfallschritte", "Bulgarian Split Squats mit 3 Sekunden exzentrischer Phase"]},
-    { id: "clb2", name: "Gleitende Beincurls (Sliding Leg Curls)", sets: 3, reps: "8-12", alts: ["Gleitende Beincurls rein exzentrisch", "Einbeinige gleitende Beincurls"]},
-    { id: "clb3", name: "Einbeiniges Wadenheben mit Dehnungs-Pause", sets: 3, reps: "10-12", alts: ["Beidbeiniges Wadenheben mit Dehnungs-Pause", "Einbeiniges Wadenheben mit zusätzlichem Rucksack-Gewicht"]},
-    { id: "clb4", name: "RKC Plank", sets: 3, reps: "15-30 Sek.", alts: ["Standard-Unterarmstütz", "RKC Plank mit weit nach hinten versetzten Ellbogen"], core: true},
+    { id: "clb1", name: "Bulgarian Split Squats", sets: 3, reps: "8-12 (pro Seite)", alts: ["Klassische Ausfallschritte", "Bulgarian Split Squats mit 3 Sekunden exzentrischer Phase"], libraryId: "bulgarian-split-squats"},
+    { id: "clb2", name: "Gleitende Beincurls (Sliding Leg Curls)", sets: 3, reps: "8-12", alts: ["Gleitende Beincurls rein exzentrisch", "Einbeinige gleitende Beincurls"], libraryId: "beincurls-gleitend"},
+    { id: "clb3", name: "Einbeiniges Wadenheben mit Dehnungs-Pause", sets: 3, reps: "10-12", alts: ["Beidbeiniges Wadenheben mit Dehnungs-Pause", "Einbeiniges Wadenheben mit zusätzlichem Rucksack-Gewicht"], libraryId: "wadenheben-einbeinig-dehnungspause"},
+    { id: "clb4", name: "RKC Plank", sets: 3, reps: "15-30 Sek.", alts: ["Standard-Unterarmstütz", "RKC Plank mit weit nach hinten versetzten Ellbogen"], core: true, libraryId: "rkc-plank"},
   ],
 };
 
@@ -983,7 +981,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.38.0";
+const APP_VERSION = "1.39.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
