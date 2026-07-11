@@ -10,7 +10,7 @@ Projektweite Fakten und Entscheidungen für "Fretze" (bis 2026-07-08 "Eisernes L
 - Kein Backend, keine Datenbank: alle Trainingsdaten liegen nur im `localStorage` des jeweiligen Browsers (Key `eisernes-log-v1`). Einziger Backup-Weg ist der Export/Import-Button (JSON-Datei).
 - Kein Package-Manager, keine Dependencies außer Google Fonts (CDN-Link in `index.html`).
 - Gemini-Proxy: Cloudflare Worker `eisernes-log-proxy`, live unter https://eisernes-log-proxy.speedfreed.workers.dev, Modell `gemini-2.5-flash-lite`. Deploy separat via `wrangler deploy` aus `worker/`, nicht Teil des GitHub-Pages-Deploys. API-Key liegt als Cloudflare-Secret `GEMINI_API_KEY` (serverseitig, nie im Client-Code).
-- Multi-User/Freunde: aktuell bewusst kein Sync/Backend — jede Person nutzt ihren eigenen Browser-`localStorage` (Entscheidung vom 2026-07-08). Geplanter Wechsel auf Firebase, siehe "Offene Punkte" unten.
+- Multi-User/Freunde: Firebase Auth + Firestore-Sync sind seit v1.22.0 live (Phase B, siehe CLAUDE.md "Konto/Login") — localStorage bleibt der primäre Speicher, Firestore ist ein Best-Effort-Spiegel pro eingeloggtem Nutzer unter `users/{uid}`. Login ist optional, die App funktioniert weiterhin komplett offline/ohne Konto.
 
 ## Entscheidungen
 
@@ -21,9 +21,14 @@ Projektweite Fakten und Entscheidungen für "Fretze" (bis 2026-07-08 "Eisernes L
 
 ## Offene Punkte / Ideen
 
-- **Firebase-Migration geplant** (besprochen 2026-07-08): Umstieg von `localStorage` auf Firestore + Firebase Auth, sobald der erste Freund die App tatsächlich mitnutzt — nicht vorher, da es bis dahin keinen Mehrwert bringt. Nutzer hat bereits ein Firebase-Konto/-Projekt (aus anderem Kontext), das senkt die Einstiegshürde. Kernpunkt bei der Umsetzung: Firestore Security Rules sauber aufsetzen, damit Nutzer sich nicht gegenseitig Daten lesen/schreiben können — das ist der eigentliche Sorgfalts-Teil, nicht die SDK-Anbindung selbst (die geht per CDN-Script ohne Build-Step, Single-File-Architektur bleibt erhalten).
 - **Standard-Schriftgröße evtl. auf "sehr groß" (`xgross`) ändern?** (Notiz vom 2026-07-08, nach Einführung des 3-Stufen-Schriftgrößen-Reglers in v1.6.0): Nutzer fand beim Ausprobieren die größte Stufe am angenehmsten zu lesen ("konnte so entspannt lesen"), aktueller Default ist aber `"normal"`. Noch keine endgültige Entscheidung — nächste Session zuerst fragen, ob der Default wirklich auf `xgross` umgestellt werden soll (betrifft nur `loadState()`-Fallback für neue/leere Installationen, analog zur früheren Sepia-Default-Änderung in v1.2.2).
+- **KI-Übungstausch als Dialog statt Einbahnstraße**: einziger noch offener Punkt aus der großen, gemeinsam priorisierten Wunschliste vom 2026-07-10 (siehe unten) — braucht Konversations-UI plus Mehrfach-Runden-Kontext im Gemini-Worker, bewusst als eigene, größere Planungsrunde zurückgestellt.
 - **Aufwärmen-Inhalt überarbeitet, erledigt v1.40.0 (2026-07-11)**: Recherche kam als zwei (versehentlich doppelt ausgeführte) Ergebnisse mit teils widersprüchlichen Empfehlungen zurück; Nutzer hat per Rückfrage entschieden: Cardio-Gerät fest pro Tagestyp (Crosstrainer/Push, Rudern/Pull, Fahrrad/Legs), Band-Aktivierung nur noch Push/Pull (Beintag gestrichen), Rampenschema auf 3 Stufen vom Arbeitsgewicht vereinfacht. Details siehe `PROJEKTLOG.md` v1.40.0 und `CLAUDE.md`.
+- **Admin-Panel erledigt (v1.45.0/v1.45.1, 2026-07-11)**: Nutzer sperren/entsperren/löschen über eine neue `/admin`-Route im Cloudflare-Worker (Firebase-ID-Token-Verifikation + selbst signiertes Service-Account-JWT über Web Crypto, keine neue Abhängigkeit). Details siehe `PROJEKTLOG.md` v1.45.0.
+- **Eigene Übungen zu bestehenden Plänen hinzufügen erledigt (v1.43.0, 2026-07-11)**: Freitext-Tausch im ⟲-Panel + "+ Eigene Übung" pro Trainingstag (auch bei eingebauten Plänen wie PPL). Damit ist auch Feature-Roadmap-Punkt 5 (siehe unten) erledigt.
+- **Physio-Übungen mit eigenem Fälligkeits-Rhythmus erledigt (v1.42.0, 2026-07-11)**: nicht Teil der ursprünglichen Roadmap, kam als eigenständiger Nutzerwunsch dazu (PT-Übungen unabhängig vom Trainingsplan-Rhythmus).
+- **Übungs-Picker im Plan-Builder erledigt (v1.44.0, 2026-07-11)**: Muskelgruppen-sortierte Mehrfachauswahl + Reihenfolge-Pfeile statt reinem Freitext-Feld.
+- **Maschinen-Übungsdatenbank erledigt (2026-07-11)**: 10 fehlende Gym-Maschinen (Adduktoren-/Abduktorenmaschine, Rudermaschine, Smith-Machine u.a.) recherchiert und eingepflegt, 113→123 Einträge.
 
 ## Feature-Roadmap (Stand 2026-07-08)
 
@@ -42,9 +47,10 @@ Wunschliste des Nutzers, einsortiert nach Recherche- vs. Engineering-Aufwand und
 
 - **Phase 0/1 (erledigt, v1.4.0, 2026-07-08):** Übungs-Erklärungen (`EXERCISE_INFO`), Aufwärmen/Stretching pro Workout-Typ (`WARMUP`/`STRETCHING`) additiv zum bestehenden PPL-Plan eingebaut, siehe `PROJEKTLOG.md` Teil 18.
 - **Phase 2 (erledigt, v1.5.0, 2026-07-08):** Punkt 1 (mehrere Pläne: PPL/Upper-Lower/Ganzkörper/Bro-Split) + Punkt 2 (Plan-Wechsel ohne Datenverlust) umgesetzt, siehe `PROJEKTLOG.md` Teil 19 und `CLAUDE.md` Abschnitt "Data model" für den ID-Namensraum-Mechanismus. Punkt 5 (eigene Übungen hinzufügen) war bewusst **nicht** Teil dieser Version — offener nächster Schritt, sobald gewünscht.
-- **Phase 3 — bewusst zuletzt:** Punkt 4 (Login/Firebase). Bleibt an die bestehende Entscheidung gekoppelt (Auslöser = erster mitnutzender Freund, siehe oben), zusätzlich sinnvoll erst NACH Phase 2, damit nur einmal migriert wird (fertiges Datenmodell nach Firestore, nicht zweimal migrieren).
+- **Phase 3 (erledigt, v1.19.0-v1.22.0):** Punkt 4 (Login/Firebase Auth + Firestore-Sync).
+- **Punkt 5 (erledigt, v1.43.0):** eigene Übungen zu bestehenden Plänen hinzufügen (Freitext-Tausch + "+ Eigene Übung").
 
-**Nächster konkreter Schritt:** eigene Übungen hinzufügen (Punkt 5) — bisher einziger offener Roadmap-Punkt außer Login/Firebase (Phase 3, absichtlich später).
+**Damit ist die ursprüngliche 7-Punkte-Roadmap vom 2026-07-08 komplett abgearbeitet.**
 
 ## Feature-Wünsche aus Nutzerperspektive (Claude-Rollenspiel, 2026-07-10)
 
@@ -91,6 +97,6 @@ Nach dem Sammeln von Claudes zwei Rollenspiel-Listen ("Feature-Wünsche"/"Kritis
 - **Phase 3 (erledigt, v1.30.0)**: ℹ/⟲-Panels gegenseitig exklusiv (nie beide gleichzeitig offen) + etwas mehr Karten-Weißraum; Trainingsmodus-Titel vergrößert (24→32px) + Navigation sticky am unteren Rand; sanfter Fade-in bei jedem View-Wechsel (`setAppHTML()`, ersetzt alle direkten `#app`.innerHTML-Zuweisungen).
 - **Phase 4 (komplett, v1.31.0/v1.32.0/v1.33.0)**: PR-Modell auf geschätztes 1RM (Epley), KI-Übungstausch auch im Trainingsmodus, Wohlbefinden-Tracking (ein optionales Gesamt-Rating 😊/😐/😖 pro Trainingseinheit beim Abschluss, siehe CLAUDE.md "Tagebuch") — alle drei erledigt. Damit ist die gesamte ursprüngliche Phase-1-4-Liste abgearbeitet.
 - **Rest der langen Wunschliste — gemeinsam priorisiert (2026-07-10), 4 von 5 Punkten komplett**: 1) ~~Notizen pro Trainingseinheit~~ **erledigt v1.34.0**. 2) ~~Konfigurierbarer Ruhetimer (Compound-vs-Isolation)~~ **erledigt v1.35.0** (Push-Benachrichtigung im Hintergrund bewusst nicht mitgemacht — eigener, größerer Folgeschritt). 3) ~~Wochenvolumen-Trend über mehrere Wochen~~ **erledigt v1.36.0**. 4) ~~Kalender-/Streak-Zähler~~ **erledigt v1.37.0** (wochenbasiert statt tagesbasiert — siehe CLAUDE.md "Streak counter" für die Begründung). 5) **Einziger noch offener Punkt**: KI-Übungstausch als Dialog statt Einbahnstraße — bewusst als eigene, größere Planungsrunde zurückgestellt (braucht Konversations-UI plus Mehrfach-Runden-Kontext im Gemini-Worker).
-- **Damit ist die gesamte am 2026-07-10 erstellte UI/UX- und Feature-Wunschliste (Phase 1-4 + "Rest der Wunschliste") bis auf den KI-Dialog abgearbeitet.** Verbleibende offene Threads insgesamt: KI-Dialog (siehe oben), Admin-Panel-Funktionalität (wartet auf Backend-Entscheidung, siehe CLAUDE.md).
+- **Damit ist die gesamte am 2026-07-10 erstellte UI/UX- und Feature-Wunschliste (Phase 1-4 + "Rest der Wunschliste") bis auf den KI-Dialog abgearbeitet.** Verbleibender offener Thread: KI-Dialog (siehe "Offene Punkte" oben). Admin-Panel-Funktionalität ist seit v1.45.0 ebenfalls erledigt (siehe oben).
 - **Calisthenics-Übungsdatenbank erledigt (v1.39.0, 2026-07-11)**: Nutzer-Recherche lag vor, 13 fehlende Übungserklärungen integriert — Calisthenics ist damit der letzte Plan mit vollständiger ℹ-Abdeckung, keine Bibliothekslücken mehr offen.
-- **Parallel, nicht von mir blockiert**: Fraktionales Wochenvolumen (bewusst abgelehnt in v1.18.0, nur bei explizitem Wunsch revidieren), Admin-Panel-Funktionalität (braucht privilegierten Backend-Entscheid).
+- **Parallel, nicht von mir blockiert**: Fraktionales Wochenvolumen (bewusst abgelehnt in v1.18.0, nur bei explizitem Wunsch revidieren).
