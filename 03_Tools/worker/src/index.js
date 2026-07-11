@@ -25,6 +25,38 @@ function jsonResponse(body, status = 200) {
   });
 }
 
+// ---------- AUTH ----------
+// Seit v1.48.0: beide KI-Funktionen (Uebungsvorschlaege + Trainingsplan-Chat) sind nur fuer
+// eingeloggte Nutzer verfuegbar - kostet echtes Geld pro Gemini-Aufruf, soll nicht von jedem
+// anonymen Besucher der oeffentlichen GitHub-Pages-Seite nutzbar sein. Gleicher Verifikations-
+// Mechanismus wie das Admin-Panel (v1.45.0): der Client schickt seinen Firebase-ID-Token, dieser
+// wird hier serverseitig ueber Googles OEFFENTLICHEN accounts:lookup-Endpunkt geprueft (nur der
+// nicht-geheime Web-API-Key noetig) - das ist die tatsaechliche Sicherheitsgrenze, nicht irgendein
+// Client-seitiges UI-Gate. Liefert bei gueltigem Token das Nutzerprofil (fuer die
+// Trainingsplan-Chat-Personalisierung mit dem echten, verifizierten Anzeigenamen statt eines vom
+// Client behaupteten Namens), bei ungueltigem/fehlendem Token null.
+async function verifyCallerAndGetProfile(idToken) {
+  if (!idToken) return null;
+  const res = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken }),
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => ({}));
+  const user = data.users && data.users[0];
+  if (!user) return null;
+  return { email: user.email || "", displayName: user.displayName || "" };
+}
+
+function bearerTokenFromRequest(request) {
+  const authHeader = request.headers.get("Authorization") || "";
+  return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+}
+
 function buildPrompt({ exercise, muscleFocus, existingAlts }) {
   const excludeList = (existingAlts && existingAlts.length ? existingAlts : []).concat([exercise]);
   return `Du bist ein erfahrener Kraftsport-Coach mit Hintergrund in Trainingswissenschaft.
@@ -106,9 +138,13 @@ async function callGemini(apiKey, promptText) {
 // einen Trainingsplan erstellt. Der Gesprächsverlauf bleibt bewusst komplett im Client (wird bei
 // jeder Anfrage komplett mitgeschickt) statt in einem neuen Server-Speicher - der Worker bleibt
 // dadurch weiterhin ein zustandsloser Relay, kein Cloudflare KV/Durable Object noetig.
-function buildPlanChatSystemInstruction(exerciseNames) {
+function buildPlanChatSystemInstruction(exerciseNames, userName) {
   const namesList = exerciseNames.length ? exerciseNames.join(", ") : "(keine Liste verfügbar)";
+  const nameLine = userName
+    ? `Der Nutzer heißt ${userName}. Sprich ihn an ein paar passenden Stellen im Gespräch (z.B. Begrüßung) mit diesem Namen an, aber nicht in jeder einzelnen Nachricht - das wirkt sonst unnatürlich.`
+    : "";
   return `Du bist ein erfahrener, freundlicher Fitness-Trainer, der über einen Chat ein kurzes Interview führt, um einen passenden Trainingsplan zu erstellen.
+${nameLine}
 
 Stelle EINE Frage nach der anderen (nicht mehrere auf einmal). Frage nach: Trainingsziel (Kraftaufbau/Muskelaufbau/Abnehmen/Ausdauer), Erfahrungslevel, verfügbare Tage pro Woche, verfügbares Equipment (Gym/Zuhause/Bänder/nur Körpergewicht), Zeit pro Einheit, und eventuellen Einschränkungen/Verletzungen. Halte die Fragen kurz und locker, auf Deutsch.
 
@@ -173,6 +209,11 @@ async function callGeminiChat(apiKey, systemInstruction, contents) {
 }
 
 async function handlePlanChatRequest(request, env) {
+  const profile = await verifyCallerAndGetProfile(bearerTokenFromRequest(request));
+  if (!profile) {
+    return jsonResponse({ error: "Bitte einloggen, um den KI-Trainingsplan-Chat zu nutzen." }, 401);
+  }
+
   let payload;
   try {
     payload = await request.json();
@@ -188,7 +229,11 @@ async function handlePlanChatRequest(request, env) {
     return jsonResponse({ error: "Server ist nicht korrekt konfiguriert (kein API-Key)" }, 500);
   }
 
-  const systemInstruction = buildPlanChatSystemInstruction(Array.isArray(exerciseNames) ? exerciseNames : []);
+  // Anzeigename kommt aus dem verifizierten Profil, nicht vom Client behauptet - falls kein
+  // Anzeigename gesetzt ist (sollte bei dieser App praktisch nie vorkommen, signUpEmail verlangt
+  // einen), faellt es auf den lokalen Teil der E-Mail-Adresse zurueck.
+  const userName = profile.displayName || (profile.email ? profile.email.split("@")[0] : "");
+  const systemInstruction = buildPlanChatSystemInstruction(Array.isArray(exerciseNames) ? exerciseNames : [], userName);
   const contents = messages
     .filter((m) => m && typeof m.text === "string" && (m.role === "user" || m.role === "model"))
     .map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
@@ -279,19 +324,8 @@ async function getServiceAccountAccessToken(env) {
 }
 
 async function verifyCallerIsAdmin(idToken) {
-  if (!idToken) return false;
-  const res = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken }),
-    }
-  );
-  if (!res.ok) return false;
-  const data = await res.json().catch(() => ({}));
-  const user = data.users && data.users[0];
-  return !!user && user.email === ADMIN_EMAIL;
+  const profile = await verifyCallerAndGetProfile(idToken);
+  return !!profile && profile.email === ADMIN_EMAIL;
 }
 
 async function identityToolkitList(env) {
@@ -348,9 +382,7 @@ async function handleAdminRequest(request, env) {
     return jsonResponse({ error: "Ungültiges JSON im Request-Body" }, 400);
   }
 
-  const authHeader = request.headers.get("Authorization") || "";
-  const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  if (!(await verifyCallerIsAdmin(idToken))) {
+  if (!(await verifyCallerIsAdmin(bearerTokenFromRequest(request)))) {
     return jsonResponse({ error: "Nicht autorisiert" }, 403);
   }
   if (!env.FIREBASE_SA_CLIENT_EMAIL || !env.FIREBASE_SA_PRIVATE_KEY) {
@@ -395,6 +427,13 @@ export default {
     }
     if (url.pathname === "/plan-chat") {
       return handlePlanChatRequest(request, env);
+    }
+
+    // Seit v1.48.0: auch der Uebungsvorschlag-Endpunkt braucht ein eingeloggtes Konto (siehe
+    // AUTH-Abschnitt oben) - vorher war er komplett offen fuer jeden, der die Worker-URL kennt.
+    const profile = await verifyCallerAndGetProfile(bearerTokenFromRequest(request));
+    if (!profile) {
+      return jsonResponse({ error: "Bitte einloggen, um KI-Vorschläge zu nutzen." }, 401);
     }
 
     let payload;

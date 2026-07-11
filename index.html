@@ -1036,7 +1036,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.47.0";
+const APP_VERSION = "1.48.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1823,6 +1823,12 @@ function aiSuggestHTML(day, ex, swapKey) {
   if (!PROXY_URL) {
     return `<div class="ai-suggest-panel"><span class="ai-suggest-status">KI-Vorschläge noch nicht konfiguriert (PROXY_URL fehlt).</span></div>`;
   }
+  // Seit v1.48.0: KI-Funktionen brauchen ein eingeloggtes Konto (Kosten pro Gemini-Aufruf,
+  // soll nicht jeder anonyme Besucher der oeffentlichen Seite nutzen koennen) - serverseitig
+  // durchgesetzt (siehe Worker), hier nur die frueh sichtbare Nutzer-Erklaerung dazu.
+  if (!currentUser) {
+    return `<div class="ai-suggest-panel"><span class="ai-suggest-status">Bitte einloggen (Profil → Konto), um KI-Vorschläge zu nutzen.</span></div>`;
+  }
   const entry = aiSuggestions[swapKey];
 
   if (!entry) {
@@ -1869,9 +1875,13 @@ async function fetchAiSuggestions(day, exId) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 25000);
   try {
+    // Seit v1.48.0: Login-Pflicht (siehe aiSuggestHTML/Worker) - hier trotzdem defensiv
+    // geprueft, falls dieser Pfad je ohne das UI-Gate erreicht wird.
+    const idToken = currentUser && window.FretzeCloud ? await window.FretzeCloud.getIdToken() : null;
+    if (!idToken) throw new Error("Bitte einloggen, um KI-Vorschläge zu nutzen.");
     const res = await fetch(PROXY_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
         exercise: state.swaps[swapKey] || ex.name,
         muscleFocus: dayMeta.sub,
@@ -3150,9 +3160,13 @@ async function sendAiPlanChatMessage(text) {
   aiPlanLoading = true;
   render();
   try {
+    // Seit v1.48.0: Login-Pflicht (siehe render-Gate bei ai-plan-chat-enter/Worker) - hier
+    // trotzdem defensiv geprueft, falls dieser Pfad je ohne das UI-Gate erreicht wird.
+    const idToken = currentUser && window.FretzeCloud ? await window.FretzeCloud.getIdToken() : null;
+    if (!idToken) throw new Error("Bitte einloggen, um den KI-Trainingsplan-Chat zu nutzen.");
     const res = await fetch(AI_PLAN_CHAT_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
         messages: aiPlanMessages,
         exerciseNames: Object.values(exerciseLibrary).map(e => e.name),
@@ -4133,12 +4147,19 @@ document.addEventListener("click", (e) => {
 
   const aiPlanChatEnter = e.target.closest('[data-role="ai-plan-chat-enter"]');
   if (aiPlanChatEnter) {
+    // Seit v1.48.0: Login-Pflicht (kostet Geld pro Gemini-Aufruf) - serverseitig im Worker
+    // durchgesetzt, hier das frueheste sichtbare Gate statt erst beim ersten Senden zu scheitern.
+    if (!currentUser) {
+      showToast("Bitte zuerst einloggen (Profil → Konto), um diese Funktion zu nutzen.");
+      return;
+    }
     focusModeActive = false;
     journalViewActive = false;
     profileActive = false;
     homeScreenActive = false;
     libraryActive = false;
-    aiPlanMessages = [{ role: "model", text: "Hallo! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?" }];
+    const greeting = currentUser.displayName ? `Hallo ${currentUser.displayName}` : "Hallo";
+    aiPlanMessages = [{ role: "model", text: `${greeting}! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?` }];
     aiPlanLoading = false;
     aiPlanChatActive = true;
     render();
