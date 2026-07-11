@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.48.1 — 2026-07-11 (Teil 87): Kein Plan mehr vorausgewählt für neue Nutzer
+
+- Nutzer-Feedback: beim allerersten Öffnen der App war stillschweigend schon PPL als aktiver Plan markiert — verwirrend, sah aus wie eine bereits getroffene Entscheidung. Gewünscht: ein wiederkehrender Nutzer soll immer den zuletzt genutzten Plan sehen (funktionierte durch die bestehende Persistenz in `localStorage` bereits korrekt), ein komplett neuer Nutzer soll dagegen **gar keinen** vorausgewählten Plan sehen, bis er explizit einen wählt.
+- Ursache: `loadState()`s Fallback-Default (greift nur, wenn `localStorage` wirklich leer ist — es gibt keinen unbedingten `persist()`-Aufruf beim Boot, ein bloßes Ansehen der App ohne Interaktion hinterlässt keine Spuren) hatte `currentPlan: "ppl"` fest verdrahtet, statt "noch nichts gewählt" abzubilden.
+- Fix: Default auf `currentPlan: null` geändert (`loadState()` an beiden Stellen, `importData()` für importierte Backups ohne dieses Feld). `applyPlan(null)` war bereits sicher (bestehender Fallback `getAllPlans().find(...) || PLANS[0]`, keine Änderung nötig) — `DAYS`/`EXERCISES` zeigen intern weiterhin sicher auf PPL, ohne dass `state.currentPlan` das nach außen als "gewählt" behauptet.
+- `renderHomeScreen()`: der "▶ Weiter mit ..."-Button erscheint jetzt nur noch, wenn `state.currentPlan` tatsächlich auf einen existierenden Plan zeigt — sonst ein schlichter Hinweistext "Wähle unten einen Trainingsplan, um loszulegen." Kein Plan wird mehr fälschlich als "aktiv" markiert, bevor der Nutzer wirklich einen ausgewählt hat.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check; Playwright mit leerem `localStorage` bestätigt weder Weiter-Button noch aktiv markierten Plan, stattdessen der Hinweistext; nach Auswahl eines Plans (Upper/Lower) und Reload zeigt der Weiter-Button korrekt wieder genau diesen Plan (bestehende Persistenz war nie das Problem, nur der Erstbesuch-Default).
+- Zweiter, noch unkonkreter Nutzer-Punkt ("Startseite fühlt sich nicht ganz intuitiv an") bleibt offen — wartet auf konkreteres Feedback, bevor daran gearbeitet wird.
+
 ## v1.48.0 — 2026-07-11 (Teil 86): KI-Funktionen nur für eingeloggte Nutzer + Namens-Personalisierung
 
 - Nutzer-Wunsch: beide KI-Funktionen (der neue Trainingsplan-Chat aus v1.47.0 **und** der bestehende Übungstausch-Vorschlag) sollen nur für registrierte/eingeloggte Nutzer verfügbar sein — jeder Gemini-Aufruf kostet echtes Geld, das soll nicht offen für jeden anonymen Besucher der öffentlichen GitHub-Pages-Seite sein. Zusätzlich: Gemini soll den Nutzer im Trainingsplan-Chat mit seinem Namen ansprechen.

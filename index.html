@@ -1036,7 +1036,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.48.0";
+const APP_VERSION = "1.48.1";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1510,7 +1510,10 @@ function loadState() {
         lastCompletedDay: parsed.lastCompletedDay || null,
         lastCompletedDate: parsed.lastCompletedDate || null,
         theme: parsed.theme || "sepia",
-        currentPlan: parsed.currentPlan || "ppl",
+        // Seit v1.48.1: kein Plan-Default mehr ("ppl") - ein neuer Nutzer soll explizit waehlen
+        // statt stillschweigend PPL aktiviert zu bekommen. null bedeutet "noch nichts gewaehlt",
+        // renderHomeScreen() zeigt dafuer einen eigenen Hinweis statt "Weiter mit ...".
+        currentPlan: parsed.currentPlan || null,
         textSize: parsed.textSize || "normal",
         gyms: parsed.gyms || [],
         currentGymId: parsed.currentGymId || null,
@@ -1527,7 +1530,7 @@ function loadState() {
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: "ppl", textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
 }
 
 let state = loadState();
@@ -2939,9 +2942,17 @@ function physioBannerHTML() {
 }
 
 function renderHomeScreen() {
-  const recDay = getRecommendedDay();
-  const recDayMeta = DAYS.find(d => d.id === recDay);
   const currentPlanMeta = getAllPlans().find(p => p.id === state.currentPlan);
+  // Seit v1.48.1: getRecommendedDay()/DAYS beziehen sich nur sinnvoll auf einen tatsaechlich
+  // gewaehlten Plan - ohne currentPlanMeta (noch nie ein Plan gewaehlt) bewusst nicht berechnet,
+  // sonst wuerde "Weiter mit ..." faelschlich auf das intern vorgewaermte PLANS[0] (PPL)
+  // zurueckfallen (siehe applyPlan()) und den Eindruck erwecken, es sei schon etwas gewaehlt.
+  const recDay = currentPlanMeta ? getRecommendedDay() : null;
+  const recDayMeta = recDay ? DAYS.find(d => d.id === recDay) : null;
+
+  const continueHTML = currentPlanMeta
+    ? `<button class="home-continue-btn" data-role="home-continue">▶ Weiter mit ${escapeAttr(currentPlanMeta.label)} – ${escapeAttr(recDayMeta ? recDayMeta.label : "")}</button>`
+    : `<p class="dim">Wähle unten einen Trainingsplan, um loszulegen.</p>`;
 
   const plansHTML = getAllPlans().map(p => {
     const isCustom = p.id.startsWith("custom_");
@@ -2960,7 +2971,7 @@ function renderHomeScreen() {
       <span class="focusmode-progress">🏠 Start</span>
     </div>
     <div class="focusmode-content">
-      <button class="home-continue-btn" data-role="home-continue">▶ Weiter mit ${escapeAttr(currentPlanMeta ? currentPlanMeta.label : "")} – ${escapeAttr(recDayMeta ? recDayMeta.label : "")}</button>
+      ${continueHTML}
       ${physioBannerHTML()}
       <div class="home-section-label">Plan wählen</div>
       ${plansHTML}
@@ -3530,7 +3541,7 @@ function importData(file) {
             lastCompletedDay: incoming.lastCompletedDay || null,
             lastCompletedDate: incoming.lastCompletedDate || null,
             theme: incoming.theme || "sepia",
-            currentPlan: incoming.currentPlan || "ppl",
+            currentPlan: incoming.currentPlan || null,
             textSize: incoming.textSize || "normal",
             gyms: incoming.gyms || [],
             currentGymId: incoming.currentGymId || null,
