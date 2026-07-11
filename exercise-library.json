@@ -2755,5 +2755,49 @@
     "safety": "Da die hochfrequenten Peitschenbewegungen extreme Zugkräfte auf die Sehnen der Rotatorenmanschette ausüben, muss der Schultergürtel während der gesamten Belastung aktiv nach hinten-unten fixiert bleiben, um ein akutes Impingement-Syndrom zu verhindern.",
     "image": null,
     "muscleGroup": "Schultern"
+  },
+  "pullover-maschine": {
+    "name": "Pullover-Maschine",
+    "muscles": {
+      "primary": "Breiter Rückenmuskel (Latissimus)",
+      "secondary": "Großer Brustmuskel, Trizeps (langer Kopf)"
+    },
+    "steps": [
+      "Auf dem Sitz Platz nehmen und die Sitzhöhe so einstellen, dass die Schultergelenke auf Höhe der Drehachse der Maschine liegen.",
+      "Die Ellbogen auf die gepolsterten Hebelarme legen und die Hände locker auf den vorderen Griffen ablegen - die Ellbogen führen die Bewegung, nicht die Hände.",
+      "Die Arme in einem weiten Bogen aus der überkopf-gestreckten Ausgangsposition nach unten vorne zur Bauch-/Brust-Region ziehen, wobei die Ellbogen leicht gebeugt bleiben.",
+      "Die maximale Kontraktion am unteren Punkt kurz halten, ohne den Oberkörper nach vorne zu krümmen.",
+      "Die Arme langsam und kontrolliert wieder in die gedehnte Ausgangsposition über dem Kopf zurückführen."
+    ],
+    "mistakes": [
+      "Ziehen mit den Händen/Armen statt die Bewegung aus den Ellbogen und dem Latissimus zu initiieren.",
+      "Rundung des oberen Rückens am Bewegungsende, um zusätzlichen Bewegungsradius zu erzwingen.",
+      "Zu schnelles, unkontrolliertes Zurückschnellen in die Dehnungsposition, was auf die Schultergelenkskapsel drückt."
+    ],
+    "safety": "Die Ellbogen sollten während der gesamten Bewegung eine leicht gebeugte, feste Position beibehalten, um die Sehnenansätze des Latissimus nicht durch ein vollständiges Durchstrecken der Arme zusätzlich zu belasten.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "rear-kick-maschine": {
+    "name": "Rear-Kick-Maschine",
+    "muscles": {
+      "primary": "Großer Gesäßmuskel",
+      "secondary": "Hintere Oberschenkelmuskulatur, unterer Rückenstrecker"
+    },
+    "steps": [
+      "Aufrecht in die Maschine stellen, den Oberkörper leicht nach vorne geneigt an das Stützpolster lehnen und die Haltegriffe fest greifen.",
+      "Den Fuß des arbeitenden Beins fest auf der Fußplatte bzw. im Fußpolster des Hebelarms platzieren, das Standbein leicht gebeugt.",
+      "Das Bein durch eine kontrollierte Streckung der Hüfte kraftvoll nach hinten drücken, während der Oberkörper stabil und aufrecht bleibt.",
+      "Am Bewegungsende die Gesäßmuskulatur kurz maximal anspannen, ohne ins Hohlkreuz zu fallen.",
+      "Das Bein langsam und unter Spannung wieder in die Ausgangsposition zurückführen."
+    ],
+    "mistakes": [
+      "Überstrecken der Lendenwirbelsäule (Hohlkreuz) am Ende der Bewegung, um mehr Bewegungsradius zu erzwingen.",
+      "Schwungvolles Wegdrücken des Beins statt einer kontrollierten Muskelkontraktion.",
+      "Rotation des Beckens zur Seite während der Ausführung statt einer reinen Streckung nach hinten."
+    ],
+    "safety": "Der Oberkörper sollte während der gesamten Bewegung fest gegen das Stützpolster gepresst bleiben, um ein Ausweichen über die Lendenwirbelsäule statt über die Hüfte zu verhindern.",
+    "image": null,
+    "muscleGroup": "Gesäß"
   }
 }

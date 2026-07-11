@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## 2026-07-11 (Teil 84): Pullover-Maschine + Rear-Kick-Maschine ergänzt (ohne Gemini-Recherche)
+
+- Nutzer-Rückfrage nach Technogym gezielt recherchiert (eigene Web-Suche, nicht Teil des vorigen Batches — der bezog sich auf McFit/gym80): Technogyms "Pure Strength"-Linie (typisch für besser ausgestattete Studios) hat zwei Maschinen, die in der Datenbank noch fehlten — Pullover-Maschine und Rear-Kick-Maschine (geführter Glute Kickback). "Vertical Traction" wurde geprüft und verworfen — inhaltlich nur eine weitere Bezeichnung für Latzug sitzend, davon existieren bereits mehrere Einträge.
+- Nur 2 Übungen — auf Nutzerwunsch **direkt selbst geschrieben statt über einen weiteren Gemini-Deep-Research-Prompt** (unverhältnismäßig für eine so kleine Ergänzung). Gleiches Vier-Felder-Format wie alle anderen Einträge, aber ohne die sonst übliche externe Gegenprüfung/Quellenangaben der Gemini-Recherche — sollte bei Bedarf im Blick behalten werden, falls Detailkorrekturen nötig werden.
+- `exercise-library.json` wächst von 131 auf **133 Einträge**.
+- Kein `APP_VERSION`-Bump nötig (separates Laden vom App-Bundle).
+- Verifiziert: Node-Skript prüft Kollisionsfreiheit vor dem Schreiben, resultierendes JSON als valide geparst.
+
 ## 2026-07-11 (Teil 83): 8 Signature-Maschinen & Functional-Training-Übungen integriert
 
 - Ergebnis von `Recherche-Prompt-Signature-Maschinen-Functional.md` (Teil 81) lag als `Biomechanischer Fitness-Übungskatalog.md` vor, alle 8 Übungen eingepflegt: Reverse Hyperextension, Belt-Squat-Maschine, Nackenmaschine, Kniende Beincurl-Maschine (Signature-Maschinen) sowie Kettlebell Swing, Schlittenschieben, Schlittenziehen, Battle Ropes (Functional Training).
