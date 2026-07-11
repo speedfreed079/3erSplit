@@ -1,7 +1,7 @@
 // CACHE_NAME muss bei jedem Release mit APP_VERSION in index.html mitgezogen werden -
 // nur ein geänderter String hier lässt den Browser die neue sw.js erkennen, den alten
 // Cache verwerfen und die App-Shell-Dateien frisch nachladen (siehe CLAUDE.md "Versionierung").
-const CACHE_NAME = "fretze-v1.44.0";
+const CACHE_NAME = "fretze-v1.45.0";
 const APP_SHELL = [
   "./",
   "./index.html",

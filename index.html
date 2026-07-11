@@ -1006,10 +1006,13 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.44.0";
+const APP_VERSION = "1.45.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
+// Admin-Panel (seit v1.45.0): gleicher Worker wie PROXY_URL, eigener Pfad - der Worker
+// unterscheidet per Pfad-Weiche zwischen dem bestehenden Gemini-Proxy und den Admin-Endpunkten.
+const ADMIN_API_URL = `${PROXY_URL}/admin`;
 
 // Google-Drive-Backup (seit v1.28.0): eigene, dedizierte OAuth-Client-ID, bewusst NICHT die von
 // Firebase Auth wiederverwendet (gleiches Isolationsprinzip wie ueberall sonst in der App - jede
@@ -1605,13 +1608,16 @@ function setCloudSyncStatus(status) {
   renderCloudSyncStatus();
 }
 
-// Admin-Panel (seit v1.20.0): reines Sichtbarkeits-Gate fuer jetzt - zeigt nur einen
-// Platzhalter-Screen. Die eigentliche Nutzerverwaltung (Konten auflisten/loeschen) braucht
-// privilegierten Backend-Zugriff (Firebase Admin SDK, das NIE im Client-JS laufen darf - sonst
-// koennte jeder Nutzer diese Funktionen selbst aufrufen) und haengt an Phase B (Firestore) -
-// beides bewusst als eigene, spaetere Planungsrunde zurueckgestellt, siehe PROJEKTLOG.md.
+// Admin-Panel: ADMIN_EMAIL hier ist nur ein UI-Gate (zeigt/versteckt den Admin-Einstieg im
+// Profil), KEINE echte Absicherung - die faellt spoofbar leicht, wenn jemand lokal am JS
+// herumspielt. Die tatsaechliche Sicherheitsgrenze liegt seit v1.45.0 serverseitig im Worker
+// (verifyCallerIsAdmin() prueft den Firebase-ID-Token gegen die gleichnamige Konstante dort).
 const ADMIN_EMAIL = "frederik.ruehmann@gmail.com";
 let adminViewActive = false;
+// Ephemer wie aiSuggestions - Nutzerliste/Ladezustand/Fehler fuers Admin-Panel, nie in state.
+let adminUsers = [];
+let adminLoading = false;
+let adminError = null;
 
 let saveTimer = null;
 
@@ -2673,14 +2679,72 @@ function renderLibraryView() {
   `;
 }
 
+// Ruft den Admin-Endpunkt des Cloudflare-Workers auf (ADMIN_API_URL, gleicher Worker wie
+// PROXY_URL, eigener Pfad). Haengt den Firebase-ID-Token als Authorization-Header an - das ist
+// der Beleg, den der Worker serverseitig gegen ADMIN_EMAIL prueft (siehe dortiger Kommentar).
+async function callAdminApi(action, extra) {
+  if (!window.FretzeCloud) throw new Error("Gerade nicht verfügbar (offline?)");
+  const idToken = await window.FretzeCloud.getIdToken();
+  if (!idToken) throw new Error("Nicht eingeloggt.");
+  const res = await fetch(ADMIN_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ action, ...extra }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Fehler (${res.status})`);
+  return data;
+}
+
+async function loadAdminUsers() {
+  adminLoading = true;
+  adminError = null;
+  render();
+  try {
+    const data = await callAdminApi("list");
+    adminUsers = data.users || [];
+  } catch (e) {
+    adminError = e.message || "Unbekannter Fehler";
+  }
+  adminLoading = false;
+  render();
+}
+
+function adminUserRowHTML(user) {
+  return `
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div style="min-width:0;">
+          <div style="font-weight:600;">${escapeAttr(user.email || "(keine E-Mail)")}</div>
+          <div class="dim" style="font-size:12px;">${escapeAttr(user.displayName || "–")}${user.disabled ? ' <span style="color:var(--rust);">· Gesperrt</span>' : ""}</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button class="swap-opt-btn" data-role="admin-toggle-disable" data-uid="${escapeAttr(user.uid)}" data-disabled="${user.disabled ? "1" : "0"}">${user.disabled ? "Entsperren" : "Sperren"}</button>
+          <button class="swap-clear-btn" data-role="admin-delete-user" data-uid="${escapeAttr(user.uid)}" data-email="${escapeAttr(user.email || "")}">🗑 Löschen</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAdminView() {
+  let bodyHTML;
+  if (adminLoading) {
+    bodyHTML = `<p class="dim">Lade Nutzerliste…</p>`;
+  } else if (adminError) {
+    bodyHTML = `<p class="dim">Fehler: ${escapeAttr(adminError)}</p><button class="home-create-btn" data-role="admin-reload">Erneut versuchen</button>`;
+  } else if (adminUsers.length === 0) {
+    bodyHTML = `<p class="dim">Keine Nutzer gefunden.</p>`;
+  } else {
+    bodyHTML = adminUsers.map(adminUserRowHTML).join("");
+  }
   return `
     <div class="focusmode-topbar">
       <button class="focusmode-exit-btn" data-role="admin-exit">✕ Schließen</button>
       <span class="focusmode-progress">🛠 Admin-Panel</span>
     </div>
     <div class="focusmode-content">
-      <p class="dim">Nutzerverwaltung folgt in einer späteren Version — das braucht einen abgesicherten Server-Zugriff (nicht direkt im Browser möglich) und hängt am geplanten Firestore-Datensync.</p>
+      ${bodyHTML}
     </div>
   `;
 }
@@ -3681,6 +3745,7 @@ document.addEventListener("click", (e) => {
     profileActive = false;
     adminViewActive = true;
     render();
+    loadAdminUsers();
     return;
   }
 
@@ -3688,6 +3753,45 @@ document.addEventListener("click", (e) => {
   if (adminExit) {
     adminViewActive = false;
     render();
+    return;
+  }
+
+  const adminReload = e.target.closest('[data-role="admin-reload"]');
+  if (adminReload) {
+    loadAdminUsers();
+    return;
+  }
+
+  const adminToggleDisable = e.target.closest('[data-role="admin-toggle-disable"]');
+  if (adminToggleDisable) {
+    const uid = adminToggleDisable.dataset.uid;
+    const nextDisabled = adminToggleDisable.dataset.disabled !== "1";
+    callAdminApi("setDisabled", { uid, disabled: nextDisabled })
+      .then(() => {
+        showToast(nextDisabled ? "Konto gesperrt." : "Konto entsperrt.");
+        loadAdminUsers();
+      })
+      .catch((err) => showToast(err.message || "Fehler beim Sperren/Entsperren."));
+    return;
+  }
+
+  const adminDeleteUser = e.target.closest('[data-role="admin-delete-user"]');
+  if (adminDeleteUser) {
+    const uid = adminDeleteUser.dataset.uid;
+    const email = adminDeleteUser.dataset.email;
+    openConfirmModal({
+      title: "Konto löschen",
+      message: `Konto "${email}" und alle zugehörigen Trainingsdaten unwiderruflich löschen?`,
+      confirmLabel: "Löschen",
+      onConfirm: () => {
+        callAdminApi("delete", { uid })
+          .then(() => {
+            showToast("Konto gelöscht.");
+            loadAdminUsers();
+          })
+          .catch((err) => showToast(err.message || "Fehler beim Löschen."));
+      },
+    });
     return;
   }
 
@@ -4441,7 +4545,7 @@ window.addEventListener("fretzecloud-ready", () => {
     const wasLoggedIn = !!currentUser;
     currentUser = user;
     if (user) { loginEmailFormOpen = false; reconcileCloudState(user.uid); }
-    if (!user) { editNameOpen = false; adminViewActive = false; cloudSyncStatus = "idle"; }
+    if (!user) { editNameOpen = false; adminViewActive = false; adminUsers = []; adminError = null; cloudSyncStatus = "idle"; }
     render();
     if (user && !wasLoggedIn) showToast(`Eingeloggt als ${user.email || user.displayName || "Konto"}.`);
     if (!user && wasLoggedIn) showToast("Ausgeloggt.");
@@ -4512,6 +4616,10 @@ if ("serviceWorker" in navigator) {
         return { uid: auth.currentUser.uid, email: auth.currentUser.email, displayName: auth.currentUser.displayName };
       },
       signOutUser: () => signOut(auth),
+      // Seit v1.45.0 (Admin-Panel): der Worker muss serverseitig beweisen koennen, dass eine
+      // Admin-Anfrage wirklich vom eingeloggten Admin kommt - der Firebase-ID-Token ist dafuer
+      // der Beleg (siehe verifyCallerIsAdmin() im Worker).
+      getIdToken: () => (auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null)),
       onAuthChange: (cb) => onAuthStateChanged(auth, (user) => {
         cb(user ? { uid: user.uid, email: user.email, displayName: user.displayName } : null);
       }),
