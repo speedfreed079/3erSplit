@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.58.0 — 2026-07-17 (Teil 99): Per-Satz-Aufwärmsatz-Markierung (🔥) entfernt
+
+- Nutzer-Rückfrage, was genau der Unterschied zwischen Aufwärmsatz und Arbeitssatz ist und ob das 🔥-Symbol pro Satz überhaupt gebraucht wird — es gibt ja schon den eigenen "🔥 Aufwärmen"-Bereich pro Trainingstag. Dabei aufgefallen: die Satz-Zeilenzahl ist fest auf die Zielzahl (z.B. "4 Sätze") begrenzt, es gibt kein "+ Satz hinzufügen" — markiert man eine Zeile als Aufwärmsatz, bleiben nur noch 3 echte Arbeitssätze übrig, obwohl das Ziel 4 war. Nutzer-Entscheidung: weglassen, schafft auch mehr Platz für die Gewichts-/Wdh.-Felder.
+- **UI entfernt, Datenmodell/Filterlogik bewusst NICHT angefasst**: der 🔥-Toggle-Button (`data-role="set-warmup-toggle"`) ist aus `setsRowsHTML()` (geteilt zwischen Kartenansicht, Trainingsmodus und Physio) sowie der zugehörige Klick-Handler und die `.warmup-toggle`-CSS-Klasse entfernt. Das `isWarmup`-Feld pro Satz bleibt im Datenmodell und wird weiterhin überall dort respektiert, wo bisher schon danach gefiltert wurde (`finishSession`s Historie-/Progressions-Pick, die Arbeitssätze-Zählung im Footer, `computePersonalRecords`/`journalPointsFor`/`computeWeeklyVolumeForRange`) — bestehende Tagebuch-Einträge mit `isWarmup: true` werden dadurch weiterhin korrekt aus PRs/Wochenvolumen ausgeschlossen, keine Migration nötig. Neue Sätze bekommen einfach für immer `isWarmup: false`, da kein Weg mehr existiert, es auf `true` zu setzen.
+- `.set-header`/`.set-row`-Grid von 6 auf 5 Spalten (kein `40px` mehr fürs 🔥-Symbol) — der freiwerdende Platz kommt automatisch den `fr`-basierten KG-/Wdh.-Spalten zugute (zusätzlich zur ohnehin schon breiteren `1.5fr 0.9fr`-Aufteilung aus v1.55.0).
+- `howto.html`s "Sätze eintragen"-Abschnitt entsprechend angepasst.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check; Playwright bei 375px-Breite — keine 🔥-Buttons mehr vorhanden, Set-Header zeigt korrekt nur noch #/kg/Wdh./↑/✓, KG-Feld mit "120,75" ohne Overflow. Screenshot zur Gegenprobe erstellt.
+
 ## v1.57.0 — 2026-07-17 (Teil 98): "Heute dran"-Empfehlung wird jetzt aus dem Tagebuch abgeleitet, nicht mehr aus einem eigenen Feld
 
 - Nutzer meldete: Banner zeigt weiterhin "Heute dran: Pull A", obwohl heute (17.7.) Legs A trainiert und im Tagebuch bestätigt war. Erwartet: Push B.
