@@ -406,6 +406,11 @@
   .journal-entry-date {
     font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim);
   }
+  .journal-entry-delete {
+    background: transparent; border: none; color: var(--chalk-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;
+    flex-shrink: 0;
+  }
   .journal-entry-day {
     font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.3px;
     text-transform: uppercase; color: var(--chalk);
@@ -1041,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.50.0";
+const APP_VERSION = "1.51.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1215,6 +1220,19 @@ function todayISODate() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Kombiniert das im Nachtragen-Datumsfeld gewaehlte Kalenderdatum mit der echten aktuellen Uhrzeit,
+// statt fest auf "12:00" zu stempeln - sonst haetten mehrere Abschluesse am selben (ggf.
+// nachgetragenen) Tag alle exakt denselben Timestamp bekommen (Kollision, da defaultDate immer
+// "heute" ist, das Feld also bei jedem normalen Abschluss unveraendert "heute" mitschickt). Der
+// Timestamp bleibt so weiterhin eindeutig pro Abschluss (wichtig fuer journal-delete-entry und
+// mergeJournals()' Dedup-per-Timestamp), waehrend der Kalendertag trotzdem korrekt uebernommen wird.
+function dateOverrideToRefDate(dateOverride) {
+  const now = new Date();
+  if (!dateOverride) return now;
+  const [y, m, d] = dateOverride.split("-").map(Number);
+  return new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
 }
 
 function getWeekStart(date) {
@@ -2529,8 +2547,11 @@ function journalHistoryHTML() {
     return `
       <div class="card">
         <div class="journal-entry-header">
-          <span class="journal-entry-date">${escapeAttr(entry.date)}</span>
-          <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}${wellbeingEmoji ? ` ${wellbeingEmoji}` : ""}</span>
+          <div>
+            <span class="journal-entry-date">${escapeAttr(entry.date)}</span>
+            <span class="journal-entry-day">${escapeAttr(entry.dayLabel)}${gym ? ` · ${escapeAttr(gym.name)}` : ""}${wellbeingEmoji ? ` ${wellbeingEmoji}` : ""}</span>
+          </div>
+          <button class="journal-entry-delete" data-role="journal-delete-entry" data-timestamp="${entry.timestamp}" title="Eintrag löschen">🗑</button>
         </div>
         ${exercisesHTML}
         ${entry.sessionNote ? `<div class="journal-session-note">📝 ${escapeAttr(entry.sessionNote)}</div>` : ""}
@@ -3437,13 +3458,14 @@ function render() {
 
 // dateOverride (seit v1.50.0, "Training nachtragen"): YYYY-MM-DD aus dem Abschluss-Modal, statt
 // immer "jetzt" - laesst vergessene/verpasste Einheiten nachtragen (z.B. Saetze, die schon in den
-// Feldern standen, aber nie ueber "Training abschliessen" bestaetigt wurden). Mittags-Uhrzeit
-// vermeidet DST-/Zeitzonen-Randfaelle beim Tageswechsel. `timestamp` ist der Wert, den
-// getWeekStart()/Streak-/Volumen-/PR-Berechnung fuer die Wochen-/Datums-Zuordnung nutzen - ein
-// nachgetragener Eintrag zaehlt damit korrekt in der richtigen ISO-Woche statt in der aktuellen.
+// Feldern standen, aber nie ueber "Training abschliessen" bestaetigt wurden). `timestamp` ist der
+// Wert, den getWeekStart()/Streak-/Volumen-/PR-Berechnung fuer die Wochen-/Datums-Zuordnung
+// nutzen - ein nachgetragener Eintrag zaehlt damit korrekt in der richtigen ISO-Woche statt in der
+// aktuellen. dateOverrideToRefDate() haelt dabei die echte Uhrzeit bei (siehe dort) statt fest auf
+// Mittag zu stempeln, damit mehrere Abschluesse am selben Tag eindeutige Timestamps behalten.
 function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   const daySets = state.sessions[dayId] || {};
-  const refDate = dateOverride ? new Date(dateOverride + "T12:00:00") : new Date();
+  const refDate = dateOverrideToRefDate(dateOverride);
   const today = refDate.toLocaleDateString("de-DE");
   const journalExercises = [];
   // Seit v1.43.0: EXERCISES[dayId] plus frei hinzugefuegte Extra-Uebungen dieses Tages - sonst
@@ -3541,7 +3563,7 @@ function physioDueInfo() {
 function finishPhysioSession(dateOverride) {
   const daySets = state.sessions[PHYSIO_DAY_ID] || {};
   let anyEntered = false;
-  const refDate = dateOverride ? new Date(dateOverride + "T12:00:00") : new Date();
+  const refDate = dateOverrideToRefDate(dateOverride);
   const today = refDate.toLocaleDateString("de-DE");
   state.physio.exercises.forEach(ex => {
     const sets = daySets[ex.id];
@@ -3880,6 +3902,26 @@ document.addEventListener("click", (e) => {
   if (journalExit) {
     journalViewActive = false;
     render();
+    return;
+  }
+
+  // Seit v1.51.0: das Tagebuch war bewusst read-only (siehe CLAUDE.md), aber mit dem editierbaren
+  // Abschluss-Datum (v1.50.0) sind versehentliche Mehrfach-/Fehleintraege beim Nachtragen
+  // realistisch - timestamp ist bereits die eindeutige ID pro Eintrag (siehe mergeJournals()).
+  const journalDeleteEntry = e.target.closest('[data-role="journal-delete-entry"]');
+  if (journalDeleteEntry) {
+    const ts = Number(journalDeleteEntry.dataset.timestamp);
+    openConfirmModal({
+      title: "Eintrag löschen?",
+      message: "Dieser Tagebuch-Eintrag wird endgültig entfernt. Gewichte/Historie der Übungen selbst bleiben unangetastet.",
+      confirmLabel: "Löschen",
+      onConfirm: () => {
+        state.journal = state.journal.filter(e => e.timestamp !== ts);
+        persist();
+        render();
+        showToast("Eintrag gelöscht.");
+      },
+    });
     return;
   }
 
