@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.53.0";
+const APP_VERSION = "1.54.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1408,6 +1408,46 @@ function startEditingPlan(planId) {
   render();
 }
 
+// Seit v1.54.0: "Plan kopieren & bearbeiten" - im Unterschied zu startEditingPlan() (a) jeder Plan
+// aus getAllPlans() ist Ausgangspunkt, nicht nur eigene, und (b) es wird bewusst KEINE id
+// mitkopiert (weder Tag noch Uebung) - dadurch vergibt buildPlanFromDraft() beim Speichern
+// automatisch frische custom_...-IDs fuer alles, der Fork wird so zu einem komplett eigenstaendigen
+// Plan, ohne dass die bestehende ID-Vergabe angefasst werden muss. Uebernimmt neben Basis-Uebungen
+// auch bereits vorhandene Extra-Uebungen des Tages (state.extraExercises, seit v1.43.0) - was man
+// gerade in der Karte sieht, landet auch in der Kopie. Aktive ⟲-Tauschs werden bewusst NICHT
+// eingebacken (Fork kopiert die Plan-Definition, nicht die Session-Overlay - Tauschs bleiben ein
+// eigenstaendiges Konzept, das nach dem Fork unter neuen IDs ohnehin nicht mehr greifen wuerde).
+function startForkingPlan(planId) {
+  const plan = getAllPlans().find(p => p.id === planId);
+  if (!plan) return;
+  const label = currentUser && currentUser.displayName
+    ? `${possessiveName(currentUser.displayName)} ${plan.label}`
+    : `${plan.label} (Kopie)`;
+  state.planDraft = {
+    editingPlanId: null,
+    label,
+    days: plan.days.map(d => {
+      const dayExercises = [...(plan.exercises[d.id] || []), ...(state.extraExercises[d.id] || [])];
+      return {
+        label: d.label,
+        exercises: dayExercises.map(ex => ({
+          name: ex.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          alts: ex.alts || [],
+          core: !!ex.core,
+          ...(ex.compound ? { compound: true } : {}),
+          ...(ex.libraryId ? { libraryId: ex.libraryId } : {}),
+        })),
+      };
+    }),
+  };
+  planBuilderActive = true;
+  homeScreenActive = false;
+  persist();
+  render();
+}
+
 function draftAddDay() {
   state.planDraft.days.push({ label: `Tag ${state.planDraft.days.length + 1}`, exercises: [{ name: "", sets: 3, reps: "8-10" }] });
 }
@@ -1469,13 +1509,18 @@ function buildPlanFromDraft(draft) {
   }));
   const exercises = {};
   draft.days.forEach((d, dayIdx) => {
+    // alts/core/compound seit v1.54.0 aus dem Entwurf uebernommen statt hart geleert - fuer von
+    // Hand im Builder erstellte Uebungen (diese Felder existieren dort nie auf dem Entwurf)
+    // exakt dasselbe Verhalten wie zuvor; fuer geforkte Plaene (startForkingPlan()) bleiben
+    // ⟲-Alternativen, CORE-Badge und die hoehere Grundübungs-Progressions-% dadurch erhalten.
     exercises[days[dayIdx].id] = d.exercises.map(ex => ({
       id: ex.id || `${planId}_ex${exCounter++}`,
       name: ex.name.trim(),
       sets: Number(ex.sets) || 1,
       reps: ex.reps.trim(),
-      alts: [],
-      core: false,
+      alts: Array.isArray(ex.alts) ? ex.alts : [],
+      core: !!ex.core,
+      ...(ex.compound ? { compound: true } : {}),
       ...(ex.libraryId ? { libraryId: ex.libraryId } : {}),
     }));
   });
@@ -2598,7 +2643,13 @@ function journalHistoryHTML() {
   if (state.journal.length === 0) {
     return `<div class="journal-empty">Noch keine abgeschlossenen Einheiten im Tagebuch.</div>`;
   }
-  return streakHTML() + [...state.journal].reverse().map(entry => {
+  // Seit v1.50.0 (Nachtragen mit editierbarem Datum) kann die Einfuegereihenfolge vom
+  // chronologischen Datum abweichen (ein spaeter nachgetragener Eintrag kann ein frueheres Datum
+  // haben als bereits vorhandene Eintraege) - .reverse() allein (Einfuegereihenfolge) reichte
+  // vorher, weil neue Eintraege immer "jetzt" datiert waren. Explizit nach timestamp absteigend
+  // sortieren, damit "neueste zuerst" wieder das tatsaechliche Datum meint, nicht nur die
+  // Reihenfolge des Abschliessens.
+  return streakHTML() + [...state.journal].sort((a, b) => b.timestamp - a.timestamp).map(entry => {
     const gym = entry.gymId ? state.gyms.find(g => g.id === entry.gymId) : null;
     const exercisesHTML = entry.exercises.map(ex => {
       const setsText = ex.sets.map(s => {
@@ -3100,6 +3151,7 @@ function renderHomeScreen() {
     return `
       <div class="home-plan-row">
         <button class="home-plan-btn ${p.id === state.currentPlan ? "active" : ""}" data-role="home-select-plan" data-planid="${escapeAttr(p.id)}">${escapeAttr(p.label)}</button>
+        <button class="home-plan-edit" data-role="home-fork-plan" data-planid="${escapeAttr(p.id)}" title="Kopieren & bearbeiten">⎘</button>
         ${isCustom ? `<button class="home-plan-edit" data-role="home-edit-plan" data-planid="${escapeAttr(p.id)}" title="Plan bearbeiten">✏</button>` : ""}
         ${isCustom ? `<button class="home-plan-delete" data-role="home-delete-plan" data-planid="${escapeAttr(p.id)}" title="Plan löschen">🗑</button>` : ""}
       </div>
@@ -4320,6 +4372,12 @@ document.addEventListener("click", (e) => {
     homeScreenActive = false;
     persist();
     render();
+    return;
+  }
+
+  const homeForkPlan = e.target.closest('[data-role="home-fork-plan"]');
+  if (homeForkPlan) {
+    startForkingPlan(homeForkPlan.dataset.planid);
     return;
   }
 
