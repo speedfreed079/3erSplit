@@ -129,9 +129,16 @@
     padding: 16px; margin-bottom: 14px;
   }
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  /* Seit v1.55.0: Trainingsmodus stapelt Titel/Buttons statt sie nebeneinander zu zwingen - bei
+     langen Uebungsnamen (z.B. "Chest-Supported Row") reichte die verbleibende Breite neben den 3
+     ℹ/⟲/✎-Buttons nicht, was zu haesslichen Wortumbruechen mitten im Wort fuehrte. Gestapelt hat
+     der Titel immer die volle Kartenbreite zur Verfuegung. */
+  .focusmode-top { flex-direction: column; align-items: stretch; }
+  .focusmode-top-actions { display: flex; gap: 6px; margin-top: 10px; }
   .card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .card-title-row h3 {
     font-size: 17px; font-weight: 500; margin: 0; text-transform: uppercase; letter-spacing: 0.3px;
+    min-width: 0; overflow-wrap: break-word;
   }
   .badge-core {
     font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--olive);
@@ -235,20 +242,20 @@
   .ai-opt-reason { display: block; font-size: 11px; color: var(--chalk-dim); margin-top: 2px; }
 
   .set-header {
-    display: grid; grid-template-columns: 22px 1fr 1fr 40px 40px 40px; gap: 6px;
+    display: grid; grid-template-columns: 20px 1.5fr 0.9fr 40px 40px 40px; gap: 6px;
     font-size: 10px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; margin: 12px 0 5px; padding-left: 2px;
   }
   .set-header-icon { text-align: center; }
   .set-row {
-    display: grid; grid-template-columns: 22px 1fr 1fr 40px 40px 40px; gap: 6px;
+    display: grid; grid-template-columns: 20px 1.5fr 0.9fr 40px 40px 40px; gap: 6px;
     align-items: center; margin-bottom: 6px;
   }
   .set-idx { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--chalk-dim); }
   .set-input {
     font-family: 'JetBrains Mono', monospace; font-size: 14px; background: var(--bg);
     border: 1px solid var(--border); border-radius: 6px; color: var(--chalk);
-    padding: 7px 8px; width: 100%;
+    padding: 7px 5px; width: 100%; min-width: 0;
   }
   .set-value {
     font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--chalk);
@@ -367,9 +374,9 @@
   .focusmode-content { padding: 16px; }
   .focusmode-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
   .focusmode-title {
-    font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 600; letter-spacing: 0.3px;
-    text-transform: uppercase; margin: 0; line-height: 1.15; min-width: 0; max-width: 100%;
-    overflow-wrap: break-word;
+    font-family: 'Oswald', sans-serif; font-size: clamp(22px, 8vw, 32px); font-weight: 600;
+    letter-spacing: 0.3px; text-transform: uppercase; margin: 0; line-height: 1.15;
+    min-width: 0; max-width: 100%; overflow-wrap: break-word;
   }
   .focusmode-target { font-size: 13px; color: var(--chalk-dim); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
   .focusmode-next {
@@ -1046,7 +1053,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.54.0";
+const APP_VERSION = "1.55.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2539,8 +2546,8 @@ function renderFocusMode() {
     <div class="focusmode-content">
       ${planBuilderExerciseNamesDatalist()}
       <div class="card">
-        <div class="card-top">
-          <div style="flex:1; min-width:0;">
+        <div class="card-top focusmode-top">
+          <div style="min-width:0;">
             <div class="focusmode-title-row">
               <h2 class="focusmode-title">${displayName}</h2>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
@@ -2549,7 +2556,7 @@ function renderFocusMode() {
             <div class="focusmode-target">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
           </div>
-          <div style="display:flex; gap:6px; flex-shrink:0;">
+          <div class="focusmode-top-actions">
             ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
             <button class="swap-btn" title="Übung tauschen" data-role="focus-swap-toggle">⟲</button>
             <button class="swap-btn ${focusEditOpen ? "active" : ""}" title="${focusEditOpen ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="focus-edit-toggle">✎</button>
@@ -2743,8 +2750,8 @@ function journalVolumeHTML() {
 function renderJournalView() {
   const tabsHTML = `
     <button class="tab-btn ${journalTab === "verlauf" ? "active" : ""}" data-role="journal-tab" data-tab="verlauf">📅 Verlauf</button>
-    <button class="tab-btn ${journalTab === "rekorde" ? "active" : ""}" data-role="journal-tab" data-tab="rekorde">🏆 Rekorde</button>
     <button class="tab-btn ${journalTab === "volumen" ? "active" : ""}" data-role="journal-tab" data-tab="volumen">📊 Wochenvolumen</button>
+    <button class="tab-btn ${journalTab === "rekorde" ? "active" : ""}" data-role="journal-tab" data-tab="rekorde">🏆 Rekorde</button>
   `;
   const bodyHTML = journalTab === "rekorde" ? journalRecordsHTML() : journalTab === "volumen" ? journalVolumeHTML() : journalHistoryHTML();
 
@@ -3012,7 +3019,7 @@ function physioExerciseCardHTML(ex) {
   return `
     <div class="card">
       <div class="card-top">
-        <div style="flex:1;">
+        <div style="flex:1; min-width:0;">
           <div class="card-title-row">
             <h3>${escapeAttr(ex.name)}</h3>
           </div>
@@ -3502,7 +3509,7 @@ function render() {
     return `
       <div class="card">
         <div class="card-top">
-          <div style="flex:1;">
+          <div style="flex:1; min-width:0;">
             <div class="card-title-row">
               <h3>${displayName}</h3>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
@@ -3623,6 +3630,17 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
       setLastWeights(ex.id, sets.map(s => s.weight || ""));
     }
   });
+  // Seit v1.55.0: state.lastCompletedDay/-Date (Grundlage fuer "Heute dran"-Empfehlung, siehe
+  // getRecommendedDay()) duerfen nur aktualisiert werden, wenn dieser Abschluss tatsaechlich der
+  // chronologisch neueste im aktiven Plan ist - vorher wurde bedingungslos ueberschrieben, wodurch
+  // ein NACHTRAEGLICH (v1.50.0) auf ein AELTERES Datum zurueckdatierter Abschluss faelschlich die
+  // Rotation zurueckgedreht hat, obwohl bereits ein neuerer Tag trainiert und geloggt war. Reine
+  // Ableitung aus state.journal (kein zusaetzliches persistiertes Feld noetig, gleiche
+  // "derive statt zweimal speichern"-Konvention wie PRs/Streak/Wochenvolumen).
+  const latestExistingTs = state.journal
+    .filter(e => e.planId === state.currentPlan)
+    .reduce((max, e) => Math.max(max, e.timestamp), 0);
+  const isNewestForRotation = refDate.getTime() >= latestExistingTs;
   if (journalExercises.length > 0) {
     const dayMeta = DAYS.find(d => d.id === dayId);
     addJournalEntry({
@@ -3637,8 +3655,10 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
       sessionNote: (sessionNote || "").trim() || null,
     });
   }
-  state.lastCompletedDay = dayId;
-  state.lastCompletedDate = today;
+  if (isNewestForRotation) {
+    state.lastCompletedDay = dayId;
+    state.lastCompletedDate = today;
+  }
   const resetDay = {};
   dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
   state.sessions[dayId] = resetDay;
