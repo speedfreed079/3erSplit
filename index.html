@@ -1053,7 +1053,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.56.0";
+const APP_VERSION = "1.57.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1654,8 +1654,6 @@ function loadState() {
         swaps: parsed.swaps || {},
         notes: parsed.notes || {},
         lastWeights: parsed.lastWeights || {},
-        lastCompletedDay: parsed.lastCompletedDay || null,
-        lastCompletedDate: parsed.lastCompletedDate || null,
         theme: parsed.theme || "sepia",
         // Seit v1.48.1: kein Plan-Default mehr ("ppl") - ein neuer Nutzer soll explizit waehlen
         // statt stillschweigend PPL aktiviert zu bekommen. null bedeutet "noch nichts gewaehlt",
@@ -1677,7 +1675,7 @@ function loadState() {
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, lastCompletedDay: null, lastCompletedDate: null, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
 }
 
 let state = loadState();
@@ -2150,10 +2148,10 @@ async function reconcileCloudState(uid) {
         swaps: cloud.swaps || {},
         notes: cloud.notes || {},
         lastWeights: cloud.lastWeights || {},
-        lastCompletedDay: cloud.lastCompletedDay || null,
-        lastCompletedDate: cloud.lastCompletedDate || null,
         theme: cloud.theme || "sepia",
-        currentPlan: cloud.currentPlan || "ppl",
+        // Seit v1.48.1 duerfen neue Nutzer keinen stillschweigenden PPL-Default bekommen (siehe
+        // loadState()) - dieser Zweig hatte den alten "ppl"-Fallback beim Cloud-Merge uebersehen.
+        currentPlan: cloud.currentPlan || null,
         textSize: cloud.textSize || "normal",
         gyms: cloud.gyms || [],
         currentGymId: cloud.currentGymId || null,
@@ -2343,20 +2341,35 @@ function stretchSectionHTML(type) {
   `;
 }
 
+// Seit v1.57.0: statt eines separat gepflegten state.lastCompletedDay/-Date-Feldes (das durch den
+// v1.55.0-Bug bereits verwaisen konnte und dann bis zum naechsten Abschluss falsch blieb - kein
+// neuer Abschluss = keine Selbstheilung) wird die "zuletzt abgeschlossene" Info jetzt bei jedem
+// Rendern direkt aus state.journal abgeleitet: der Eintrag mit dem hoechsten timestamp fuer den
+// aktiven Plan. Damit gibt es keinen zweiten, potenziell veraltenden Speicherort mehr - jede
+// Anzeige ist automatisch konsistent mit dem tatsaechlichen Tagebuch, auch rueckwirkend fuer
+// bereits bestehende, ggf. verwaiste Installationen.
+function getLastJournalEntryForCurrentPlan() {
+  const entries = state.journal.filter(e => e.planId === state.currentPlan);
+  if (entries.length === 0) return null;
+  return entries.reduce((a, b) => (b.timestamp > a.timestamp ? b : a));
+}
+
 function getRecommendedDay() {
-  if (!state.lastCompletedDay) return DAYS[0].id;
-  const idx = DAYS.findIndex(d => d.id === state.lastCompletedDay);
+  const lastEntry = getLastJournalEntryForCurrentPlan();
+  if (!lastEntry) return DAYS[0].id;
+  const idx = DAYS.findIndex(d => d.id === lastEntry.dayId);
   if (idx === -1) return DAYS[0].id;
   return DAYS[(idx + 1) % DAYS.length].id;
 }
 
 function renderTodayBanner() {
   const today = new Date().toLocaleDateString("de-DE");
-  const lastDayMeta = DAYS.find(d => d.id === state.lastCompletedDay);
+  const lastEntry = getLastJournalEntryForCurrentPlan();
+  const lastDayMeta = lastEntry ? DAYS.find(d => d.id === lastEntry.dayId) : null;
   // lastDayMeta kann fehlen, wenn zuletzt in einem anderen Plan trainiert wurde (der
   // abgeschlossene Tag gehoert dann nicht zum gerade aktiven Plan) - dann gilt "heute
   // schon trainiert" nicht fuer die aktuelle Rotation.
-  const trainedToday = state.lastCompletedDate === today && !!lastDayMeta;
+  const trainedToday = !!lastEntry && lastEntry.date === today && !!lastDayMeta;
   const recDay = getRecommendedDay();
   const recLabel = DAYS.find(d => d.id === recDay).label;
 
@@ -3630,17 +3643,6 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
       setLastWeights(ex.id, sets.map(s => s.weight || ""));
     }
   });
-  // Seit v1.55.0: state.lastCompletedDay/-Date (Grundlage fuer "Heute dran"-Empfehlung, siehe
-  // getRecommendedDay()) duerfen nur aktualisiert werden, wenn dieser Abschluss tatsaechlich der
-  // chronologisch neueste im aktiven Plan ist - vorher wurde bedingungslos ueberschrieben, wodurch
-  // ein NACHTRAEGLICH (v1.50.0) auf ein AELTERES Datum zurueckdatierter Abschluss faelschlich die
-  // Rotation zurueckgedreht hat, obwohl bereits ein neuerer Tag trainiert und geloggt war. Reine
-  // Ableitung aus state.journal (kein zusaetzliches persistiertes Feld noetig, gleiche
-  // "derive statt zweimal speichern"-Konvention wie PRs/Streak/Wochenvolumen).
-  const latestExistingTs = state.journal
-    .filter(e => e.planId === state.currentPlan)
-    .reduce((max, e) => Math.max(max, e.timestamp), 0);
-  const isNewestForRotation = refDate.getTime() >= latestExistingTs;
   if (journalExercises.length > 0) {
     const dayMeta = DAYS.find(d => d.id === dayId);
     addJournalEntry({
@@ -3654,10 +3656,6 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
       wellbeing: wellbeing || null,
       sessionNote: (sessionNote || "").trim() || null,
     });
-  }
-  if (isNewestForRotation) {
-    state.lastCompletedDay = dayId;
-    state.lastCompletedDate = today;
   }
   const resetDay = {};
   dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
@@ -3678,8 +3676,8 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
 // geaendert werden, sie waren nie an DAYS/EXERCISES gebunden.
 const PHYSIO_DAY_ID = "physio";
 
-// Reine Ableitung aus state.physio.lastDoneAt (Unix-Timestamp, nicht der de-DE-Anzeige-String wie
-// state.lastCompletedDate - Faelligkeits-Mathematik braucht echte Tages-Differenzen).
+// Reine Ableitung aus state.physio.lastDoneAt (Unix-Timestamp, nicht ein de-DE-Anzeige-String -
+// Faelligkeits-Mathematik braucht echte Tages-Differenzen).
 function physioDueInfo() {
   if (!state.physio.lastDoneAt) return { due: true, daysSince: null };
   const daysSince = Math.floor((Date.now() - state.physio.lastDoneAt) / 86400000);
@@ -3770,8 +3768,6 @@ function importData(file) {
             swaps: incoming.swaps || {},
             notes: incoming.notes || {},
             lastWeights: incoming.lastWeights || {},
-            lastCompletedDay: incoming.lastCompletedDay || null,
-            lastCompletedDate: incoming.lastCompletedDate || null,
             theme: incoming.theme || "sepia",
             currentPlan: incoming.currentPlan || null,
             textSize: incoming.textSize || "normal",
