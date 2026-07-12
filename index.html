@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.51.0";
+const APP_VERSION = "1.53.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1069,17 +1069,6 @@ const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 function emptySets(n) {
   return Array.from({ length: n }, () => ({ weight: "", reps: "", isWarmup: false, couldDoMore: false, done: false }));
-}
-
-function buildInitialSets(exId, n) {
-  const weights = getLastWeights(exId);
-  return Array.from({ length: n }, (_, i) => ({
-    weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
-    reps: "",
-    isWarmup: false,
-    couldDoMore: false,
-    done: false,
-  }));
 }
 
 // Gym-Standorte: state.currentGymId === null bedeutet "kein Gym" und nutzt weiterhin die
@@ -1117,6 +1106,70 @@ function setHistoryEntry(exId, entry) {
   } else {
     state.history[exId] = entry;
   }
+}
+
+// Plan-übergreifende Gewichts-/Verlaufs-Übernahme (seit v1.53.0): jede Übung hat pro Plan eine
+// eigene Slot-ID (bewusst so, damit Plan-Wechsel keine Daten verliert, siehe CLAUDE.md "Data
+// model") - dieselbe reale Übung (z.B. "Kniebeugen mit der Langhantel" in Upper/Lower, Ganzkörper
+// UND Bro-Split) hat dadurch mehrere, komplett getrennte exId-Einträge in state.lastWeights/
+// state.history. Ohne diese Funktion würde man beim ersten Mal in einem neuen Plan wieder bei 0
+// anfangen, obwohl man dieselbe Übung in einem anderen Plan schon x-mal gemacht hat. Die stabile,
+// plan-unabhängige libraryId (seit v1.16.0, ohnehin schon für die ℹ-Erklärung gedacht) ist die
+// einzige verlässliche Klammer zwischen den Slot-IDs. Bleibt innerhalb der bestehenden Gym-Grenze
+// (getLastWeights/getHistoryEntry selbst filtern schon nach state.currentGymId) - kein Fallback
+// zwischen Gyms, gleiche Begründung wie dort. Nimmt bewusst den ERSTEN Treffer über getAllPlans()
+// (keine Zeitstempel pro Gewichts-/Verlaufs-Eintrag vorhanden, um "jüngste Nutzung" zu bestimmen) -
+// einfachste Definition, gleiche "computed on demand, austauschbar ohne Migration"-Konvention wie
+// z.B. computePersonalRecords()' PR-Definition.
+function otherExIdsSharingLibraryId(ex) {
+  if (!ex.libraryId) return [];
+  const ids = [];
+  for (const plan of getAllPlans()) {
+    for (const dayId of Object.keys(plan.exercises)) {
+      for (const otherEx of plan.exercises[dayId]) {
+        if (otherEx.id !== ex.id && otherEx.libraryId === ex.libraryId) ids.push(otherEx.id);
+      }
+    }
+  }
+  for (const dayId of Object.keys(state.extraExercises)) {
+    for (const otherEx of state.extraExercises[dayId]) {
+      if (otherEx.id !== ex.id && otherEx.libraryId === ex.libraryId) ids.push(otherEx.id);
+    }
+  }
+  return ids;
+}
+
+function findCrossPlanLastWeights(ex) {
+  for (const id of otherExIdsSharingLibraryId(ex)) {
+    const weights = getLastWeights(id);
+    if (weights.length) return weights;
+  }
+  return null;
+}
+
+function findCrossPlanHistoryEntry(ex) {
+  for (const id of otherExIdsSharingLibraryId(ex)) {
+    const hist = getHistoryEntry(id);
+    if (hist) return hist;
+  }
+  return null;
+}
+
+// exId-Parameter seit v1.53.0 zu ex (volles Objekt) erweitert - wird fuer den libraryId-Zugriff
+// oben gebraucht, alle bestehenden Aufrufstellen hatten `ex` ohnehin schon im Scope.
+function buildInitialSets(ex, n) {
+  let weights = getLastWeights(ex.id);
+  if (weights.length === 0) {
+    const crossPlanWeights = findCrossPlanLastWeights(ex);
+    if (crossPlanWeights) weights = crossPlanWeights;
+  }
+  return Array.from({ length: n }, (_, i) => ({
+    weight: weights[i] !== undefined ? weights[i] : (weights.length ? weights[weights.length - 1] : ""),
+    reps: "",
+    isWarmup: false,
+    couldDoMore: false,
+    done: false,
+  }));
 }
 
 function addGym(name) {
@@ -1270,24 +1323,33 @@ function computeWeeklyVolumeForRange(weekStart, weekEnd) {
   return { counts, unattributed };
 }
 
+// Seit v1.52.0 rollierend (letzte 7 Tage bis jetzt) statt feste Mo-So-Kalenderwoche - Nutzer-
+// Feedback: eine feste Kalenderwoche zeigt z.B. dienstags nur 2 Tage Trainingsdaten und wirkt
+// dadurch kuenstlich niedrig, obwohl in den letzten 7 echten Tagen durchaus regelmaessig
+// trainiert wurde. `weekEnd` ist bewusst "jetzt" (nicht Tagesende), `weekStart` exakt 7*24h davor -
+// computeWeeklyVolumeForRange() selbst ist bereits bereichs-generisch, brauchte keine Aenderung.
+// Der Streak-Zaehler (computeTrainingStreaks()) bleibt bewusst bei echten Kalenderwochen (siehe
+// dort) - "jede Woche mindestens 1x trainiert" ist als Konsistenz-Kennzahl an echten Wochen
+// verankert, waehrend das Volumen-Dashboard von einem gleitenden Fenster profitiert.
 function computeWeeklyVolume() {
-  const weekStart = getWeekStart(new Date());
-  const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const weekEnd = new Date();
+  const weekStart = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
   const { counts, unattributed } = computeWeeklyVolumeForRange(weekStart, weekEnd);
   return { counts, unattributed, weekStart };
 }
 
-// Mehrwochen-Trend (seit v1.36.0): letzte VOLUME_TREND_WEEKS Kalenderwochen (inkl. der laufenden,
-// noch unvollstaendigen Woche), aeltester Eintrag zuerst - damit hilft das Dashboard, strukturelles
-// Unter-/Uebertraining ueber die Zeit zu erkennen statt nur eine Momentaufnahme zu zeigen.
+// Mehrwochen-Trend (seit v1.36.0): letzte VOLUME_TREND_WEEKS rollierende 7-Tage-Fenster (seit
+// v1.52.0, vorher feste Kalenderwochen - siehe computeWeeklyVolume()), je um 7 Tage versetzt,
+// aeltestes Fenster zuerst - damit hilft das Dashboard, strukturelles Unter-/Uebertraining ueber
+// die Zeit zu erkennen statt nur eine Momentaufnahme zu zeigen.
 const VOLUME_TREND_WEEKS = 8;
 
 function computeVolumeTrend() {
-  const currentWeekStart = getWeekStart(new Date());
+  const now = new Date();
   const weeks = [];
   for (let i = VOLUME_TREND_WEEKS - 1; i >= 0; i--) {
-    const weekStart = new Date(currentWeekStart.getTime() - i * 7 * 24 * 60 * 60 * 1000);
-    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+    const weekStart = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
     const { counts } = computeWeeklyVolumeForRange(weekStart, weekEnd);
     weeks.push({ weekStart, counts });
   }
@@ -2071,13 +2133,13 @@ async function reconcileCloudState(uid) {
 function getSetsFor(dayId, ex) {
   const day = state.sessions[dayId];
   if (day && day[ex.id] && day[ex.id].length === ex.sets) return day[ex.id];
-  return buildInitialSets(ex.id, ex.sets);
+  return buildInitialSets(ex, ex.sets);
 }
 
 function ensureDaySets(dayId, ex) {
   if (!state.sessions[dayId]) state.sessions[dayId] = {};
   if (!state.sessions[dayId][ex.id] || state.sessions[dayId][ex.id].length !== ex.sets) {
-    state.sessions[dayId][ex.id] = buildInitialSets(ex.id, ex.sets);
+    state.sessions[dayId][ex.id] = buildInitialSets(ex, ex.sets);
   }
   return state.sessions[dayId][ex.id];
 }
@@ -2402,7 +2464,9 @@ function renderFocusMode() {
   const displayName = state.swaps[swapKey] || ex.name;
   const sets = getSetsFor(day, ex);
   const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
-  const hist = getHistoryEntry(ex.id);
+  // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
+  // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
+  const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(ex);
   const note = state.notes[swapKey] || "";
   const info = exerciseLibrary[ex.libraryId];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
@@ -2616,10 +2680,10 @@ function journalVolumeHTML() {
     `;
   }).join("");
   const unattributedHTML = unattributed > 0
-    ? `<div class="journal-empty">${unattributed} diese Woche erfasste(r) Satz/Sätze ohne zuordenbare Muskelgruppe (z.B. aus einer gelöschten oder bearbeiteten eigenen Übung).</div>`
+    ? `<div class="journal-empty">${unattributed} in den letzten 7 Tagen erfasste(r) Satz/Sätze ohne zuordenbare Muskelgruppe (z.B. aus einer gelöschten oder bearbeiteten eigenen Übung).</div>`
     : "";
   return `
-    <div class="volume-hint">Zielbereich (heller Balkenbereich): 12–20 Sätze pro Muskelgruppe und Woche (Mo–So) — Richtwert für trainierte Sportler. Die kleine Linie unter jedem Balken zeigt den Verlauf der letzten ${VOLUME_TREND_WEEKS} Wochen.</div>
+    <div class="volume-hint">Zielbereich (heller Balkenbereich): 12–20 Sätze pro Muskelgruppe in den letzten 7 Tagen — Richtwert für trainierte Sportler. Die kleine Linie unter jedem Balken zeigt den Verlauf der letzten ${VOLUME_TREND_WEEKS} 7-Tage-Fenster.</div>
     ${rows}
     ${unattributedHTML}
   `;
@@ -3370,7 +3434,9 @@ function render() {
     const displayName = state.swaps[swapKey] || ex.name;
     const sets = getSetsFor(day, ex);
     const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
-    const hist = getHistoryEntry(ex.id);
+    // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
+    // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
+    const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(ex);
     const note = state.notes[swapKey] || "";
 
     const historyHTML = historyLineHTML(ex.id, hist);
@@ -3522,7 +3588,7 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   state.lastCompletedDay = dayId;
   state.lastCompletedDate = today;
   const resetDay = {};
-  dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
+  dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
   state.sessions[dayId] = resetDay;
   stopRestTimer();
   persist();
@@ -3581,7 +3647,7 @@ function finishPhysioSession(dateOverride) {
   }
   state.physio.lastDoneAt = refDate.getTime();
   const resetDay = {};
-  state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
+  state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
   state.sessions[PHYSIO_DAY_ID] = resetDay;
   persist();
   render();
