@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.58.0";
+const APP_VERSION = "1.59.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1384,6 +1384,16 @@ function sparklineSVG(points) {
 // die ein versehentliches Schliessen/Reload nicht verlieren soll.
 function newPlanDraft() {
   return { editingPlanId: null, label: "", days: [{ label: "Tag 1", exercises: [{ name: "", sets: 3, reps: "8-10" }] }] };
+}
+
+// Seit v1.59.0 aus dem plan-builder-enter-Klick-Handler herausgezogen - wird jetzt auch von der
+// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen, nicht mehr nur vom
+// Startbildschirm-Button.
+function startPlanBuilder() {
+  if (!state.planDraft) state.planDraft = newPlanDraft();
+  planBuilderActive = true;
+  persist();
+  render();
 }
 
 // Laedt einen bestehenden eigenen Plan zum Bearbeiten in den Entwurf - Tage/Uebungen
@@ -3312,6 +3322,29 @@ function renderExercisePicker() {
 // landet direkt in state.planDraft und oeffnet den bestehenden Plan-Builder (siehe
 // applyAiGeneratedPlan()) - der komplette Review/Edit/Speichern-Teil ist dadurch kostenlos
 // wiederverwendet, keine neue UI dafuer noetig.
+
+// Seit v1.59.0 aus dem ai-plan-chat-enter-Klick-Handler herausgezogen - wird jetzt auch von der
+// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen, nicht mehr nur vom
+// Startbildschirm-Button.
+function startAiPlanChat() {
+  // Seit v1.48.0: Login-Pflicht (kostet Geld pro Gemini-Aufruf) - serverseitig im Worker
+  // durchgesetzt, hier das frueheste sichtbare Gate statt erst beim ersten Senden zu scheitern.
+  if (!currentUser) {
+    showToast("Bitte zuerst einloggen (Profil → Konto), um diese Funktion zu nutzen.");
+    return;
+  }
+  focusModeActive = false;
+  journalViewActive = false;
+  profileActive = false;
+  homeScreenActive = false;
+  libraryActive = false;
+  const greeting = currentUser.displayName ? `Hallo ${currentUser.displayName}` : "Hallo";
+  aiPlanMessages = [{ role: "model", text: `${greeting}! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?` }];
+  aiPlanLoading = false;
+  aiPlanChatActive = true;
+  render();
+}
+
 function renderAiPlanChatView() {
   const messagesHTML = aiPlanMessages.map(m => `
     <div class="chat-message ${escapeAttr(m.role)}">${escapeAttr(m.text)}</div>
@@ -3567,6 +3600,10 @@ function render() {
       <label class="plan-label" for="plan-select">Plan</label>
       <select id="plan-select" class="plan-select" data-role="plan-select">
         ${getAllPlans().map(p => `<option value="${escapeAttr(p.id)}" ${p.id === state.currentPlan ? "selected" : ""}>${escapeAttr(p.label)}</option>`).join("")}
+        <optgroup label="Neuer Plan">
+          <option value="__new_plan__">+ Eigenen Plan erstellen</option>
+          <option value="__ai_plan__">🤖 KI-Trainingsplan erstellen</option>
+        </optgroup>
       </select>
     </div>
     ${gymRowHTML()}
@@ -4408,31 +4445,13 @@ document.addEventListener("click", (e) => {
 
   const planBuilderEnter = e.target.closest('[data-role="plan-builder-enter"]');
   if (planBuilderEnter) {
-    if (!state.planDraft) state.planDraft = newPlanDraft();
-    planBuilderActive = true;
-    persist();
-    render();
+    startPlanBuilder();
     return;
   }
 
   const aiPlanChatEnter = e.target.closest('[data-role="ai-plan-chat-enter"]');
   if (aiPlanChatEnter) {
-    // Seit v1.48.0: Login-Pflicht (kostet Geld pro Gemini-Aufruf) - serverseitig im Worker
-    // durchgesetzt, hier das frueheste sichtbare Gate statt erst beim ersten Senden zu scheitern.
-    if (!currentUser) {
-      showToast("Bitte zuerst einloggen (Profil → Konto), um diese Funktion zu nutzen.");
-      return;
-    }
-    focusModeActive = false;
-    journalViewActive = false;
-    profileActive = false;
-    homeScreenActive = false;
-    libraryActive = false;
-    const greeting = currentUser.displayName ? `Hallo ${currentUser.displayName}` : "Hallo";
-    aiPlanMessages = [{ role: "model", text: `${greeting}! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?` }];
-    aiPlanLoading = false;
-    aiPlanChatActive = true;
-    render();
+    startAiPlanChat();
     return;
   }
 
@@ -5016,6 +5035,12 @@ document.addEventListener("change", (e) => {
 
   const planSelect = e.target.closest('[data-role="plan-select"]');
   if (planSelect) {
+    // Seit v1.59.0: die Dropdown-Liste enthaelt neben echten Plaenen auch zwei Sentinel-Werte
+    // fuer "neuen Plan erstellen" - kein echter Plan-Wechsel, sondern derselbe Einstieg wie die
+    // gleichnamigen Startbildschirm-Buttons (startPlanBuilder()/startAiPlanChat() rendern ohnehin
+    // eine komplett andere Ansicht, das <select> selbst existiert danach nicht mehr).
+    if (planSelect.value === "__new_plan__") { startPlanBuilder(); return; }
+    if (planSelect.value === "__ai_plan__") { startAiPlanChat(); return; }
     state.currentPlan = planSelect.value;
     applyPlan(state.currentPlan);
     state.currentDay = DAYS[0].id;

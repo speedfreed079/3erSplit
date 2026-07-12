@@ -2,6 +2,15 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.59.0 — 2026-07-17 (Teil 100): "Eigenen Plan erstellen"/"KI-Trainingsplan erstellen" auch im Plan-Auswahlfeld
+
+- Nutzer-Wunsch: die beiden Erstellen-Aktionen sollen nicht nur auf dem Startbildschirm, sondern auch direkt im Plan-Dropdown (`#plan-select`, in jeder Ansicht mit aktivem Plan sichtbar) auswählbar sein.
+- **Wiederverwendung statt Duplizierung**: die bisher inline im `plan-builder-enter`/`ai-plan-chat-enter`-Klick-Handler stehende Logik wurde in zwei benannte Funktionen extrahiert (`startPlanBuilder()`, `startAiPlanChat()`) — beide Klick-Handler rufen sie jetzt nur noch auf, keine Verhaltensänderung dort.
+- `#plan-select` bekommt eine neue `<optgroup label="Neuer Plan">` mit zwei Sentinel-Werten (`__new_plan__`/`__ai_plan__`) ganz unten in der Liste. Der `change`-Handler prüft diese zwei Werte zuerst und ruft dann `startPlanBuilder()`/`startAiPlanChat()` auf, statt sie als echten Plan-Wechsel zu behandeln — beide Funktionen rendern ohnehin eine komplett andere Ansicht, das `<select>` existiert danach nicht mehr, kein manuelles Zurücksetzen der Auswahl nötig.
+- Der bestehende Login-Gate für den KI-Chat (seit v1.48.0) greift unverändert auch über diesen neuen Einstieg.
+- `howto.html`s Plan-Auswahl-Abschnitt entsprechend ergänzt.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check; Playwright — beide neuen Optionen erscheinen korrekt im Dropdown, Auswahl von "+ Eigenen Plan erstellen" öffnet den Plan-Builder, Auswahl von "🤖 KI-Trainingsplan erstellen" im nicht eingeloggten Zustand zeigt korrekt den Login-Hinweis statt zu crashen. Keine Konsolenfehler.
+
 ## v1.58.0 — 2026-07-17 (Teil 99): Per-Satz-Aufwärmsatz-Markierung (🔥) entfernt
 
 - Nutzer-Rückfrage, was genau der Unterschied zwischen Aufwärmsatz und Arbeitssatz ist und ob das 🔥-Symbol pro Satz überhaupt gebraucht wird — es gibt ja schon den eigenen "🔥 Aufwärmen"-Bereich pro Trainingstag. Dabei aufgefallen: die Satz-Zeilenzahl ist fest auf die Zielzahl (z.B. "4 Sätze") begrenzt, es gibt kein "+ Satz hinzufügen" — markiert man eine Zeile als Aufwärmsatz, bleiben nur noch 3 echte Arbeitssätze übrig, obwohl das Ziel 4 war. Nutzer-Entscheidung: weglassen, schafft auch mehr Platz für die Gewichts-/Wdh.-Felder.
