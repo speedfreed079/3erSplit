@@ -61,10 +61,19 @@
     padding: 16px; margin-bottom: 14px;
   }
   .card h2 {
-    font-size: 16px; font-weight: 500; margin: 0 0 8px; text-transform: uppercase;
+    font-size: 16px; font-weight: 500; margin: 0; text-transform: uppercase;
     letter-spacing: 0.3px; color: var(--rust);
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 8px; flex: 1;
   }
+  .card summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px;
+  }
+  .card summary::-webkit-details-marker { display: none; }
+  .card summary::after {
+    content: "▸"; color: var(--chalk-dim); font-size: 13px; flex-shrink: 0;
+  }
+  .card[open] summary::after { content: "▾"; }
+  .card[open] summary { margin-bottom: 8px; }
   .card p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
   .card ul { margin: 6px 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
   .card li { margin-bottom: 4px; }
@@ -123,13 +132,13 @@
       <p>Fretze ist dein Trainingstracker für Krafttraining: du trägst ein, was du je Satz geschafft hast, die App merkt sich alles fürs nächste Mal. Läuft standardmäßig nur auf diesem Gerät, ganz ohne Konto (siehe <a href="#backup" style="color:var(--rust);">Backup</a>) — ein <a href="#konto" style="color:var(--rust);">Konto</a> ist optional.</p>
     </div>
 
-    <div class="card" id="start">
-      <h2>🏠 Startbildschirm</h2>
+    <details class="card" id="start">
+      <summary><h2>🏠 Startbildschirm</h2></summary>
       <p>Zeigt "Weiter mit [Plan] – [Tag]", deine Pläne zur Auswahl und "+ Neuen Plan erstellen". Über "🏠 Start" im Header jederzeit wieder aufrufbar.</p>
-    </div>
+    </details>
 
-    <div class="card" id="plaene">
-      <h2>📋 Trainingsplan wählen</h2>
+    <details class="card" id="plaene">
+      <summary><h2>📋 Trainingsplan wählen</h2></summary>
       <ul>
         <li><b>Push/Pull/Legs</b> — 6 Tage</li>
         <li><b>Upper/Lower</b> — 4 Tage</li>
@@ -140,37 +149,37 @@
         <li>plus deine <b>eigenen Pläne</b></li>
       </ul>
       <p class="dim">Plan wechseln verliert keine Daten — jeder Plan behält seinen eigenen Stand.</p>
-    </div>
+    </details>
 
-    <div class="card" id="eigenerplan">
-      <h2>✏ Eigenen Plan erstellen</h2>
+    <details class="card" id="eigenerplan">
+      <summary><h2>✏ Eigenen Plan erstellen</h2></summary>
       <p>Über "+ Neuen Plan erstellen": Name, beliebig viele Tage und Übungen (Sätze, Ziel-Wiederholungen). Beim Übungsnamen gibt's Vorschläge aus der Datenbank — wählst du einen davon, bekommst du automatisch eine ℹ-Erklärung dazu.</p>
       <p>"📚 Aus Datenbank wählen" öffnet eine eigene Übersicht nach Muskelgruppe sortiert — dort mehrere Übungen anhaken (mit ℹ direkt zur Erklärung vor der Auswahl) und auf einmal in den Tag übernehmen. Über die kleinen ▲/▼-Pfeile neben jeder Übung lässt sich die Reihenfolge danach anpassen.</p>
       <p class="dim">Bearbeiten über ✏, Löschen über 🗑 auf dem Startbildschirm.</p>
       <p>Über <b>⎘</b> neben jedem Plan (auch bei den mitgelieferten wie PPL) öffnest du eine Kopie zum freien Bearbeiten — Übungen entfernen, ändern, hinzufügen. Die Kopie landet als eigener Plan (Name vorausgefüllt, z.B. "Push/Pull/Legs (Kopie)") in deiner Liste, das Original bleibt unverändert.</p>
-    </div>
+    </details>
 
-    <div class="card" id="kitrainer">
-      <h2>🤖 KI-Trainingsplan erstellen</h2>
+    <details class="card" id="kitrainer">
+      <summary><h2>🤖 KI-Trainingsplan erstellen</h2></summary>
       <p>"🤖 KI-Trainingsplan erstellen" auf dem Startbildschirm führt ein kurzes Chat-Interview wie mit einem Fitnesstrainer — Ziel, Erfahrung, verfügbare Tage, Equipment, Einschränkungen. Antworte einfach im Chat.</p>
       <p>Sobald genug Infos da sind, schlägt die KI automatisch einen fertigen Plan vor — der öffnet sich direkt im gewohnten Plan-Editor zum Prüfen, Anpassen und Speichern. Magst du das Interview abkürzen, tippe jederzeit "✓ Plan jetzt erstellen".</p>
       <p class="dim">Der Chatverlauf wird nicht gespeichert — verlässt du die Ansicht, startet er beim nächsten Mal neu. Erfordert ein Konto (siehe <a href="#konto" style="color:var(--rust);">Konto</a>) — jeder KI-Aufruf kostet echtes Geld.</p>
-    </div>
+    </details>
 
-    <div class="card" id="bibliothek">
-      <h2>📚 Übungs-Bibliothek</h2>
+    <details class="card" id="bibliothek">
+      <summary><h2>📚 Übungs-Bibliothek</h2></summary>
       <p>"📚 Übungen durchsuchen" auf dem Startbildschirm zeigt die komplette Übungsdatenbank, gruppiert nach Muskelgruppe — mit ℹ direkt nachlesbar. Jede Übung erscheint genau einmal, unabhängig davon in wie vielen Plänen sie vorkommt.</p>
-    </div>
+    </details>
 
-    <div class="card" id="physio">
-      <h2>🩺 Physio-Übungen</h2>
+    <details class="card" id="physio">
+      <summary><h2>🩺 Physio-Übungen</h2></summary>
       <p>Für Übungen, die z.B. von deiner Physiotherapeutin verordnet sind und in einem eigenen Rhythmus laufen sollen — unabhängig davon, welcher Trainingstag gerade dran ist. Über "🩺 Physio-Übungen" auf dem Startbildschirm anlegen: Name (frei eintragen oder über "📚 Aus Datenbank wählen" nach Muskelgruppe auswählen), Sätze, Wiederholungen, plus wie viele Tage zwischen zwei Einheiten liegen sollen (Standard: alle 2 Tage).</p>
       <p>Sätze trägst du genau wie im Training ein (Gewicht/Wdh., kollabiert nach dem Abhaken, ✎ zum Nachbearbeiten). "Physio abschließen" merkt sich das Datum — ab dann läuft der Countdown neu. Ist eine Einheit fällig, zeigt der Startbildschirm einen Hinweis-Banner.</p>
       <p class="dim">Physio-Sessions zählen nicht ins Tagebuch/Wochenvolumen/Streak — sie sind bewusst von deinem eigentlichen Training getrennt.</p>
-    </div>
+    </details>
 
-    <div class="card" id="gym">
-      <h2>🏋 Gym wählen</h2>
+    <details class="card" id="gym">
+      <summary><h2>🏋 Gym wählen</h2></summary>
       <p>Trainierst du mal hier, mal dort (z.B. über Wellhub/Urban Sports Club), hilft die Gym-Auswahl unter dem Plan:</p>
       <ul>
         <li>Gyms anlegen über <b>"+ Standort hinzufügen"</b> (⚙ zum Verwalten, auch im Profil-Bereich)</li>
@@ -178,15 +187,15 @@
         <li><b>"Kein Gym"</b> → wie bisher, ein gemeinsamer Stand</li>
       </ul>
       <p class="dim">Kein GPS — du wählst selbst aus. Ein gelöschtes Gym nimmt seine Daten nicht mit, sie tauchen nur nicht mehr auf.</p>
-    </div>
+    </details>
 
-    <div class="card" id="tag">
-      <h2>📅 Trainingstag wählen</h2>
+    <details class="card" id="tag">
+      <summary><h2>📅 Trainingstag wählen</h2></summary>
       <p>Über die Reiter unter dem Plan wählst du den Tag. Die Banner-Zeile oben schlägt automatisch den nächsten Tag in der Rotation vor.</p>
-    </div>
+    </details>
 
-    <div class="card" id="trainingsmodus">
-      <h2>▶ Trainingsmodus</h2>
+    <details class="card" id="trainingsmodus">
+      <summary><h2>▶ Trainingsmodus</h2></summary>
       <p>"▶ Trainingsmodus starten" zeigt eine Übung nach der anderen groß im Vollbild.</p>
       <ul>
         <li>Fortschritt oben, <b>✕ Verlassen</b> bringt dich zurück (nichts geht verloren)</li>
@@ -194,15 +203,15 @@
         <li><b>Zurück</b>/<b>Weiter</b> navigiert; bei der letzten Übung wird "Weiter" zum Abschluss-Button</li>
       </ul>
       <p class="dim">Tauschen (⟲, inkl. KI-Vorschläge), Erklärung (ℹ), Bearbeiten-Sperre (✎), Sätze eintragen und der Satzpausen-Timer funktionieren genau wie in der Kartenansicht.</p>
-    </div>
+    </details>
 
-    <div class="card" id="aufwaermen">
-      <h2>🔥 Aufwärmen</h2>
+    <details class="card" id="aufwaermen">
+      <summary><h2>🔥 Aufwärmen</h2></summary>
       <p>Über den Übungen (sofern hinterlegt) findest du eine aufklappbare, auf den Trainingstag abgestimmte Aufwärm-Sektion — dauert nur wenige Minuten.</p>
-    </div>
+    </details>
 
-    <div class="card" id="saetze">
-      <h2>💪 Sätze eintragen</h2>
+    <details class="card" id="saetze">
+      <summary><h2>💪 Sätze eintragen</h2></summary>
       <p>Pro Satz trägst du Gewicht (kg) und Wiederholungen ein. Wiederholungen eintragen markiert den Satz automatisch als erledigt (Häkchen grün) und startet die Pause — das Häkchen rechts bleibt für Sonderfälle auch manuell bedienbar.</p>
       <ul>
         <li>🔥 markiert einen <b>Aufwärmsatz</b> (antippen zum Umschalten)</li>
@@ -210,55 +219,55 @@
       </ul>
       <p class="dim">"Letztes Mal" zeigt dein letztes Ergebnis, das Gewichtsfeld ist schon vorbefüllt. Aufwärmsätze zählen dabei nicht mit. Machst du dieselbe Übung zum ersten Mal in einem anderen Plan, wird sie automatisch aus deinem letzten Ergebnis in dem anderen Plan vorbefüllt — du fängst also nicht bei 0 an.</p>
       <p>Ein abgehakter Satz zeigt Gewicht und Wiederholungen nur noch als reinen Text an, damit du beim Training nicht versehentlich hineintippst. Über <b>✎</b> (neben ℹ und ⟲) öffnest du die ganze Übung wieder zum Nachtragen/Korrigieren — nochmal antippen sperrt sie wieder.</p>
-    </div>
+    </details>
 
-    <div class="card" id="gewichtsvorschlag">
-      <h2>💡 Gewichtsvorschlag</h2>
+    <details class="card" id="gewichtsvorschlag">
+      <summary><h2>💡 Gewichtsvorschlag</h2></summary>
       <p>Erreichst/überschreitest du beim letzten Arbeitssatz die Ziel-Wiederholungen <b>und</b> markierst ↑, schlägt dir die App beim nächsten Mal mehr Gewicht vor (💡-Hinweis mit "Übernehmen"-Button).</p>
       <ul>
         <li>+5 % bei schweren Grundübungen, sonst +2,5 % — gerundet auf 0,5 kg</li>
         <li>Nichts passiert automatisch, du entscheidest</li>
         <li>Beim Bänder-Plan kommt gleich die passende Band-Kombination dazu (z.B. "35kg (20+15kg)")</li>
       </ul>
-    </div>
+    </details>
 
-    <div class="card" id="erklaerung">
-      <h2>ℹ Übungserklärung</h2>
+    <details class="card" id="erklaerung">
+      <summary><h2>ℹ Übungserklärung</h2></summary>
       <p>Zeigt Zielmuskulatur, Ausführung Schritt für Schritt, häufigste Fehler und einen Sicherheitshinweis — für die meisten Pläne durchgängig hinterlegt.</p>
-    </div>
+    </details>
 
-    <div class="card" id="tauschen">
-      <h2>⟲ Übung tauschen</h2>
+    <details class="card" id="tauschen">
+      <summary><h2>⟲ Übung tauschen</h2></summary>
       <p>Passt eine Übung nicht (Gerät belegt, Verletzung, keine Lust)? ⟲ öffnet eine Liste von Alternativen — Zielsätze/Wiederholungen und dein Verlauf bleiben an der ursprünglichen Übung, nur der angezeigte Name ändert sich.</p>
       <p>Keine passende Alternative dabei? Unten im Tausch-Panel kannst du auch einen eigenen Übungsnamen eintragen und übernehmen — mit Vorschlägen aus der Datenbank, aber auch als reiner Freitext.</p>
       <p>"✨ KI-Vorschläge holen" startet einen kurzen Chat mit der KI (erfordert ein Konto) — beim ersten Klick kommen sofort 2-3 generische Alternativen. Du kannst danach im Textfeld Kontext nachliefern, z.B. "Knie zwickt" oder "kein Kabelzug frei", und die KI passt ihre Vorschläge im Gespräch darauf an. "🔄 Neu starten" verwirft den Verlauf.</p>
       <p class="dim">ℹ und ⟲ sind nie gleichzeitig offen.</p>
-    </div>
+    </details>
 
-    <div class="card" id="eigeneuebung">
-      <h2>+ Eigene Übung hinzufügen</h2>
+    <details class="card" id="eigeneuebung">
+      <summary><h2>+ Eigene Übung hinzufügen</h2></summary>
       <p>Am Ende der Übungsliste eines Trainingstags fügt "+ Eigene Übung" eine komplett neue, selbst benannte Übung zu genau diesem Tag hinzu — funktioniert bei jedem Plan, auch den eingebauten wie Push/Pull/Legs (die sonst nicht bearbeitbar sind). Name, Sätze und Ziel-Wiederholungen selbst eintragen; passt der Name exakt zu einem Datenbank-Eintrag, gibt's automatisch eine ℹ-Erklärung dazu.</p>
       <p class="dim">Läuft danach genauso wie jede andere Übung mit — auch im Trainingsmodus. Entfernen über ✕ im Verwalten-Panel.</p>
-    </div>
+    </details>
 
-    <div class="card" id="timer">
-      <h2>⏱ Satzpause</h2>
+    <details class="card" id="timer">
+      <summary><h2>⏱ Satzpause</h2></summary>
       <p>Startet automatisch nach einem abgehakten Satz (Ton + Vibration am Ende): 2:30 Min. bei schweren Grundübungen, 1:30 Min. sonst. Mit ±15s anpassbar, mit "Überspringen" sofort beendbar.</p>
-    </div>
+    </details>
 
-    <div class="card" id="stretching">
-      <h2>🧘 Stretching</h2>
+    <details class="card" id="stretching">
+      <summary><h2>🧘 Stretching</h2></summary>
       <p>Unter den Übungen (sofern hinterlegt) findest du passende Dehnübungen für nach dem Training.</p>
-    </div>
+    </details>
 
-    <div class="card" id="abschluss">
-      <h2>✅ Training abschließen</h2>
+    <details class="card" id="abschluss">
+      <summary><h2>✅ Training abschließen</h2></summary>
       <p>Der Button unten schließt die Einheit ab, merkt sich deine Gewichte fürs nächste Mal und trägt alles ins Tagebuch ein. Davor fragt die App optional, wie es war (😊/😐/😖) und ob du eine Notiz hinterlassen willst — beides komplett überspringbar.</p>
       <p class="dim">Das Datum ist dabei anpassbar (Standard: heute) — praktisch, wenn du eine Einheit vergessen hast abzuschließen: einfach den Trainingstag-Reiter öffnen (deine eingetragenen Sätze stehen noch drin, solange du nicht abgeschlossen hast), abschließen und das richtige Datum einstellen. Genauso beim Physio-Abschluss (dort ohne Wohlbefinden-Frage).</p>
-    </div>
+    </details>
 
-    <div class="card" id="tagebuch">
-      <h2>📔 Tagebuch</h2>
+    <details class="card" id="tagebuch">
+      <summary><h2>📔 Tagebuch</h2></summary>
       <p>Im Header, drei Reiter:</p>
       <ul>
         <li><b>📅 Verlauf</b> — alle Einheiten, neueste zuerst, plus ein 🔥-Banner ("X Wochen in Folge trainiert")</li>
@@ -267,37 +276,37 @@
       </ul>
       <p class="dim">Nur Einheiten mit echten Einträgen landen im Tagebuch.</p>
       <p>Im Verlauf hat jeder Eintrag ein 🗑 zum Löschen (mit Bestätigung) — praktisch bei Doppel- oder Fehleinträgen, z.B. wenn du beim Nachtragen aus Versehen mehrfach abgeschlossen hast.</p>
-    </div>
+    </details>
 
-    <div class="card" id="profil">
-      <h2>👤 Profil</h2>
+    <details class="card" id="profil">
+      <summary><h2>👤 Profil</h2></summary>
       <p>Sammelt Geräte- und Daten-Einstellungen an einem Ort: Theme, Schriftgröße, Gym-Verwaltung, Backup, Konto.</p>
-    </div>
+    </details>
 
-    <div class="card" id="darstellung">
-      <h2>☀/🌙 Darstellung</h2>
+    <details class="card" id="darstellung">
+      <summary><h2>☀/🌙 Darstellung</h2></summary>
       <p>Theme (hell/dunkel) und Schriftgröße (3 Stufen, "Aa"-Button) lassen sich im Profil-Bereich umschalten — praktisch bei viel Umgebungslicht oder wenn der Bildschirm weiter weg liegt.</p>
-    </div>
+    </details>
 
-    <div class="card" id="backup">
-      <h2>⭳ Backup</h2>
+    <details class="card" id="backup">
+      <summary><h2>⭳ Backup</h2></summary>
       <p>Deine Daten liegen zuerst immer auf diesem Gerät. Im Profil-Bereich: <b>Export</b> lädt eine Sicherungsdatei herunter, <b>Import</b> spielt sie wieder ein.</p>
       <p class="dim"><b>In Drive sichern</b> lädt dieselbe Datei zusätzlich in dein Google Drive hoch (unabhängig vom Konto-Login) — jeder Klick legt eine neue, datierte Datei an.</p>
-    </div>
+    </details>
 
-    <div class="card" id="konto">
-      <h2>👤 Konto (optional)</h2>
+    <details class="card" id="konto">
+      <summary><h2>👤 Konto (optional)</h2></summary>
       <p>Freiwillige Anmeldung mit Google oder E-Mail/Passwort im Profil-Bereich — <b>nicht Pflicht</b>, ohne Login läuft alles wie gewohnt.</p>
       <p>Eingeloggt gleicht die App deine Daten automatisch zwischen Geräten ab. Dein Tagebuch geht dabei nie verloren; bei allem anderen gewinnt im Zweifel der zuletzt gespeicherte Stand.</p>
       <p class="dim">Anzeigename jederzeit über "✎ Ändern" anpassbar. Die "Cloud-Sync"-Zeile zeigt, ob der letzte Abgleich geklappt hat (✓), läuft (⏳) oder fehlgeschlagen ist (⚠).</p>
-    </div>
+    </details>
 
-    <div class="card" id="installieren">
-      <h2>📱 Als App installieren</h2>
+    <details class="card" id="installieren">
+      <summary><h2>📱 Als App installieren</h2></summary>
       <p><strong>Android/Chrome:</strong> Menü (⋮) → "App installieren", oder es erscheint automatisch ein Installieren-Banner.</p>
       <p><strong>iPhone/iPad:</strong> nur in <strong>Safari</strong> möglich (Chrome, Firefox & Co. auf iOS können das technisch nicht) — Teilen-Symbol (Quadrat mit Pfeil nach oben) antippen → "Zum Home-Bildschirm". Hier gibt es keinen automatischen Installieren-Button, das ist eine Einschränkung von iOS selbst, kein Fehler in der App.</p>
       <p class="dim">Nach der Installation startet Fretze direkt vom Homescreen, auch offline. Nach einem Update: die installierte App einmal komplett schließen und neu öffnen, damit die neue Version greift.</p>
-    </div>
+    </details>
   </div>
 
   <script>
@@ -306,6 +315,21 @@
       const theme = raw ? (JSON.parse(raw).theme || "sepia") : "sepia";
       document.documentElement.setAttribute("data-theme", theme === "sepia" ? "sepia" : "dark");
     } catch (e) { /* ignore, keep default */ }
+
+    // Alle Abschnitte sind seit v1.56.0 <details> (Nutzer-Feedback: zu viel Text auf einmal) -
+    // ein Klick auf einen Inhaltsverzeichnis-Link soll den Zielabschnitt trotzdem aufklappen,
+    // sonst landet man auf einer Ueberschrift ohne sichtbaren Inhalt darunter.
+    function openTargetDetails() {
+      const id = location.hash.slice(1);
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el && el.tagName === "DETAILS") {
+        el.open = true;
+        el.scrollIntoView({ block: "start" });
+      }
+    }
+    window.addEventListener("hashchange", openTargetDetails);
+    openTargetDetails();
   </script>
 </body>
 </html>
