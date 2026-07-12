@@ -57,16 +57,6 @@ function bearerTokenFromRequest(request) {
   return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 }
 
-function buildPrompt({ exercise, muscleFocus, existingAlts }) {
-  const excludeList = (existingAlts && existingAlts.length ? existingAlts : []).concat([exercise]);
-  return `Du bist ein erfahrener Kraftsport-Coach mit Hintergrund in Trainingswissenschaft.
-Schlage 2-3 wissenschaftlich sinnvolle Alternativübungen zu "${exercise}" (Fokus: ${muscleFocus}) vor.
-Die Alternativen müssen dieselbe primäre Zielmuskulatur bzw. dasselbe Bewegungsmuster ansprechen und einen vergleichbaren Trainingsreiz (Hypertrophie) liefern.
-Schlage KEINE der folgenden bereits bekannten Übungen vor: ${excludeList.join(", ")}.
-Antworte AUSSCHLIESSLICH als valides JSON-Array in diesem Format, ohne weiteren Text:
-[{"name": "Übungsname", "reason": "kurze Begründung auf Deutsch, max. 15 Wörter"}]`;
-}
-
 // 503 von Gemini heisst laut Google-Doku "UNAVAILABLE - model overloaded, spikes are usually
 // temporary" - genau dafuer lohnt sich ein einzelner automatischer Retry. 429 bewusst NICHT
 // hier drin: das kann auch eine echte Fehlkonfiguration (falsche/veraltete Modell-ID, Kontingent
@@ -85,52 +75,6 @@ function friendlyGeminiError(status, rawText) {
     if (parsed?.error?.message) message = parsed.error.message;
   } catch (e) { /* rawText war kein JSON, beim rohen Ausschnitt bleiben */ }
   return `Gemini-API-Fehler (${status}): ${message}`;
-}
-
-async function callGeminiOnce(apiKey, promptText) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: { responseMimeType: "application/json" },
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    const err = new Error(friendlyGeminiError(res.status, errText));
-    err.status = res.status;
-    throw err;
-  }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini-Antwort enthielt keinen Text");
-
-  let suggestions;
-  try {
-    suggestions = JSON.parse(text);
-  } catch (e) {
-    throw new Error("Gemini-Antwort war kein valides JSON");
-  }
-  if (!Array.isArray(suggestions)) throw new Error("Gemini-Antwort war kein Array");
-
-  return suggestions
-    .filter((s) => s && typeof s.name === "string")
-    .slice(0, 3)
-    .map((s) => ({ name: s.name, reason: typeof s.reason === "string" ? s.reason : "" }));
-}
-
-async function callGemini(apiKey, promptText) {
-  try {
-    return await callGeminiOnce(apiKey, promptText);
-  } catch (e) {
-    if (!isRetryableStatus(e.status)) throw e;
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return await callGeminiOnce(apiKey, promptText);
-  }
 }
 
 // ---------- KI-TRAININGSPLAN-CHAT ----------
@@ -192,8 +136,8 @@ async function callGeminiChatOnce(apiKey, systemInstruction, contents) {
   } catch (e) {
     throw new Error("Gemini-Antwort war kein valides JSON");
   }
-  if (!parsed || (parsed.type !== "question" && parsed.type !== "plan")) {
-    throw new Error("Gemini-Antwort hatte kein erwartetes Format (type: question/plan)");
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error("Gemini-Antwort war kein JSON-Objekt");
   }
   return parsed;
 }
@@ -243,7 +187,86 @@ async function handlePlanChatRequest(request, env) {
 
   try {
     const reply = await callGeminiChat(env.GEMINI_API_KEY, systemInstruction, contents);
+    if (reply.type !== "question" && reply.type !== "plan") {
+      throw new Error("Gemini-Antwort hatte kein erwartetes Format (type: question/plan)");
+    }
     return jsonResponse(reply);
+  } catch (e) {
+    return jsonResponse({ error: e.message || "Unbekannter Fehler" }, 502);
+  }
+}
+
+// ---------- KI-UEBUNGSTAUSCH-CHAT ----------
+// Seit v1.49.0: der bisherige Einweg-Uebungsvorschlag (ein Prompt rein, eine feste Liste raus)
+// wird zu einem echten Mehrfach-Runden-Dialog - der Nutzer kann Kontext geben (z.B. "Knie zwickt
+// bei Kniebeugen"), die KI reagiert gezielt darauf statt nur generische Alternativen zu listen.
+// Nutzt dieselbe callGeminiChat/contents-Infrastruktur wie der Trainingsplan-Chat oben - die
+// Uebung/der Muskelfokus/die auszuschliessenden Alternativen sind fixer Kontext in der
+// System-Instruction (aendern sich waehrend eines Dialogs nicht), nur der eigentliche
+// Gespraechsverlauf wandert durch "contents".
+function buildSwapChatSystemInstruction(exercise, muscleFocus, existingAlts, userName) {
+  const excludeList = (existingAlts && existingAlts.length ? existingAlts : []).concat([exercise]);
+  const nameLine = userName ? `Der Nutzer heißt ${userName}. Du darfst ihn gelegentlich mit Namen ansprechen, aber nicht in jeder Nachricht.` : "";
+  return `Du bist ein erfahrener Kraftsport-Coach mit Hintergrund in Trainingswissenschaft. Der Nutzer trainiert aktuell "${exercise}" (Fokus: ${muscleFocus}) und sucht im Dialog mit dir nach einer Alternative dazu.
+${nameLine}
+
+Wenn der Nutzer noch keinen konkreten Grund nennt (z.B. nur "Vorschläge bitte" schreibt), gib trotzdem sofort 2-3 sinnvolle Alternativen - frag nicht erst unnötig nach. Nennt der Nutzer einen Grund (z.B. Schmerzen, Langeweile, fehlendes Equipment), geh gezielt darauf ein; stelle bei Bedarf eine kurze Rückfrage (z.B. "wo genau tut es weh?"), bevor du Vorschläge machst, statt zu raten - in dem Fall darf "suggestions" auch leer sein.
+
+Die Alternativen müssen dieselbe primäre Zielmuskulatur bzw. dasselbe Bewegungsmuster ansprechen und einen vergleichbaren Trainingsreiz liefern. Schlage NIE folgende bereits bekannte Übungen vor: ${excludeList.join(", ")}.
+
+Antworte IMMER ausschließlich als valides JSON, ohne weiteren Text, in genau diesem Format:
+{"reply": "kurze Antwort/Erklärung auf Deutsch", "suggestions": [{"name": "Übungsname", "reason": "kurze Begründung auf Deutsch, max. 15 Wörter"}]}
+"suggestions" ist ein Array mit 0-3 Einträgen.`;
+}
+
+async function handleSwapChatRequest(request, env) {
+  const profile = await verifyCallerAndGetProfile(bearerTokenFromRequest(request));
+  if (!profile) {
+    return jsonResponse({ error: "Bitte einloggen, um KI-Vorschläge zu nutzen." }, 401);
+  }
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch (e) {
+    return jsonResponse({ error: "Ungültiges JSON im Request-Body" }, 400);
+  }
+
+  const { messages, exercise, muscleFocus, existingAlts } = payload || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return jsonResponse({ error: "Feld 'messages' fehlt oder ist leer" }, 400);
+  }
+  if (!exercise || typeof exercise !== "string") {
+    return jsonResponse({ error: "Feld 'exercise' fehlt oder ist ungültig" }, 400);
+  }
+  if (!env.GEMINI_API_KEY) {
+    return jsonResponse({ error: "Server ist nicht korrekt konfiguriert (kein API-Key)" }, 500);
+  }
+
+  const userName = profile.displayName || (profile.email ? profile.email.split("@")[0] : "");
+  const systemInstruction = buildSwapChatSystemInstruction(
+    exercise,
+    typeof muscleFocus === "string" ? muscleFocus : "",
+    Array.isArray(existingAlts) ? existingAlts : [],
+    userName
+  );
+  const contents = messages
+    .filter((m) => m && typeof m.text === "string" && (m.role === "user" || m.role === "model"))
+    .map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
+  if (contents.length === 0) {
+    return jsonResponse({ error: "Feld 'messages' enthielt keine gültigen Einträge" }, 400);
+  }
+
+  try {
+    const reply = await callGeminiChat(env.GEMINI_API_KEY, systemInstruction, contents);
+    if (typeof reply.reply !== "string") {
+      throw new Error("Gemini-Antwort hatte kein erwartetes Format (Feld 'reply' fehlt)");
+    }
+    const suggestions = (Array.isArray(reply.suggestions) ? reply.suggestions : [])
+      .filter((s) => s && typeof s.name === "string")
+      .slice(0, 3)
+      .map((s) => ({ name: s.name, reason: typeof s.reason === "string" ? s.reason : "" }));
+    return jsonResponse({ reply: reply.reply, suggestions });
   } catch (e) {
     return jsonResponse({ error: e.message || "Unbekannter Fehler" }, 502);
   }
@@ -421,6 +444,9 @@ export default {
       return jsonResponse({ error: "Nur POST erlaubt" }, 405);
     }
 
+    // Seit v1.49.0: explizite Routing-Tabelle statt implizitem Default-Pfad - der bisherige
+    // Uebungsvorschlag-Einweg-Endpunkt (bare PROXY_URL) ist mit dem Umbau auf einen Dialog
+    // komplett durch /swap-chat ersetzt, kein Client ruft den bare Pfad mehr auf.
     const url = new URL(request.url);
     if (url.pathname === "/admin") {
       return handleAdminRequest(request, env);
@@ -428,36 +454,9 @@ export default {
     if (url.pathname === "/plan-chat") {
       return handlePlanChatRequest(request, env);
     }
-
-    // Seit v1.48.0: auch der Uebungsvorschlag-Endpunkt braucht ein eingeloggtes Konto (siehe
-    // AUTH-Abschnitt oben) - vorher war er komplett offen fuer jeden, der die Worker-URL kennt.
-    const profile = await verifyCallerAndGetProfile(bearerTokenFromRequest(request));
-    if (!profile) {
-      return jsonResponse({ error: "Bitte einloggen, um KI-Vorschläge zu nutzen." }, 401);
+    if (url.pathname === "/swap-chat") {
+      return handleSwapChatRequest(request, env);
     }
-
-    let payload;
-    try {
-      payload = await request.json();
-    } catch (e) {
-      return jsonResponse({ error: "Ungültiges JSON im Request-Body" }, 400);
-    }
-
-    const { exercise, muscleFocus, existingAlts } = payload || {};
-    if (!exercise || typeof exercise !== "string") {
-      return jsonResponse({ error: "Feld 'exercise' fehlt oder ist ungültig" }, 400);
-    }
-
-    if (!env.GEMINI_API_KEY) {
-      return jsonResponse({ error: "Server ist nicht korrekt konfiguriert (kein API-Key)" }, 500);
-    }
-
-    try {
-      const prompt = buildPrompt({ exercise, muscleFocus: muscleFocus || "", existingAlts: existingAlts || [] });
-      const suggestions = await callGemini(env.GEMINI_API_KEY, prompt);
-      return jsonResponse({ suggestions });
-    } catch (e) {
-      return jsonResponse({ error: e.message || "Unbekannter Fehler" }, 502);
-    }
+    return jsonResponse({ error: "Unbekannter Pfad" }, 404);
   },
 };

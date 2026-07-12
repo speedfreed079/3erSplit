@@ -331,6 +331,8 @@
   .modal-btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--chalk-dim); }
   .modal-btn-confirm { background: var(--olive); border: 1px solid var(--olive); color: #fff; }
   .modal-btn-danger { background: var(--rust); border: 1px solid var(--rust); color: #fff; }
+  .modal-date-label { display: block; font-size: 12px; color: var(--chalk-dim); margin-bottom: 4px; }
+  .modal-date-label .modal-input { margin-top: 4px; }
   .modal-choice-options { display: flex; gap: 8px; margin-bottom: 14px; }
   .modal-choice-btn {
     flex: 1; padding: 14px 8px; border-radius: 8px; border: 1px solid var(--border);
@@ -1039,7 +1041,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.48.2";
+const APP_VERSION = "1.50.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1048,6 +1050,8 @@ const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
 const ADMIN_API_URL = `${PROXY_URL}/admin`;
 // KI-Trainingsplan-Chat (seit v1.47.0): gleiches Muster, dritter Pfad am selben Worker.
 const AI_PLAN_CHAT_API_URL = `${PROXY_URL}/plan-chat`;
+// KI-Übungstausch-Dialog (seit v1.49.0): vierter Pfad, ersetzt den alten bare-PROXY_URL-Einweg-Endpunkt.
+const SWAP_CHAT_API_URL = `${PROXY_URL}/swap-chat`;
 
 // Google-Drive-Backup (seit v1.28.0): eigene, dedizierte OAuth-Client-ID, bewusst NICHT die von
 // Firebase Auth wiederverwendet (gleiches Isolationsprinzip wie ueberall sonst in der App - jede
@@ -1203,6 +1207,14 @@ function findExerciseDefById(exId) {
     if (found) return found;
   }
   return null;
+}
+
+// YYYY-MM-DD im lokalen Zeitzone (nicht toISOString(), das wuerde bei einem UTC-Versatz auf den
+// falschen Kalendertag rutschen) - fuer das <input type="date">-Feld beim Nachtragen (v1.50.0).
+function todayISODate() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 function getWeekStart(date) {
@@ -1616,7 +1628,7 @@ let exPickerGroupOpen = new Set();
 // mehrere Panels gleichzeitig offen).
 let exPickerInfoOpenKey = null;
 
-// KI-Trainingsplan-Chat (seit v1.47.0): ephemer wie aiSuggestions/restTimer - der Gesprächs-
+// KI-Trainingsplan-Chat (seit v1.47.0): ephemer wie aiSwapChats/restTimer - der Gesprächs-
 // verlauf wird bewusst NICHT persistiert, ein Verlassen/Neubetreten startet den Chat neu.
 let aiPlanChatActive = false;
 let aiPlanMessages = []; // [{role: "user"|"model", text}]
@@ -1664,7 +1676,7 @@ function setCloudSyncStatus(status) {
 // (verifyCallerIsAdmin() prueft den Firebase-ID-Token gegen die gleichnamige Konstante dort).
 const ADMIN_EMAIL = "frederik.ruehmann@gmail.com";
 let adminViewActive = false;
-// Ephemer wie aiSuggestions - Nutzerliste/Ladezustand/Fehler fuers Admin-Panel, nie in state.
+// Ephemer wie aiSwapChats - Nutzerliste/Ladezustand/Fehler fuers Admin-Panel, nie in state.
 let adminUsers = [];
 let adminLoading = false;
 let adminError = null;
@@ -1706,8 +1718,12 @@ function openConfirmModal({ title, message = "", confirmLabel = "Löschen", onCo
 // Einheiten-Notizen) blendet zusaetzlich ein optionales Textfeld ein, dessen Wert immer als
 // zweites Argument an onConfirm geht (auch beim Ueberspringen - man kann eine Notiz schreiben
 // und trotzdem kein Emoji waehlen).
-function openChoiceModal({ title, message = "", options, includeNote = false, notePlaceholder = "", onConfirm }) {
-  modal = { kind: "choice", title, message, options, includeNote, notePlaceholder, onConfirm };
+// `includeDate`/`defaultDate`/`skipLabel` seit v1.50.0 (Training/Physio nachtragen): lassen das
+// Abschluss-Datum statt immer "heute" editierbar sein - siehe finishSession()/finishPhysioSession().
+// `skipLabel` ersetzt den Skip-Button-Text, da "Überspringen" beim Physio-Abschluss (keine
+// Wellbeing-Auswahl vorhanden, nur die Datumsbestaetigung) irrefuehrend waere.
+function openChoiceModal({ title, message = "", options, includeNote = false, notePlaceholder = "", includeDate = false, defaultDate = "", skipLabel = "Überspringen", onConfirm }) {
+  modal = { kind: "choice", title, message, options, includeNote, notePlaceholder, includeDate, defaultDate, skipLabel, onConfirm };
   renderModal();
 }
 
@@ -1729,8 +1745,9 @@ function renderModal() {
           ${modal.options.map(o => `<button class="modal-choice-btn" data-role="modal-choice-select" data-value="${escapeAttr(o.value)}">${escapeAttr(o.label)}</button>`).join("")}
         </div>
         ${modal.includeNote ? `<textarea class="modal-input" id="modal-note-field" rows="2" placeholder="${escapeAttr(modal.notePlaceholder)}"></textarea>` : ""}
+        ${modal.includeDate ? `<label class="modal-date-label">Datum<input class="modal-input" id="modal-date-field" type="date" value="${escapeAttr(modal.defaultDate)}" max="${escapeAttr(todayISODate())}" /></label>` : ""}
         <div class="modal-actions">
-          <button class="modal-btn modal-btn-cancel" data-role="modal-skip">Überspringen</button>
+          <button class="modal-btn modal-btn-cancel" data-role="modal-skip">${escapeAttr(modal.skipLabel)}</button>
         </div>
       </div>
     `;
@@ -1821,9 +1838,14 @@ function stopRestTimer() {
   renderRestTimer();
 }
 
-// ---------- KI-ÜBUNGSVORSCHLÄGE (via Cloudflare-Worker-Proxy) ----------
-// Flüchtiger State, nicht in localStorage: { [swapKey]: { status: 'loading'|'done'|'error', suggestions?, error? } }
-const aiSuggestions = {};
+// ---------- KI-ÜBUNGSTAUSCH-DIALOG (via Cloudflare-Worker-Proxy) ----------
+// Seit v1.49.0: statt einer einmaligen statischen Liste ein echter Mehrfach-Runden-Dialog (kann
+// z.B. "Knie zwickt bei Kniebeugen" tippen und bekommt gezielte Vorschläge) - gleiche
+// Chat-Infrastruktur wie der KI-Trainingsplan-Chat (systemInstruction + contents-Verlauf), aber
+// eingebettet im bestehenden ⟲-Panel statt eines eigenen Vollbild-Screens, da an eine einzelne
+// Übung gebunden. Flüchtiger State, nicht in localStorage:
+// { [swapKey]: { messages: [{role:'user'|'model'|'error', text, suggestions?}], sending: bool } }
+const aiSwapChats = {};
 
 function aiSuggestHTML(day, ex, swapKey) {
   if (!PROXY_URL) {
@@ -1835,7 +1857,7 @@ function aiSuggestHTML(day, ex, swapKey) {
   if (!currentUser) {
     return `<div class="ai-suggest-panel"><span class="ai-suggest-status">Bitte einloggen (Profil → Konto), um KI-Vorschläge zu nutzen.</span></div>`;
   }
-  const entry = aiSuggestions[swapKey];
+  const entry = aiSwapChats[swapKey];
 
   if (!entry) {
     return `
@@ -1844,39 +1866,68 @@ function aiSuggestHTML(day, ex, swapKey) {
       </div>
     `;
   }
-  if (entry.status === "loading") {
-    return `<div class="ai-suggest-panel"><span class="ai-suggest-status">Lade Vorschläge von Gemini…</span></div>`;
-  }
-  if (entry.status === "error") {
-    return `
-      <div class="ai-suggest-panel">
-        <span class="ai-suggest-error">Fehler: ${escapeAttr(entry.error)}</span><br/>
-        <button class="ai-suggest-btn" data-role="ai-suggest" data-day="${day}" data-exid="${ex.id}">Erneut versuchen</button>
-      </div>
-    `;
-  }
-  const items = entry.suggestions.length
-    ? entry.suggestions.map(s => `
-        <button class="ai-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(s.name)}">
-          ${escapeAttr(s.name)}
-          ${s.reason ? `<span class="ai-opt-reason">${escapeAttr(s.reason)}</span>` : ""}
-        </button>
-      `).join("")
-    : `<span class="ai-suggest-status">Keine Vorschläge erhalten.</span>`;
+
+  const messagesHTML = entry.messages.map(m => {
+    if (m.role === "error") return `<div class="chat-message error">${escapeAttr(m.text)}</div>`;
+    const suggestionsHTML = m.suggestions && m.suggestions.length
+      ? m.suggestions.map(s => `
+          <button class="ai-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(s.name)}">
+            ${escapeAttr(s.name)}
+            ${s.reason ? `<span class="ai-opt-reason">${escapeAttr(s.reason)}</span>` : ""}
+          </button>
+        `).join("")
+      : "";
+    return `<div class="chat-message ${escapeAttr(m.role)}">${escapeAttr(m.text)}</div>${suggestionsHTML}`;
+  }).join("");
+  const loadingHTML = entry.sending ? `<div class="chat-message model">…</div>` : "";
+
   return `
     <div class="ai-suggest-panel">
-      ${items}
-      <button class="ai-suggest-btn" style="margin-top:6px;" data-role="ai-suggest" data-day="${day}" data-exid="${ex.id}">🔄 Neu vorschlagen</button>
+      <div class="chat-messages">
+        ${messagesHTML}
+        ${loadingHTML}
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" rows="1" placeholder="Kontext eingeben, z.B. 'Knie zwickt'…" data-role="ai-suggest-chat-input" ${entry.sending ? "disabled" : ""}></textarea>
+        <button class="ai-suggest-btn" style="flex-shrink:0;" data-role="ai-suggest-chat-send" data-day="${day}" data-exid="${ex.id}" ${entry.sending ? "disabled" : ""}>Senden</button>
+      </div>
+      <button class="ai-suggest-btn" style="margin-top:6px;" data-role="ai-suggest-chat-reset" data-day="${day}" data-exid="${ex.id}">🔄 Neu starten</button>
     </div>
   `;
 }
 
-async function fetchAiSuggestions(day, exId) {
-  const ex = EXERCISES[day].find(x => x.id === exId);
+// Startet einen neuen Dialog (bisheriges "ein Klick = generische Vorschläge"-Verhalten bleibt
+// erhalten, die erste Nutzer-Nachricht ist eine feste Eröffnungsfrage). findExerciseById() statt
+// EXERCISES[day].find() - fixt nebenbei einen bestehenden Bug: fuer Extra-Uebungen
+// (state.extraExercises, seit v1.43.0 auch im Swap-Panel erreichbar) lieferte EXERCISES[day].find
+// undefined und der Klick waere gecrasht.
+function startAiSwapChat(day, exId) {
+  const swapKey = `${day}:${exId}`;
+  aiSwapChats[swapKey] = { messages: [{ role: "user", text: "Schlag mir Alternativen vor." }], sending: true };
+  render();
+  runSwapChatTurn(day, exId);
+}
+
+function sendAiSwapChatMessage(day, exId, text) {
+  const swapKey = `${day}:${exId}`;
+  const entry = aiSwapChats[swapKey];
+  if (!entry || entry.sending) return;
+  entry.messages.push({ role: "user", text });
+  entry.sending = true;
+  render();
+  runSwapChatTurn(day, exId);
+}
+
+function resetAiSwapChat(day, exId) {
+  delete aiSwapChats[`${day}:${exId}`];
+  render();
+}
+
+async function runSwapChatTurn(day, exId) {
+  const ex = findExerciseById(day, exId);
   const swapKey = `${day}:${exId}`;
   const dayMeta = DAYS.find(d => d.id === day);
-  aiSuggestions[swapKey] = { status: "loading" };
-  render();
+  const entry = aiSwapChats[swapKey];
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 25000);
@@ -1885,23 +1936,25 @@ async function fetchAiSuggestions(day, exId) {
     // geprueft, falls dieser Pfad je ohne das UI-Gate erreicht wird.
     const idToken = currentUser && window.FretzeCloud ? await window.FretzeCloud.getIdToken() : null;
     if (!idToken) throw new Error("Bitte einloggen, um KI-Vorschläge zu nutzen.");
-    const res = await fetch(PROXY_URL, {
+    const res = await fetch(SWAP_CHAT_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
+        messages: entry.messages,
         exercise: state.swaps[swapKey] || ex.name,
         muscleFocus: dayMeta.sub,
         existingAlts: ex.alts,
       }),
       signal: controller.signal,
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Server-Fehler (${res.status})`);
-    aiSuggestions[swapKey] = { status: "done", suggestions: data.suggestions || [] };
+    entry.messages.push({ role: "model", text: data.reply, suggestions: data.suggestions || [] });
   } catch (e) {
-    aiSuggestions[swapKey] = { status: "error", error: e.name === "AbortError" ? "Zeitüberschreitung" : e.message };
+    entry.messages.push({ role: "error", text: e.name === "AbortError" ? "Zeitüberschreitung" : (e.message || "Da ist etwas schiefgelaufen.") });
   } finally {
     clearTimeout(timeoutId);
+    entry.sending = false;
     render();
   }
 }
@@ -3382,9 +3435,16 @@ function render() {
   `);
 }
 
-function finishSession(dayId, wellbeing, sessionNote) {
+// dateOverride (seit v1.50.0, "Training nachtragen"): YYYY-MM-DD aus dem Abschluss-Modal, statt
+// immer "jetzt" - laesst vergessene/verpasste Einheiten nachtragen (z.B. Saetze, die schon in den
+// Feldern standen, aber nie ueber "Training abschliessen" bestaetigt wurden). Mittags-Uhrzeit
+// vermeidet DST-/Zeitzonen-Randfaelle beim Tageswechsel. `timestamp` ist der Wert, den
+// getWeekStart()/Streak-/Volumen-/PR-Berechnung fuer die Wochen-/Datums-Zuordnung nutzen - ein
+// nachgetragener Eintrag zaehlt damit korrekt in der richtigen ISO-Woche statt in der aktuellen.
+function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   const daySets = state.sessions[dayId] || {};
-  const today = new Date().toLocaleDateString("de-DE");
+  const refDate = dateOverride ? new Date(dateOverride + "T12:00:00") : new Date();
+  const today = refDate.toLocaleDateString("de-DE");
   const journalExercises = [];
   // Seit v1.43.0: EXERCISES[dayId] plus frei hinzugefuegte Extra-Uebungen dieses Tages - sonst
   // wuerden Extra-Uebungen weder ins Tagebuch/die Gewichtsprogression einfliessen noch (unten)
@@ -3427,7 +3487,7 @@ function finishSession(dayId, wellbeing, sessionNote) {
     const dayMeta = DAYS.find(d => d.id === dayId);
     addJournalEntry({
       date: today,
-      timestamp: Date.now(),
+      timestamp: refDate.getTime(),
       planId: state.currentPlan,
       dayId,
       dayLabel: dayMeta ? dayMeta.label : dayId,
@@ -3471,10 +3531,18 @@ function physioDueInfo() {
 // mit fester PT-Vorgabe brauchen keinen "mehr Gewicht"-Vorschlag, und Physio-Sessions sollen
 // bewusst nicht das Wochenvolumen-Dashboard/den Streak-Zaehler beeinflussen (beide lesen nur
 // state.journal, das hier unangetastet bleibt).
-function finishPhysioSession() {
+// dateOverride (seit v1.50.0): siehe finishSession() fuer die gleiche Begruendung. Zusaetzliche
+// Nuance hier: wurde das Datum bewusst von "heute" weg veraendert (echtes Nachtragen, z.B. Physio
+// von vor der Funktions-Einfuehrung), darf lastDoneAt auch ohne eingetragene Saetze aktualisiert
+// werden - man erinnert sich oft nicht mehr an exakte Wiederholungen von vor ein paar Tagen, will
+// aber trotzdem, dass der Faelligkeits-Countdown ab dem richtigen Datum neu laeuft. Bleibt das
+// Datum auf heute stehen, gilt weiterhin die bisherige Schutzschranke gegen versehentliches
+// Leer-Abschliessen.
+function finishPhysioSession(dateOverride) {
   const daySets = state.sessions[PHYSIO_DAY_ID] || {};
   let anyEntered = false;
-  const today = new Date().toLocaleDateString("de-DE");
+  const refDate = dateOverride ? new Date(dateOverride + "T12:00:00") : new Date();
+  const today = refDate.toLocaleDateString("de-DE");
   state.physio.exercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
@@ -3484,11 +3552,12 @@ function finishPhysioSession() {
     const last = entered[entered.length - 1];
     setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
   });
-  if (!anyEntered) {
+  const isBackdated = dateOverride && dateOverride !== todayISODate();
+  if (!anyEntered && !isBackdated) {
     showToast("Keine Übung eingetragen.");
     return;
   }
-  state.physio.lastDoneAt = Date.now();
+  state.physio.lastDoneAt = refDate.getTime();
   const resetDay = {};
   state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex.id, ex.sets); });
   state.sessions[PHYSIO_DAY_ID] = resetDay;
@@ -3696,8 +3765,9 @@ document.addEventListener("click", (e) => {
   if (modalSkip) {
     const current = modal;
     const note = current && current.includeNote ? (document.getElementById("modal-note-field")?.value ?? "") : "";
+    const dateStr = current && current.includeDate ? (document.getElementById("modal-date-field")?.value || "") : "";
     closeModal();
-    if (current && current.onConfirm) current.onConfirm(null, note);
+    if (current && current.onConfirm) current.onConfirm(null, note, dateStr);
     return;
   }
 
@@ -3706,8 +3776,9 @@ document.addEventListener("click", (e) => {
     const current = modal;
     const value = modalChoiceSelect.dataset.value;
     const note = current && current.includeNote ? (document.getElementById("modal-note-field")?.value ?? "") : "";
+    const dateStr = current && current.includeDate ? (document.getElementById("modal-date-field")?.value || "") : "";
     closeModal();
-    if (current && current.onConfirm) current.onConfirm(value, note);
+    if (current && current.onConfirm) current.onConfirm(value, note, dateStr);
     return;
   }
 
@@ -4064,7 +4135,18 @@ document.addEventListener("click", (e) => {
 
   const finishPhysio = e.target.closest('[data-role="finish-physio"]');
   if (finishPhysio) {
-    finishPhysioSession();
+    // Seit v1.50.0: gleiche Datums-Auswahl wie beim regulaeren Trainingsabschluss (siehe
+    // finish-Handler), aber ohne Wellbeing-Optionen (options: []) - die gab es bei Physio nie.
+    // skipLabel "Speichern" statt "Überspringen", da hier nichts uebersprungen wird.
+    openChoiceModal({
+      title: "Physio abschließen",
+      message: "Datum bestätigen — anpassen, falls du die Einheit schon vor ein paar Tagen gemacht hast.",
+      options: [],
+      includeDate: true,
+      defaultDate: todayISODate(),
+      skipLabel: "Speichern",
+      onConfirm: (_value, _note, dateStr) => finishPhysioSession(dateStr),
+    });
     return;
   }
 
@@ -4507,7 +4589,22 @@ document.addEventListener("click", (e) => {
 
   const aiSuggestBtn = e.target.closest('[data-role="ai-suggest"]');
   if (aiSuggestBtn) {
-    fetchAiSuggestions(aiSuggestBtn.dataset.day, aiSuggestBtn.dataset.exid);
+    startAiSwapChat(aiSuggestBtn.dataset.day, aiSuggestBtn.dataset.exid);
+    return;
+  }
+
+  const aiSuggestChatSend = e.target.closest('[data-role="ai-suggest-chat-send"]');
+  if (aiSuggestChatSend) {
+    const input = document.querySelector('[data-role="ai-suggest-chat-input"]');
+    const text = input ? input.value.trim() : "";
+    if (!text) return;
+    sendAiSwapChatMessage(aiSuggestChatSend.dataset.day, aiSuggestChatSend.dataset.exid, text);
+    return;
+  }
+
+  const aiSuggestChatReset = e.target.closest('[data-role="ai-suggest-chat-reset"]');
+  if (aiSuggestChatReset) {
+    resetAiSwapChat(aiSuggestChatReset.dataset.day, aiSuggestChatReset.dataset.exid);
     return;
   }
 
@@ -4594,7 +4691,9 @@ document.addEventListener("click", (e) => {
       ],
       includeNote: true,
       notePlaceholder: "Notiz zur Einheit (Schlaf, Energie, Krankheit …) — optional",
-      onConfirm: (wellbeing, sessionNote) => finishSession(dayId, wellbeing, sessionNote),
+      includeDate: true,
+      defaultDate: todayISODate(),
+      onConfirm: (wellbeing, sessionNote, dateStr) => finishSession(dayId, wellbeing, sessionNote, dateStr),
     });
     return;
   }
