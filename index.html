@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.59.0";
+const APP_VERSION = "1.59.1";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1121,34 +1121,52 @@ function setHistoryEntry(exId, entry) {
 // (keine Zeitstempel pro Gewichts-/Verlaufs-Eintrag vorhanden, um "jüngste Nutzung" zu bestimmen) -
 // einfachste Definition, gleiche "computed on demand, austauschbar ohne Migration"-Konvention wie
 // z.B. computePersonalRecords()' PR-Definition.
-function otherExIdsSharingLibraryId(ex) {
-  if (!ex.libraryId) return [];
+//
+// effectiveLibraryId() (seit v1.59.1): ein per ⟲ getauschter Slot behält seine ursprüngliche
+// libraryId (state.swaps speichert nur den angezeigten Namen, siehe swap-select-Handler) - ohne
+// diese Auflösung würde z.B. Push Bs "Schrägbankdrücken Maschine", getauscht zu "Schrägbankdrücken
+// Kurzhantel", niemals mit Push As gleichnamiger, eigener Übung (andere libraryId) verknüpft, weil
+// otherExIdsSharingLibraryId() stur die (falsche) Maschinen-libraryId des Original-Slots vergliche.
+// Löst den getauschten Anzeigenamen zuerst über libraryIdForName() auf; kein Treffer (freier Text,
+// oder Name nicht in exerciseLibrary) fällt auf ex.libraryId zurück, exakt wie zuvor.
+function effectiveLibraryId(day, ex) {
+  const displayName = state.swaps[`${day}:${ex.id}`];
+  if (displayName) {
+    const swappedLibraryId = libraryIdForName(displayName);
+    if (swappedLibraryId) return swappedLibraryId;
+  }
+  return ex.libraryId;
+}
+
+function otherExIdsSharingLibraryId(day, ex) {
+  const libraryId = effectiveLibraryId(day, ex);
+  if (!libraryId) return [];
   const ids = [];
   for (const plan of getAllPlans()) {
     for (const dayId of Object.keys(plan.exercises)) {
       for (const otherEx of plan.exercises[dayId]) {
-        if (otherEx.id !== ex.id && otherEx.libraryId === ex.libraryId) ids.push(otherEx.id);
+        if (otherEx.id !== ex.id && otherEx.libraryId === libraryId) ids.push(otherEx.id);
       }
     }
   }
   for (const dayId of Object.keys(state.extraExercises)) {
     for (const otherEx of state.extraExercises[dayId]) {
-      if (otherEx.id !== ex.id && otherEx.libraryId === ex.libraryId) ids.push(otherEx.id);
+      if (otherEx.id !== ex.id && otherEx.libraryId === libraryId) ids.push(otherEx.id);
     }
   }
   return ids;
 }
 
-function findCrossPlanLastWeights(ex) {
-  for (const id of otherExIdsSharingLibraryId(ex)) {
+function findCrossPlanLastWeights(day, ex) {
+  for (const id of otherExIdsSharingLibraryId(day, ex)) {
     const weights = getLastWeights(id);
     if (weights.length) return weights;
   }
   return null;
 }
 
-function findCrossPlanHistoryEntry(ex) {
-  for (const id of otherExIdsSharingLibraryId(ex)) {
+function findCrossPlanHistoryEntry(day, ex) {
+  for (const id of otherExIdsSharingLibraryId(day, ex)) {
     const hist = getHistoryEntry(id);
     if (hist) return hist;
   }
@@ -1156,11 +1174,13 @@ function findCrossPlanHistoryEntry(ex) {
 }
 
 // exId-Parameter seit v1.53.0 zu ex (volles Objekt) erweitert - wird fuer den libraryId-Zugriff
-// oben gebraucht, alle bestehenden Aufrufstellen hatten `ex` ohnehin schon im Scope.
-function buildInitialSets(ex, n) {
+// oben gebraucht, alle bestehenden Aufrufstellen hatten `ex` ohnehin schon im Scope. day-Parameter
+// seit v1.59.1 dazugekommen (siehe effectiveLibraryId() oben) - alle Aufrufstellen hatten die
+// Day-ID ebenfalls schon im Scope.
+function buildInitialSets(day, ex, n) {
   let weights = getLastWeights(ex.id);
   if (weights.length === 0) {
-    const crossPlanWeights = findCrossPlanLastWeights(ex);
+    const crossPlanWeights = findCrossPlanLastWeights(day, ex);
     if (crossPlanWeights) weights = crossPlanWeights;
   }
   return Array.from({ length: n }, (_, i) => ({
@@ -2186,13 +2206,13 @@ async function reconcileCloudState(uid) {
 function getSetsFor(dayId, ex) {
   const day = state.sessions[dayId];
   if (day && day[ex.id] && day[ex.id].length === ex.sets) return day[ex.id];
-  return buildInitialSets(ex, ex.sets);
+  return buildInitialSets(dayId, ex, ex.sets);
 }
 
 function ensureDaySets(dayId, ex) {
   if (!state.sessions[dayId]) state.sessions[dayId] = {};
   if (!state.sessions[dayId][ex.id] || state.sessions[dayId][ex.id].length !== ex.sets) {
-    state.sessions[dayId][ex.id] = buildInitialSets(ex, ex.sets);
+    state.sessions[dayId][ex.id] = buildInitialSets(dayId, ex, ex.sets);
   }
   return state.sessions[dayId][ex.id];
 }
@@ -2533,7 +2553,7 @@ function renderFocusMode() {
   const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
   // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
   // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
-  const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(ex);
+  const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(day, ex);
   const note = state.notes[swapKey] || "";
   const info = exerciseLibrary[ex.libraryId];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
@@ -3533,7 +3553,7 @@ function render() {
     const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
     // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
     // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
-    const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(ex);
+    const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(day, ex);
     const note = state.notes[swapKey] || "";
 
     const historyHTML = historyLineHTML(ex.id, hist);
@@ -3687,7 +3707,7 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
     });
   }
   const resetDay = {};
-  dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
+  dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(dayId, ex, ex.sets); });
   state.sessions[dayId] = resetDay;
   stopRestTimer();
   persist();
@@ -3746,7 +3766,7 @@ function finishPhysioSession(dateOverride) {
   }
   state.physio.lastDoneAt = refDate.getTime();
   const resetDay = {};
-  state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(ex, ex.sets); });
+  state.physio.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(PHYSIO_DAY_ID, ex, ex.sets); });
   state.sessions[PHYSIO_DAY_ID] = resetDay;
   persist();
   render();

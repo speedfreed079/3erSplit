@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.59.1 — 2026-07-13 (Teil 101): Bugfix — Plan-übergreifende Gewichts-Übernahme griff nicht bei getauschten Übungen
+
+- Nutzer-Meldung: in Push B "Schrägbankdrücken Maschine" (kein passendes Gerät im eigenen Gym) per ⟲ zu "Schrägbankdrücken Kurzhantel" getauscht — dieselbe Übung, die auch nativ in Push A trainiert wird. Erwartet (laut der seit v1.53.0 dokumentierten plan-übergreifenden Übernahme): Gewicht/Historie aus Push A werden vorbefüllt. Tatsächlich: leer, wie beim allerersten Mal.
+- **Ursache**: `state.swaps[...]` (⟲-Tausch) ändert nur den angezeigten Namen, nicht die `libraryId` des Plan-Slots. `otherExIdsSharingLibraryId(ex)` verglich weiterhin die `libraryId` des *ursprünglichen* Slots (hier: die eigene libraryId von "Schrägbankdrücken Maschine") und fand dadurch nie Push As "Schrägbankdrücken Kurzhantel" (eigene, andere libraryId), obwohl der angezeigte Name identisch war.
+- **Fix**: neue Funktion `effectiveLibraryId(day, ex)` löst zuerst den per ⟲ getauschten Anzeigenamen über das bestehende `libraryIdForName()` (bisher nur im Plan-Builder-Datalist genutzt) auf und fällt nur ohne Treffer (freier Text oder unbekannter Name) auf `ex.libraryId` zurück. `otherExIdsSharingLibraryId()`/`findCrossPlanLastWeights()`/`findCrossPlanHistoryEntry()`/`buildInitialSets()` bekamen dafür einen zusätzlichen `day`-Parameter — alle Aufrufstellen hatten die Day-ID ohnehin schon im Scope, keine Verhaltensänderung für nicht getauschte Übungen.
+- `howto.html` unverändert — die bestehende Beschreibung der Übernahme ("Machst du dieselbe Übung zum ersten Mal in einem anderen Plan...") war schon korrekt formuliert, sie griff nur in diesem einen Fall nicht.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check.
+
 ## v1.59.0 — 2026-07-17 (Teil 100): "Eigenen Plan erstellen"/"KI-Trainingsplan erstellen" auch im Plan-Auswahlfeld
 
 - Nutzer-Wunsch: die beiden Erstellen-Aktionen sollen nicht nur auf dem Startbildschirm, sondern auch direkt im Plan-Dropdown (`#plan-select`, in jeder Ansicht mit aktivem Plan sichtbar) auswählbar sein.
