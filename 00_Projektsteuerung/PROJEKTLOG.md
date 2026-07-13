@@ -2,6 +2,16 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.60.0 — 2026-07-13 (Teil 102): CSV-Export der Sätze für Datenanalyse in Excel/Sheets
+
+- Nutzer-Wunsch (nach kurzem Brainstorm, siehe `00_Projektsteuerung/MEMORY.md` "CSV/Excel-Export"): ein zusätzlicher Export unabhängig vom bestehenden JSON-Backup, gedacht für eigene Pivot-Tabellen/Trendlinien statt reiner Wiederherstellung.
+- **Umfang bewusst auf Satz-Ebene beschränkt** (Nutzer-Entscheidung gegen eine zweite Sessions-CSV in dieser ersten Version): `exportCsv()` schreibt eine Zeile pro geloggtem Satz aus `state.journal` (long format, direkt Pivot-tauglich in Excel) — Datum, Uhrzeit, Plan, Tag, Übung, Muskelgruppe, Gym, Satz-Nr, Gewicht, Wiederholungen, geschätztes 1RM (Epley, gleiche Funktion wie bei den Tagebuch-PRs), Könnte-mehr, Aufwärmsatz. Muskelgruppe wird wie im Wochenvolumen-Dashboard über `findExerciseDefById(exId)` → `exerciseLibrary[...].muscleGroup` aufgelöst (leer, wenn nicht zuordenbar — gleiche Graceful-Degradation wie dort).
+- **Reines CSV statt `.xlsx`**: bewusst keine neue Dependency (z.B. SheetJS für ein echtes Mehrfach-Reiter-Excel) — passt zur Zero-Build-Tooling-Philosophie des Projekts, siehe CLAUDE.md.
+- **Format-Details fürs deutsche Excel**: Semikolon statt Komma als Feldtrennzeichen, Komma statt Punkt als Dezimaltrennzeichen (`formatNumberDe()`) — beides zusammen nötig, sonst zerreißt Excel z.B. "22,5" in zwei Spalten. UTF-8-BOM vor dem Blob-Inhalt, sonst zeigt Excel Umlaute in Übungsnamen kaputt an. `csvEscapeField()` quotet Felder mit Semikolon/Anführungszeichen/Zeilenumbruch korrekt (z.B. Gym-Namen, die zufällig ein Semikolon enthalten).
+- Neuer Button "📊 CSV" im Profil, Bereich "Daten", neben Export/Import.
+- `howto.html`: neuer Absatz im Export/Import-Abschnitt.
+- Verifiziert: `node -e "new Function(...)"` Syntax-Check; isolierte Logik-Simulation der Zeilenaufbereitung (Datum/Uhrzeit-Formatierung, Komma-Dezimalzahlen, Muskelgruppen-Auflösung, korrektes Quoting eines Gym-Namens mit Semikolon) — alle Checks bestanden.
+
 ## v1.59.1 — 2026-07-13 (Teil 101): Bugfix — Plan-übergreifende Gewichts-Übernahme griff nicht bei getauschten Übungen
 
 - Nutzer-Meldung: in Push B "Schrägbankdrücken Maschine" (kein passendes Gerät im eigenen Gym) per ⟲ zu "Schrägbankdrücken Kurzhantel" getauscht — dieselbe Übung, die auch nativ in Push A trainiert wird. Erwartet (laut der seit v1.53.0 dokumentierten plan-übergreifenden Übernahme): Gewicht/Historie aus Push A werden vorbefüllt. Tatsächlich: leer, wie beim allerersten Mal.

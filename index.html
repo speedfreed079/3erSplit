@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.59.1";
+const APP_VERSION = "1.60.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -2829,6 +2829,10 @@ function renderProfileView() {
         <span>Backup importieren</span>
         <button class="icon-btn" data-role="import-trigger">↑ Import</button>
       </div>
+      <div class="profile-row">
+        <span>Sätze als CSV exportieren</span>
+        <button class="icon-btn" data-role="export-csv">📊 CSV</button>
+      </div>
       <input type="file" id="import-file-input" accept="application/json" style="display:none;" />
       <div class="profile-row">
         <span>In Google Drive sichern</span>
@@ -3798,6 +3802,73 @@ function exportData() {
   showToast("Backup wurde heruntergeladen.");
 }
 
+// CSV-Export fuer Datenanalyse in Excel/Sheets (seit v1.60.0) - bewusst getrennt vom
+// JSON-Backup oben (das die App selbst sichert/wiederherstellt). Eine Zeile pro geloggtem
+// Satz (long format), damit Excel-Pivot-Tabellen direkt funktionieren, ohne dass der Nutzer
+// erst wide-zu-long umformen muesste. Semikolon statt Komma als Feldtrenner UND Komma statt
+// Punkt als Dezimaltrennzeichen (formatNumberDe) - beides zusammen ist noetig, weil deutsches
+// Excel Komma als Dezimalzeichen erwartet und sonst z.B. "22,5" in zwei Spalten zerreisst.
+// UTF-8-BOM (﻿) vor dem Blob-Inhalt, sonst zeigt Excel Umlaute in Uebungsnamen kaputt an.
+function csvEscapeField(value) {
+  const str = String(value ?? "");
+  if (/[;"\r\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+  return str;
+}
+
+function formatNumberDe(n) {
+  return String(n).replace(".", ",");
+}
+
+function exportCsv() {
+  const header = ["Datum", "Uhrzeit", "Plan", "Tag", "Übung", "Muskelgruppe", "Gym", "Satz-Nr", "Gewicht (kg)", "Wiederholungen", "Geschätztes 1RM (kg)", "Könnte mehr", "Aufwärmsatz"];
+  const rows = [header];
+  const pad = (n) => String(n).padStart(2, "0");
+  state.journal.forEach(entry => {
+    const planMeta = getAllPlans().find(p => p.id === entry.planId);
+    const planLabel = planMeta ? planMeta.label : entry.planId;
+    const gym = entry.gymId ? state.gyms.find(g => g.id === entry.gymId) : null;
+    const d = new Date(entry.timestamp);
+    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    entry.exercises.forEach(ex => {
+      const def = findExerciseDefById(ex.exId);
+      const info = def ? exerciseLibrary[def.libraryId] : null;
+      const muscleGroup = (info && info.muscleGroup) || "";
+      ex.sets.forEach((s, i) => {
+        const weightNum = parseWeightNum(s.weight);
+        const hasWeight = Number.isFinite(weightNum);
+        const e1rm = hasWeight ? Math.round(estimateOneRepMax(weightNum, s.reps) * 10) / 10 : null;
+        rows.push([
+          dateStr,
+          timeStr,
+          planLabel,
+          entry.dayLabel,
+          ex.name,
+          muscleGroup,
+          gym ? gym.name : "",
+          String(i + 1),
+          hasWeight ? formatNumberDe(weightNum) : (s.weight || ""),
+          s.reps || "",
+          e1rm !== null ? formatNumberDe(e1rm) : "",
+          s.couldDoMore ? "Ja" : "Nein",
+          s.isWarmup ? "Ja" : "Nein",
+        ]);
+      });
+    });
+  });
+  const csvBody = rows.map(row => row.map(csvEscapeField).join(";")).join("\r\n");
+  const blob = new Blob(["﻿" + csvBody], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `fretze-saetze-${todayISODate()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("CSV-Export wurde heruntergeladen.");
+}
+
 function importData(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -4650,6 +4721,12 @@ document.addEventListener("click", (e) => {
   const exportBtn = e.target.closest('[data-role="export"]');
   if (exportBtn) {
     exportData();
+    return;
+  }
+
+  const exportCsvBtn = e.target.closest('[data-role="export-csv"]');
+  if (exportCsvBtn) {
+    exportCsv();
     return;
   }
 
