@@ -464,11 +464,6 @@
   .volume-fill-ok { background: var(--olive); }
   .volume-fill-high { background: var(--rust); }
 
-  .home-continue-btn {
-    width: 100%; padding: 14px; border-radius: 9px; border: 1px solid var(--rust);
-    background: var(--rust); color: #fff; font-family: 'Oswald', sans-serif; font-size: 15px;
-    letter-spacing: 0.4px; text-transform: uppercase; cursor: pointer; margin-bottom: 18px;
-  }
   .home-section-label {
     font-size: 11px; color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
@@ -509,7 +504,7 @@
   .home-plan-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .home-plan-btn {
     flex: 1; text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--chalk); font-size: 14px; cursor: pointer;
+    background: var(--surface); color: var(--chalk); font-size: 14px; display: flex; align-items: center;
   }
   .home-plan-btn.active { border-color: var(--rust); }
   .home-plan-edit {
@@ -1046,7 +1041,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.60.0";
+const APP_VERSION = "1.61.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1407,8 +1402,7 @@ function newPlanDraft() {
 }
 
 // Seit v1.59.0 aus dem plan-builder-enter-Klick-Handler herausgezogen - wird jetzt auch von der
-// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen, nicht mehr nur vom
-// Startbildschirm-Button.
+// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen.
 function startPlanBuilder() {
   if (!state.planDraft) state.planDraft = newPlanDraft();
   planBuilderActive = true;
@@ -1433,7 +1427,6 @@ function startEditingPlan(planId) {
     })),
   };
   planBuilderActive = true;
-  homeScreenActive = false;
   persist();
   render();
 }
@@ -1473,7 +1466,6 @@ function startForkingPlan(planId) {
     }),
   };
   planBuilderActive = true;
-  homeScreenActive = false;
   persist();
   render();
 }
@@ -1576,7 +1568,6 @@ function savePlanDraft() {
   state.currentDay = DAYS[0].id;
   planBuilderActive = false;
   exPickerActive = false;
-  homeScreenActive = false;
   persist();
   render();
   showToast(wasEditing ? "Plan aktualisiert." : "Plan gespeichert.");
@@ -1679,8 +1670,8 @@ function loadState() {
         lastWeights: parsed.lastWeights || {},
         theme: parsed.theme || "sepia",
         // Seit v1.48.1: kein Plan-Default mehr ("ppl") - ein neuer Nutzer soll explizit waehlen
-        // statt stillschweigend PPL aktiviert zu bekommen. null bedeutet "noch nichts gewaehlt",
-        // renderHomeScreen() zeigt dafuer einen eigenen Hinweis statt "Weiter mit ...".
+        // statt stillschweigend PPL aktiviert zu bekommen. null bedeutet "noch nichts gewaehlt" -
+        // render() zeigt dafuer einen eigenen Platzhalter-Hinweis statt der Kartenansicht.
         currentPlan: parsed.currentPlan || null,
         textSize: parsed.textSize || "normal",
         gyms: parsed.gyms || [],
@@ -1737,10 +1728,6 @@ let focusEditOpen = false;
 let journalViewActive = false;
 let journalTab = "verlauf"; // "verlauf" | "rekorde" | "volumen"
 
-// Startbildschirm: bewusst initial true (nicht false wie die anderen ephemeren Views) -
-// erscheint dadurch automatisch beim allerersten render()-Aufruf nach dem Laden, ohne
-// dass eine Aktion noetig ist. Wird ueber den 🏠-Header-Button jederzeit erneut aktiviert.
-let homeScreenActive = true;
 let planBuilderActive = false;
 
 // Profil-Ansicht: sammelt Geraete-/Daten-Einstellungen (Theme, Schriftgroesse, Export,
@@ -1769,7 +1756,7 @@ let extraManageOpen = false;
 
 // Uebungs-Picker im Plan-Builder (seit v1.44.0): "gestapelte" Ansicht ueber dem Plan-Builder -
 // planBuilderActive bleibt waehrend der Picker offen ist unangetastet, render() prueft
-// exPickerActive VOR planBuilderActive (gleiches Prinzip wie physioViewActive vor homeScreenActive).
+// exPickerActive VOR planBuilderActive (gleiches Prinzip wie physioViewActive vor journalViewActive).
 let exPickerActive = false;
 // Seit v1.46.0: exPickerDayIdx (reine Zahl) wurde zu exPickerTarget verallgemeinert, damit der
 // Picker auch aus dem Physio-Bereich heraus aufrufbar ist, nicht nur aus dem Plan-Builder -
@@ -2820,6 +2807,11 @@ function renderProfileView() {
       </div>
       <div class="home-section-label" style="margin-top:18px;">Gym-Standort</div>
       ${gymRowHTML()}
+      <div class="home-section-label" style="margin-top:18px;">Training</div>
+      <p class="dim" style="margin-top:0;">Zum Wechseln/Anlegen eines Plans: Dropdown "Plan" oben in der Kopfzeile. Hier nur Verwaltung bestehender Pläne.</p>
+      ${planManageRowsHTML()}
+      <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
+      <button class="home-create-btn" data-role="physio-enter">🩺 Physio-Übungen</button>
       <div class="home-section-label" style="margin-top:18px;">Daten</div>
       <div class="profile-row">
         <span>Backup exportieren</span>
@@ -3165,8 +3157,9 @@ function renderPhysioView() {
   `;
 }
 
-// Home-Screen-Banner: nur sichtbar wenn tatsaechlich faellig - der Startbildschirm soll nicht mit
-// einem Dauer-Hinweis zugestellt werden, wenn Physio noch gar nicht ansteht.
+// Banner in der Kartenansicht (seit Entfernung des Startbildschirms direkt neben
+// renderTodayBanner() gerendert, siehe render()): nur sichtbar wenn tatsaechlich faellig -
+// kein Dauer-Hinweis, wenn Physio noch gar nicht ansteht.
 function physioBannerHTML() {
   if (state.physio.exercises.length === 0) return "";
   const { due, daysSince } = physioDueInfo();
@@ -3179,47 +3172,22 @@ function physioBannerHTML() {
   `;
 }
 
-function renderHomeScreen() {
-  const currentPlanMeta = getAllPlans().find(p => p.id === state.currentPlan);
-  // Seit v1.48.1: getRecommendedDay()/DAYS beziehen sich nur sinnvoll auf einen tatsaechlich
-  // gewaehlten Plan - ohne currentPlanMeta (noch nie ein Plan gewaehlt) bewusst nicht berechnet,
-  // sonst wuerde "Weiter mit ..." faelschlich auf das intern vorgewaermte PLANS[0] (PPL)
-  // zurueckfallen (siehe applyPlan()) und den Eindruck erwecken, es sei schon etwas gewaehlt.
-  const recDay = currentPlanMeta ? getRecommendedDay() : null;
-  const recDayMeta = recDay ? DAYS.find(d => d.id === recDay) : null;
-
-  const continueHTML = currentPlanMeta
-    ? `<button class="home-continue-btn" data-role="home-continue">▶ Weiter mit ${escapeAttr(currentPlanMeta.label)} – ${escapeAttr(recDayMeta ? recDayMeta.label : "")}</button>`
-    : `<p class="dim">Wähle unten einen Trainingsplan, um loszulegen.</p>`;
-
-  const plansHTML = getAllPlans().map(p => {
+// Seit Entfernung des Startbildschirms (der diese Liste vorher zeigte) lebt die Plan-Verwaltung
+// (kopieren/bearbeiten/loeschen) im Profil - Plan-WECHSEL selbst laeuft ausschliesslich ueber das
+// immer sichtbare #plan-select-Dropdown im Header, deshalb hier bewusst kein anklickbarer
+// "Plan waehlen"-Button mehr (das waere derselbe zweite Weg gewesen, den wir gerade auflösen).
+function planManageRowsHTML() {
+  return getAllPlans().map(p => {
     const isCustom = p.id.startsWith("custom_");
     return `
       <div class="home-plan-row">
-        <button class="home-plan-btn ${p.id === state.currentPlan ? "active" : ""}" data-role="home-select-plan" data-planid="${escapeAttr(p.id)}">${escapeAttr(p.label)}</button>
+        <span class="home-plan-btn ${p.id === state.currentPlan ? "active" : ""}">${escapeAttr(p.label)}</span>
         <button class="home-plan-edit" data-role="home-fork-plan" data-planid="${escapeAttr(p.id)}" title="Kopieren & bearbeiten">⎘</button>
         ${isCustom ? `<button class="home-plan-edit" data-role="home-edit-plan" data-planid="${escapeAttr(p.id)}" title="Plan bearbeiten">✏</button>` : ""}
         ${isCustom ? `<button class="home-plan-delete" data-role="home-delete-plan" data-planid="${escapeAttr(p.id)}" title="Plan löschen">🗑</button>` : ""}
       </div>
     `;
   }).join("");
-
-  return `
-    <div class="focusmode-topbar">
-      <button class="focusmode-exit-btn" data-role="home-exit">✕ Schließen</button>
-      <span class="focusmode-progress">🏠 Startbildschirm</span>
-    </div>
-    <div class="focusmode-content">
-      ${continueHTML}
-      ${physioBannerHTML()}
-      <div class="home-section-label">Plan wählen</div>
-      ${plansHTML}
-      <button class="home-create-btn" data-role="plan-builder-enter">+ Neuen Plan erstellen</button>
-      <button class="home-create-btn" data-role="ai-plan-chat-enter">🤖 KI-Trainingsplan erstellen</button>
-      <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
-      <button class="home-create-btn" data-role="physio-enter">🩺 Physio-Übungen</button>
-    </div>
-  `;
 }
 
 // Vorschlaege kommen bewusst NUR aus exerciseLibrary (nicht mehr aus allen Plan-Uebungsnamen) -
@@ -3348,8 +3316,7 @@ function renderExercisePicker() {
 // wiederverwendet, keine neue UI dafuer noetig.
 
 // Seit v1.59.0 aus dem ai-plan-chat-enter-Klick-Handler herausgezogen - wird jetzt auch von der
-// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen, nicht mehr nur vom
-// Startbildschirm-Button.
+// Plan-Auswahl (plan-select-Dropdown, in jeder Ansicht sichtbar) aufgerufen.
 function startAiPlanChat() {
   // Seit v1.48.0: Login-Pflicht (kostet Geld pro Gemini-Aufruf) - serverseitig im Worker
   // durchgesetzt, hier das frueheste sichtbare Gate statt erst beim ersten Senden zu scheitern.
@@ -3360,7 +3327,6 @@ function startAiPlanChat() {
   focusModeActive = false;
   journalViewActive = false;
   profileActive = false;
-  homeScreenActive = false;
   libraryActive = false;
   const greeting = currentUser.displayName ? `Hallo ${currentUser.displayName}` : "Hallo";
   aiPlanMessages = [{ role: "model", text: `${greeting}! Ich helfe dir, einen passenden Trainingsplan zu erstellen. Lass uns kurz reden — was ist dein Hauptziel: Muskelaufbau, Kraft, Abnehmen oder Ausdauer?` }];
@@ -3483,6 +3449,46 @@ function setAppHTML(html) {
   app.classList.add("fade-in");
 }
 
+// Seit Entfernung des Startbildschirms aus dem Haupt-render()-Template herausgezogen, weil
+// jetzt zwei Zweige denselben Header/Plan-Dropdown brauchen: der Normalfall (Kartenansicht)
+// und der "noch kein Plan gewaehlt"-Platzhalter (siehe render()). Ohne currentPlan zeigt das
+// Dropdown eine deaktivierte Platzhalter-Option statt einfach die erste echte Option optisch
+// als "gewaehlt" wirken zu lassen.
+function headerHTML() {
+  return `
+    <div class="header">
+      <div class="header-row">
+        <div style="min-width:0; flex:1;">
+          <div class="header-title">
+            <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
+            <!-- Auf Nutzerwunsch (v1.23.0) zeigt nur dieser sichtbare Header wieder "Fretze pumpt" -
+                 <title>/Seitentitel und der App-Name in howto.html bleiben bewusst beim kurzen
+                 "Fretze" (2026-07-09). Kein Versehen, nicht "zurueckkorrigieren". -->
+            <h1>Fretze pumpt</h1>
+          </div>
+          <div class="header-sub">${escapeAttr(headerSubtitleText())} · v${APP_VERSION}</div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" data-role="journal-enter" title="Tagebuch öffnen">📔 Tagebuch</button>
+          <button class="icon-btn" data-role="profile-enter" title="Profil öffnen">👤 Profil</button>
+          <a class="icon-btn" href="howto.html" title="Hilfe öffnen">❓ Hilfe</a>
+        </div>
+      </div>
+    </div>
+    <div class="plan-row">
+      <label class="plan-label" for="plan-select">Plan</label>
+      <select id="plan-select" class="plan-select" data-role="plan-select">
+        ${!state.currentPlan ? `<option value="" disabled selected>Plan wählen…</option>` : ""}
+        ${getAllPlans().map(p => `<option value="${escapeAttr(p.id)}" ${p.id === state.currentPlan ? "selected" : ""}>${escapeAttr(p.label)}</option>`).join("")}
+        <optgroup label="Neuer Plan">
+          <option value="__new_plan__">+ Eigenen Plan erstellen</option>
+          <option value="__ai_plan__">🤖 KI-Trainingsplan erstellen</option>
+        </optgroup>
+      </select>
+    </div>
+  `;
+}
+
 function render() {
   document.documentElement.setAttribute("data-theme", state.theme === "sepia" ? "sepia" : "dark");
   document.documentElement.setAttribute("data-textsize", state.textSize || "normal");
@@ -3524,11 +3530,6 @@ function render() {
     return;
   }
 
-  if (homeScreenActive) {
-    setAppHTML(renderHomeScreen());
-    return;
-  }
-
   if (journalViewActive) {
     setAppHTML(renderJournalView());
     return;
@@ -3536,6 +3537,23 @@ function render() {
 
   if (focusModeActive) {
     setAppHTML(renderFocusMode());
+    return;
+  }
+
+  // Seit Entfernung des Startbildschirms (der dieses "noch nichts gewaehlt"-UI-Symptom vorher
+  // abfing): state.currentPlan kann null sein (frische Installation, oder der zuletzt aktive
+  // eigene Plan wurde geloescht). applyPlan(null) faellt intern zwar auf PLANS[0] (PPL) zurueck
+  // (siehe dort), aber DAYS/EXERCISES duerfen deshalb NICHT einfach durchgerendert werden -
+  // das waere exakt der in v1.48.1 gefixte Bug (App zeigt faelschlich PPL als aktiv gewaehlt),
+  // nur an neuer Stelle. Deshalb expliziter Guard hier statt Verlass auf DAYS/EXERCISES.
+  if (!state.currentPlan) {
+    setAppHTML(`
+      ${headerHTML()}
+      ${gymRowHTML()}
+      <div class="content">
+        <p class="dim">Wähle oben einen Trainingsplan aus, um loszulegen.</p>
+      </div>
+    `);
     return;
   }
 
@@ -3600,38 +3618,10 @@ function render() {
   }).join("");
 
   setAppHTML(`
-    <div class="header">
-      <div class="header-row">
-        <div style="min-width:0; flex:1;">
-          <div class="header-title">
-            <img src="${state.theme === "sepia" ? "logo-mark-sepia.png" : "logo-mark-dark.png"}" alt="" aria-hidden="true" style="height: 46px; width: auto; flex-shrink: 0;" />
-            <!-- Auf Nutzerwunsch (v1.23.0) zeigt nur dieser sichtbare Header wieder "Fretze pumpt" -
-                 <title>/Seitentitel und der App-Name in howto.html bleiben bewusst beim kurzen
-                 "Fretze" (2026-07-09). Kein Versehen, nicht "zurueckkorrigieren". -->
-            <h1>Fretze pumpt</h1>
-          </div>
-          <div class="header-sub">${escapeAttr(headerSubtitleText())} · v${APP_VERSION}</div>
-        </div>
-        <div class="header-actions">
-          <button class="icon-btn" data-role="home-enter" title="Startbildschirm öffnen">🏠 Start</button>
-          <button class="icon-btn" data-role="journal-enter" title="Tagebuch öffnen">📔 Tagebuch</button>
-          <button class="icon-btn" data-role="profile-enter" title="Profil öffnen">👤 Profil</button>
-          <a class="icon-btn" href="howto.html" title="Hilfe öffnen">❓ Hilfe</a>
-        </div>
-      </div>
-    </div>
-    <div class="plan-row">
-      <label class="plan-label" for="plan-select">Plan</label>
-      <select id="plan-select" class="plan-select" data-role="plan-select">
-        ${getAllPlans().map(p => `<option value="${escapeAttr(p.id)}" ${p.id === state.currentPlan ? "selected" : ""}>${escapeAttr(p.label)}</option>`).join("")}
-        <optgroup label="Neuer Plan">
-          <option value="__new_plan__">+ Eigenen Plan erstellen</option>
-          <option value="__ai_plan__">🤖 KI-Trainingsplan erstellen</option>
-        </optgroup>
-      </select>
-    </div>
+    ${headerHTML()}
     ${gymRowHTML()}
     ${renderTodayBanner()}
+    ${physioBannerHTML()}
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
       ${planBuilderExerciseNamesDatalist()}
@@ -4143,7 +4133,6 @@ document.addEventListener("click", (e) => {
   const journalEnter = e.target.closest('[data-role="journal-enter"]');
   if (journalEnter) {
     focusModeActive = false;
-    homeScreenActive = false;
     profileActive = false;
     libraryActive = false;
     physioViewActive = false;
@@ -4186,30 +4175,10 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  const homeEnter = e.target.closest('[data-role="home-enter"]');
-  if (homeEnter) {
-    focusModeActive = false;
-    journalViewActive = false;
-    profileActive = false;
-    libraryActive = false;
-    physioViewActive = false;
-    homeScreenActive = true;
-    render();
-    return;
-  }
-
-  const homeExit = e.target.closest('[data-role="home-exit"]');
-  if (homeExit) {
-    homeScreenActive = false;
-    render();
-    return;
-  }
-
   const profileEnter = e.target.closest('[data-role="profile-enter"]');
   if (profileEnter) {
     focusModeActive = false;
     journalViewActive = false;
-    homeScreenActive = false;
     libraryActive = false;
     physioViewActive = false;
     profileActive = true;
@@ -4379,7 +4348,6 @@ document.addEventListener("click", (e) => {
     focusModeActive = false;
     journalViewActive = false;
     profileActive = false;
-    homeScreenActive = false;
     physioViewActive = false;
     libraryInfoOpenKey = null;
     libraryActive = true;
@@ -4392,7 +4360,6 @@ document.addEventListener("click", (e) => {
     focusModeActive = false;
     journalViewActive = false;
     profileActive = false;
-    homeScreenActive = false;
     libraryActive = false;
     physioViewActive = true;
     render();
@@ -4485,28 +4452,6 @@ document.addEventListener("click", (e) => {
   if (libraryInfoToggle) {
     const exid = libraryInfoToggle.dataset.exid;
     libraryInfoOpenKey = libraryInfoOpenKey === exid ? null : exid;
-    render();
-    return;
-  }
-
-  const homeContinue = e.target.closest('[data-role="home-continue"]');
-  if (homeContinue) {
-    homeScreenActive = false;
-    render();
-    return;
-  }
-
-  const homeSelectPlan = e.target.closest('[data-role="home-select-plan"]');
-  if (homeSelectPlan) {
-    state.currentPlan = homeSelectPlan.dataset.planid;
-    applyPlan(state.currentPlan);
-    state.currentDay = DAYS[0].id;
-    swapOpenKey = null;
-    infoOpenKey = null;
-    warmupOpen = false;
-    stretchOpen = false;
-    homeScreenActive = false;
-    persist();
     render();
     return;
   }
@@ -5133,9 +5078,8 @@ document.addEventListener("change", (e) => {
   const planSelect = e.target.closest('[data-role="plan-select"]');
   if (planSelect) {
     // Seit v1.59.0: die Dropdown-Liste enthaelt neben echten Plaenen auch zwei Sentinel-Werte
-    // fuer "neuen Plan erstellen" - kein echter Plan-Wechsel, sondern derselbe Einstieg wie die
-    // gleichnamigen Startbildschirm-Buttons (startPlanBuilder()/startAiPlanChat() rendern ohnehin
-    // eine komplett andere Ansicht, das <select> selbst existiert danach nicht mehr).
+    // fuer "neuen Plan erstellen" - kein echter Plan-Wechsel (startPlanBuilder()/startAiPlanChat()
+    // rendern ohnehin eine komplett andere Ansicht, das <select> selbst existiert danach nicht mehr).
     if (planSelect.value === "__new_plan__") { startPlanBuilder(); return; }
     if (planSelect.value === "__ai_plan__") { startAiPlanChat(); return; }
     state.currentPlan = planSelect.value;
