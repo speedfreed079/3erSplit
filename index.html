@@ -1046,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.67.0";
+const APP_VERSION = "1.69.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1172,6 +1172,14 @@ function otherExIdsSharingLibraryId(day, ex) {
   }
   for (const dayId of Object.keys(state.extraExercises)) {
     for (const otherEx of state.extraExercises[dayId]) {
+      if (otherEx.id !== ex.id && otherEx.libraryId === libraryId) ids.push(otherEx.id);
+    }
+  }
+  // Seit v1.69.0: gleiche Begruendung wie beim Block oben, fuer "nur diese Einheit" hinzugefuegte
+  // Uebungen - deren Gewicht/Historie soll trotz Verschwinden nach Sessionende ueber die
+  // libraryId weiter auffindbar sein.
+  for (const dayId of Object.keys(state.sessionExtraExercises)) {
+    for (const otherEx of state.sessionExtraExercises[dayId]) {
       if (otherEx.id !== ex.id && otherEx.libraryId === libraryId) ids.push(otherEx.id);
     }
   }
@@ -1303,6 +1311,11 @@ function findExerciseDefById(exId) {
   // Wochenvolumen-Dashboard dauerhaft als "nicht zuordenbar".
   for (const dayId of Object.keys(state.extraExercises)) {
     const found = state.extraExercises[dayId].find(ex => ex.id === exId);
+    if (found) return found;
+  }
+  // Seit v1.69.0: gleiche Begruendung wie oben, fuer "nur diese Einheit" hinzugefuegte Uebungen.
+  for (const dayId of Object.keys(state.sessionExtraExercises)) {
+    const found = state.sessionExtraExercises[dayId].find(ex => ex.id === exId);
     if (found) return found;
   }
   // Seit v1.62.0: Physio-Uebungen sind ebenfalls kein Teil eines Plans (eigener Pseudo-Tag,
@@ -1766,10 +1779,13 @@ function loadState() {
         // sollen - siehe MOBILITY_DAY_ID weiter unten fuer die Begruendung.
         mobility: parsed.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
         extraExercises: parsed.extraExercises || {},
+        // Seit v1.69.0: Gegenstueck zu extraExercises fuer "nur diese Trainingseinheit" hinzu-
+        // gefuegte Uebungen - wird nach finishSession() fuer den jeweiligen Tag automatisch geleert.
+        sessionExtraExercises: parsed.sessionExtraExercises || {},
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, sessionSwaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, autoWeightIncreases: {}, gymAutoWeightIncreases: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, mobility: { exercises: [], intervalDays: 1, lastDoneAt: null }, extraExercises: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, sessionSwaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, autoWeightIncreases: {}, gymAutoWeightIncreases: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, mobility: { exercises: [], intervalDays: 1, lastDoneAt: null }, extraExercises: {}, sessionExtraExercises: {} };
 }
 
 let state = loadState();
@@ -1781,6 +1797,8 @@ let swapOpenKey = null;
 // bewusst ephemer/sticky ueber die ganze Session (nicht pro Uebung zurueckgesetzt), damit man bei
 // mehreren "Geraet ist gerade belegt"-Taeuschen hintereinander nicht jedes Mal neu umschalten muss.
 let swapDurationChoice = "permanent";
+// Seit v1.69.0: gleiches Muster wie swapDurationChoice, fuer "+ Eigene Uebung".
+let extraDurationChoice = "permanent";
 let infoOpenKey = null;
 let warmupOpen = false;
 let stretchOpen = false;
@@ -1796,6 +1814,12 @@ let editModeKeys = new Set();
 // nur die Position zurueck auf die Kartenansicht, keine geloggten Satzdaten gehen verloren
 // (die liegen immer in state.sessions).
 let focusModeActive = false;
+// Seit v1.68.0: welcher "Tag" gerade im Trainingsmodus laeuft - eine echte Tag-ID des aktiven
+// Plans, oder PHYSIO_DAY_ID/MOBILITY_DAY_ID, wenn der Trainingsmodus aus dem Physio-/Mobility-
+// Bereich heraus gestartet wurde (siehe physio-focus-enter/mobility-focus-enter). Vorher wurde
+// renderFocusMode() hart an state.currentDay gebunden - das haette fuer Physio/Mobility nie
+// funktioniert, da state.currentDay ausschliesslich echte Plan-Tage kennt.
+let focusModeDay = null;
 let focusQueue = [];
 let focusPos = 0;
 let focusInfoOpen = false;
@@ -2275,6 +2299,7 @@ async function reconcileCloudState(uid) {
         physio: cloud.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
         mobility: cloud.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
         extraExercises: cloud.extraExercises || {},
+        sessionExtraExercises: cloud.sessionExtraExercises || {},
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find((d) => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -2313,10 +2338,14 @@ function ensureDaySets(dayId, ex) {
 // EXERCISES["physio"], das es nicht gibt) - seit v1.42.0.
 function findExerciseById(day, exId) {
   if (day === PHYSIO_DAY_ID) return state.physio.exercises.find(x => x.id === exId);
+  if (day === MOBILITY_DAY_ID) return state.mobility.exercises.find(x => x.id === exId);
   const inPlan = EXERCISES[day].find(x => x.id === exId);
   if (inPlan) return inPlan;
   // Seit v1.43.0: frei zum Tag hinzugefuegte Extra-Uebungen sind nicht Teil von EXERCISES[day].
-  return (state.extraExercises[day] || []).find(x => x.id === exId);
+  const inExtra = (state.extraExercises[day] || []).find(x => x.id === exId);
+  if (inExtra) return inExtra;
+  // Seit v1.69.0: gleiche Begruendung, fuer "nur diese Einheit" hinzugefuegte Uebungen.
+  return (state.sessionExtraExercises[day] || []).find(x => x.id === exId);
 }
 
 function tallyHTML(count) {
@@ -2650,14 +2679,33 @@ function skipCurrent() {
   focusQueue.splice(insertAt, 0, skipped);
 }
 
+// Seit v1.68.0: Uebungsliste fuer den Trainingsmodus-Einstieg (focus-enter/physio-focus-enter/
+// mobility-focus-enter), generisch ueber alle drei "Tag"-Arten - gleiches day-Parametrisierungs-
+// Prinzip wie getSetsFor/setsRowsHTML/findExerciseById.
+function exercisesForFocusDay(day) {
+  if (day === PHYSIO_DAY_ID) return state.physio.exercises;
+  if (day === MOBILITY_DAY_ID) return state.mobility.exercises;
+  return [...EXERCISES[day], ...(state.extraExercises[day] || []), ...(state.sessionExtraExercises[day] || [])];
+}
+
+// Seit v1.68.0: Topbar-Beschriftung im Trainingsmodus - echte Plan-Tage haben ein DAYS-Label,
+// Physio/Mobility als Pseudo-Tag nicht (die stehen nie in DAYS), deshalb hier fest verdrahtet.
+function focusModeTopbarLabel(day) {
+  if (day === PHYSIO_DAY_ID) return "🩺 Physio";
+  if (day === MOBILITY_DAY_ID) return "🧘 Mobility";
+  const meta = DAYS.find(d => d.id === day);
+  return meta ? meta.label : day;
+}
+
 function renderFocusMode() {
-  const day = state.currentDay;
-  const dayMeta = DAYS.find(d => d.id === day);
+  const day = focusModeDay;
+  const isPseudoTag = day === PHYSIO_DAY_ID || day === MOBILITY_DAY_ID;
   const exId = focusQueue[focusPos];
   const ex = findExerciseById(day, exId);
   const swapKey = `${day}:${ex.id}`;
   const displayName = getEffectiveSwapName(day, ex.id) || ex.name;
   const isSessionSwap = !!state.sessionSwaps[swapKey];
+  const isSessionExtra = (state.sessionExtraExercises[day] || []).some(x => x.id === ex.id);
   const sets = getSetsFor(day, ex);
   const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
   // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
@@ -2666,7 +2714,10 @@ function renderFocusMode() {
   const note = state.notes[swapKey] || "";
   const info = exerciseLibrary[ex.libraryId];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
-  const swapPanelContent = focusSwapOpen ? swapPanelHTML(day, ex, swapKey) : "";
+  // Seit v1.68.0: Physio/Mobility-Uebungen haben nie Alternativen (siehe physioExerciseCardHTML/
+  // mobilityExerciseCardHTML - "kein ⟲"), der Trainingsmodus blendet den Tausch-Button/das Panel
+  // fuer diese beiden Pseudo-Tage deshalb konsequent genauso aus wie die Kartenansicht.
+  const swapPanelContent = !isPseudoTag && focusSwapOpen ? swapPanelHTML(day, ex, swapKey) : "";
 
   const historyHTML = historyLineHTML(day, ex, hist);
 
@@ -2678,14 +2729,19 @@ function renderFocusMode() {
     ? `<div class="focusmode-next">Als Nächstes: <b>${escapeAttr(nextDisplayName)}</b></div>`
     : `<div class="focusmode-next">Letzte Übung dieser Einheit</div>`;
 
+  // Seit v1.68.0: der letzte Schritt schliesst je nach Pseudo-Tag ueber finish-physio/
+  // finish-mobility ab statt ueber den regulaeren finish-Handler (der ein anderes Modal mit
+  // Wohlbefinden-Abfrage oeffnet, die es bei Physio/Mobility nie gab).
+  const finishRole = day === PHYSIO_DAY_ID ? "finish-physio" : day === MOBILITY_DAY_ID ? "finish-mobility" : "finish";
+  const finishLabel = day === PHYSIO_DAY_ID ? "✓ Physio abschließen" : day === MOBILITY_DAY_ID ? "✓ Mobility abschließen" : "✓ Training abschließen";
   const nextBtnHTML = isLast
-    ? `<button class="focusmode-nav-btn finish" data-role="finish" data-day="${day}">✓ Training abschließen</button>`
+    ? `<button class="focusmode-nav-btn finish" data-role="${finishRole}" data-day="${day}">${finishLabel}</button>`
     : `<button class="focusmode-nav-btn primary" data-role="focus-next">Weiter →</button>`;
 
   return `
     <div class="focusmode-topbar">
       <button class="focusmode-exit-btn" data-role="focus-exit">✕ Verlassen</button>
-      <span class="focusmode-progress">${focusPos + 1}/${focusQueue.length} · ${dayMeta.label}</span>
+      <span class="focusmode-progress">${focusPos + 1}/${focusQueue.length} · ${focusModeTopbarLabel(day)}</span>
     </div>
     <div class="focusmode-content">
       ${planBuilderExerciseNamesDatalist()}
@@ -2695,14 +2751,15 @@ function renderFocusMode() {
             <div class="focusmode-title-row">
               <h2 class="focusmode-title">${displayName}</h2>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
-              ${getEffectiveSwapName(day, ex.id) ? `<span class="badge-swapped">${isSessionSwap ? "🕐 nur heute · " : ""}statt ${ex.name}</span>` : ""}
+              ${!isPseudoTag && getEffectiveSwapName(day, ex.id) ? `<span class="badge-swapped">${isSessionSwap ? "🕐 nur heute · " : ""}statt ${ex.name}</span>` : ""}
+              ${isSessionExtra ? '<span class="badge-swapped">🕐 nur diese Einheit</span>' : ""}
             </div>
             <div class="focusmode-target">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
           </div>
           <div class="focusmode-top-actions">
             ${info ? `<button class="swap-btn" title="Übung erklären" data-role="focus-info-toggle">ℹ</button>` : ""}
-            <button class="swap-btn" title="Übung tauschen" data-role="focus-swap-toggle">⟲</button>
+            ${isPseudoTag ? "" : `<button class="swap-btn" title="Übung tauschen" data-role="focus-swap-toggle">⟲</button>`}
             <button class="swap-btn ${focusEditOpen ? "active" : ""}" title="${focusEditOpen ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="focus-edit-toggle">✎</button>
           </div>
         </div>
@@ -3236,24 +3293,39 @@ function physioManagePanelHTML() {
 // + libraryIdForName() (1:1 aus dem Plan-Builder uebernommen, Zeile ~2779) verknuepft bei exakter
 // Namensuebereinstimmung automatisch mit der Datenbank (ℹ-Erklaerung + Wochenvolumen-Zuordnung),
 // Freitext bleibt weiterhin moeglich.
+// Seit v1.69.0: "+ Eigene Uebung" kann jetzt auch "nur fuer diese Trainingseinheit" gelten
+// (state.sessionExtraExercises statt state.extraExercises) - gleicher Duration-Toggle wie beim
+// ⟲-Tausch (extraDurationChoice), gleiche Begruendung: flexibel eine Uebung fuer heute ergaenzen,
+// ohne den Trainingstag dauerhaft zu veraendern. finishSession() leert sessionExtraExercises fuer
+// den jeweiligen Tag nach Abschluss automatisch. Gewicht/Historie bleiben trotzdem erhalten (ueber
+// otherExIdsSharingLibraryId(), falls die Uebung eine libraryId hat - gleiche Kulanz wie
+// plan-uebergreifend, siehe dort), nur die Uebung selbst verschwindet wieder aus dem Tag.
 function extraManagePanelHTML(day) {
-  const list = state.extraExercises[day] || [];
-  const rowsHTML = list.map(ex => `
+  const rowHTML = (ex, kind) => `
     <div class="draft-ex-row">
       <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Übungsname"
-        value="${escapeAttr(ex.name)}" data-role="extra-ex-name" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+        value="${escapeAttr(ex.name)}" data-role="extra-ex-name" data-day="${day}" data-kind="${kind}" data-exid="${escapeAttr(ex.id)}" />
       <div class="draft-ex-bottom-row">
         <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
-          value="${ex.sets}" data-role="extra-ex-sets" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
+          value="${ex.sets}" data-role="extra-ex-sets" data-day="${day}" data-kind="${kind}" data-exid="${escapeAttr(ex.id)}" />
         <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 8-10)"
-          value="${escapeAttr(ex.reps)}" data-role="extra-ex-reps" data-day="${day}" data-exid="${escapeAttr(ex.id)}" />
-        <button class="draft-remove-btn" data-role="extra-remove-ex" data-day="${day}" data-exid="${escapeAttr(ex.id)}">✕</button>
+          value="${escapeAttr(ex.reps)}" data-role="extra-ex-reps" data-day="${day}" data-kind="${kind}" data-exid="${escapeAttr(ex.id)}" />
+        <button class="draft-remove-btn" data-role="extra-remove-ex" data-day="${day}" data-kind="${kind}" data-exid="${escapeAttr(ex.id)}">✕</button>
       </div>
+      ${kind === "session" ? `<span class="badge-swapped">🕐 nur diese Einheit</span>` : ""}
     </div>
-  `).join("");
+  `;
+  const permanentRows = (state.extraExercises[day] || []).map(ex => rowHTML(ex, "permanent")).join("");
+  const sessionRows = (state.sessionExtraExercises[day] || []).map(ex => rowHTML(ex, "session")).join("");
   return `
     <div class="card">
-      ${rowsHTML}
+      <div class="swap-panel-label">Wie hinzufügen?</div>
+      <div class="swap-duration-toggle">
+        <button class="swap-opt-btn ${extraDurationChoice === "permanent" ? "active" : ""}" data-role="extra-duration" data-value="permanent">Dauerhaft</button>
+        <button class="swap-opt-btn ${extraDurationChoice === "session" ? "active" : ""}" data-role="extra-duration" data-value="session">Nur diese Einheit</button>
+      </div>
+      ${permanentRows}
+      ${sessionRows}
       <button class="draft-add-btn" data-role="extra-add-ex" data-day="${day}">+ Übung hinzufügen</button>
     </div>
   `;
@@ -3281,6 +3353,7 @@ function renderPhysioView() {
       <button class="home-create-btn" data-role="physio-manage-toggle">⚙ Übungen verwalten</button>
       ${physioManageOpen ? physioManagePanelHTML() : ""}
       ${emptyHint}
+      ${hasExercises ? `<button class="focusmode-enter-btn" data-role="physio-focus-enter">▶ Trainingsmodus starten</button>` : ""}
       ${cardsHTML}
       ${hasExercises ? `<button class="finish-btn" data-role="finish-physio">✓ Physio abschließen</button>` : ""}
     </div>
@@ -3394,6 +3467,7 @@ function renderMobilityView() {
       <button class="home-create-btn" data-role="mobility-manage-toggle">⚙ Übungen verwalten</button>
       ${mobilityManageOpen ? mobilityManagePanelHTML() : ""}
       ${emptyHint}
+      ${hasExercises ? `<button class="focusmode-enter-btn" data-role="mobility-focus-enter">▶ Trainingsmodus starten</button>` : ""}
       ${cardsHTML}
       ${hasExercises ? `<button class="finish-btn" data-role="finish-mobility">✓ Mobility abschließen</button>` : ""}
     </div>
@@ -3824,7 +3898,7 @@ function render() {
   // Seit v1.43.0: EXERCISES[day] plus frei hinzugefuegte Extra-Uebungen fuer diesen Tag - der
   // restliche Karten-Render-Code danach ist bereits generisch pro ex-Objekt, braucht keine
   // weitere Anpassung.
-  const exercises = [...EXERCISES[day], ...(state.extraExercises[day] || [])];
+  const exercises = [...EXERCISES[day], ...(state.extraExercises[day] || []), ...(state.sessionExtraExercises[day] || [])];
 
   const tabsHTML = DAYS.map(d => `
     <button class="tab-btn ${d.id === day ? "active" : ""}" data-role="day-tab" data-day="${d.id}">${d.label}</button>
@@ -3834,6 +3908,10 @@ function render() {
     const swapKey = `${day}:${ex.id}`;
     const displayName = getEffectiveSwapName(day, ex.id) || ex.name;
     const isSessionSwap = !!state.sessionSwaps[swapKey];
+    // Seit v1.69.0: "+ Eigene Uebung, nur diese Einheit" - eigene Kennzeichnung, unabhaengig vom
+    // ⟲-Tausch-Badge oben (eine Uebung kann grundsaetzlich beides nie gleichzeitig sein, da
+    // Extra-Uebungen keine eigenen alts/Tausch-Optionen haben).
+    const isSessionExtra = (state.sessionExtraExercises[day] || []).some(x => x.id === ex.id);
     const sets = getSetsFor(day, ex);
     const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
     // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
@@ -3857,6 +3935,7 @@ function render() {
               <h3>${displayName}</h3>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
               ${getEffectiveSwapName(day, ex.id) ? `<span class="badge-swapped">${isSessionSwap ? "🕐 nur heute · " : ""}statt ${ex.name}</span>` : ""}
+              ${isSessionExtra ? '<span class="badge-swapped">🕐 nur diese Einheit</span>' : ""}
             </div>
             <div class="target-line">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
@@ -3915,8 +3994,9 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   const journalExercises = [];
   // Seit v1.43.0: EXERCISES[dayId] plus frei hinzugefuegte Extra-Uebungen dieses Tages - sonst
   // wuerden Extra-Uebungen weder ins Tagebuch/die Gewichtsprogression einfliessen noch (unten)
-  // ihre Saetze nach Abschluss zurueckgesetzt.
-  const dayExercises = [...EXERCISES[dayId], ...(state.extraExercises[dayId] || [])];
+  // ihre Saetze nach Abschluss zurueckgesetzt. Seit v1.69.0 zusaetzlich sessionExtraExercises
+  // (nur-diese-Einheit-Uebungen) - werden am Ende dieser Funktion fuer den Tag wieder geleert.
+  const dayExercises = [...EXERCISES[dayId], ...(state.extraExercises[dayId] || []), ...(state.sessionExtraExercises[dayId] || [])];
   dayExercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
@@ -3998,6 +4078,10 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   const resetDay = {};
   dayExercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(dayId, ex, ex.sets); });
   state.sessions[dayId] = resetDay;
+  // Seit v1.69.0: "nur diese Einheit" hinzugefuegte Uebungen verschwinden nach Abschluss wieder
+  // aus dem Tag - Gewicht/Historie bleiben ueber die eigene ID bzw. libraryId erhalten (siehe
+  // otherExIdsSharingLibraryId()), nur der Tag selbst zeigt sie ab jetzt nicht mehr.
+  delete state.sessionExtraExercises[dayId];
   stopRestTimer();
   persist();
   render();
@@ -4053,7 +4137,10 @@ function finishMobilitySession(dateOverride) {
   state.mobility.exercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
-    const entered = sets.filter(s => s.weight || s.reps);
+    // Seit v1.68.0: auch ein reines Abhaken (done) ohne Gewicht/Wdh.-Text zaehlt als "eingetragen"
+    // - Dehnhaltungen ohne Gewicht wurden sonst nie gespeichert, wenn niemand pro Satz erneut die
+    // (ohnehin schon als Ziel angezeigte) Wiederholungs-/Haltezeit eingetippt hat.
+    const entered = sets.filter(s => s.weight || s.reps || s.done);
     if (entered.length === 0) return;
     anyEntered = true;
     journalExercises.push({
@@ -4112,7 +4199,9 @@ function finishPhysioSession(dateOverride) {
   state.physio.exercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
-    const entered = sets.filter(s => s.weight || s.reps);
+    // Seit v1.68.0: gleiche Begruendung wie bei finishMobilitySession() - reines Abhaken zaehlt
+    // mit, nicht nur explizit eingetipptes Gewicht/Wdh.
+    const entered = sets.filter(s => s.weight || s.reps || s.done);
     if (entered.length === 0) return;
     anyEntered = true;
     journalExercises.push({
@@ -4287,6 +4376,7 @@ function importData(file) {
             physio: incoming.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
             mobility: incoming.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
             extraExercises: incoming.extraExercises || {},
+            sessionExtraExercises: incoming.sessionExtraExercises || {},
           };
           applyPlan(state.currentPlan);
           if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -4454,7 +4544,8 @@ document.addEventListener("click", (e) => {
   const focusEnter = e.target.closest('[data-role="focus-enter"]');
   if (focusEnter) {
     const day = focusEnter.dataset.day;
-    focusQueue = [...EXERCISES[day], ...(state.extraExercises[day] || [])].map(ex => ex.id);
+    focusModeDay = day;
+    focusQueue = exercisesForFocusDay(day).map(ex => ex.id);
     focusPos = 0;
     focusInfoOpen = false;
     focusSwapOpen = false;
@@ -4464,9 +4555,47 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  // Seit v1.68.0: Trainingsmodus-Einstieg aus dem Physio-/Mobility-Bereich - 1:1 dasselbe Muster
+  // wie focus-enter direkt darueber, nur mit dem jeweiligen Pseudo-Tag als focusModeDay statt
+  // einer echten Plan-Tag-ID. physioViewActive/mobilityViewActive werden hier auf false gesetzt
+  // (render() zeigt sonst durch die Dispatch-Reihenfolge parallel beide Ansichten) -
+  // focus-exit/finish-physio/finish-mobility setzen sie beim Verlassen wieder auf true, sonst
+  // waere die normale Kartenansicht der falsche Rueckkehr-Bildschirm.
+  const physioFocusEnter = e.target.closest('[data-role="physio-focus-enter"]');
+  if (physioFocusEnter) {
+    focusModeDay = PHYSIO_DAY_ID;
+    focusQueue = exercisesForFocusDay(PHYSIO_DAY_ID).map(ex => ex.id);
+    focusPos = 0;
+    focusInfoOpen = false;
+    focusSwapOpen = false;
+    focusEditOpen = false;
+    physioViewActive = false;
+    focusModeActive = true;
+    render();
+    return;
+  }
+
+  const mobilityFocusEnter = e.target.closest('[data-role="mobility-focus-enter"]');
+  if (mobilityFocusEnter) {
+    focusModeDay = MOBILITY_DAY_ID;
+    focusQueue = exercisesForFocusDay(MOBILITY_DAY_ID).map(ex => ex.id);
+    focusPos = 0;
+    focusInfoOpen = false;
+    focusSwapOpen = false;
+    focusEditOpen = false;
+    mobilityViewActive = false;
+    focusModeActive = true;
+    render();
+    return;
+  }
+
   const focusExit = e.target.closest('[data-role="focus-exit"]');
   if (focusExit) {
     focusModeActive = false;
+    // Seit v1.68.0: aus Physio/Mobility gestarteter Trainingsmodus kehrt beim Verlassen zurueck
+    // in den jeweiligen Bereich statt in die normale Kartenansicht zu fallen.
+    if (focusModeDay === PHYSIO_DAY_ID) physioViewActive = true;
+    else if (focusModeDay === MOBILITY_DAY_ID) mobilityViewActive = true;
     render();
     return;
   }
@@ -4820,6 +4949,11 @@ document.addEventListener("click", (e) => {
     // Seit v1.50.0: gleiche Datums-Auswahl wie beim regulaeren Trainingsabschluss (siehe
     // finish-Handler), aber ohne Wellbeing-Optionen (options: []) - die gab es bei Physio nie.
     // skipLabel "Speichern" statt "Überspringen", da hier nichts uebersprungen wird.
+    // Seit v1.68.0: kann auch aus dem Trainingsmodus heraus kommen (siehe renderFocusMode()) -
+    // dann muss hier auf denselben Physio-Bereich zurueckgekehrt werden, aus dem gestartet wurde,
+    // sonst laendet man in der normalen Kartenansicht.
+    focusModeActive = false;
+    physioViewActive = true;
     openChoiceModal({
       title: "Physio abschließen",
       message: "Datum bestätigen — anpassen, falls du die Einheit schon vor ein paar Tagen gemacht hast.",
@@ -4859,6 +4993,9 @@ document.addEventListener("click", (e) => {
 
   const finishMobility = e.target.closest('[data-role="finish-mobility"]');
   if (finishMobility) {
+    // Seit v1.68.0: siehe finish-physio-Kommentar oben, gleiche Begruendung.
+    focusModeActive = false;
+    mobilityViewActive = true;
     openChoiceModal({
       title: "Mobility abschließen",
       message: "Datum bestätigen — anpassen, falls du die Einheit schon vor ein paar Tagen gemacht hast.",
@@ -4878,11 +5015,22 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  // Seit v1.69.0: waehlt, ob "+ Eigene Uebung" dauerhaft (state.extraExercises) oder nur fuer
+  // die laufende Trainingseinheit (state.sessionExtraExercises) anlegt - gleiches Muster wie
+  // swapDurationChoice beim ⟲-Tausch.
+  const extraDuration = e.target.closest('[data-role="extra-duration"]');
+  if (extraDuration) {
+    extraDurationChoice = extraDuration.dataset.value;
+    render();
+    return;
+  }
+
   const extraAddEx = e.target.closest('[data-role="extra-add-ex"]');
   if (extraAddEx) {
     const day = extraAddEx.dataset.day;
-    if (!state.extraExercises[day]) state.extraExercises[day] = [];
-    state.extraExercises[day].push({ id: `extra_${Date.now()}`, name: "", sets: 3, reps: "", alts: [], core: false });
+    const target = extraDurationChoice === "session" ? state.sessionExtraExercises : state.extraExercises;
+    if (!target[day]) target[day] = [];
+    target[day].push({ id: `extra_${Date.now()}`, name: "", sets: 3, reps: "", alts: [], core: false });
     persist();
     render();
     return;
@@ -4891,8 +5039,9 @@ document.addEventListener("click", (e) => {
   const extraRemoveEx = e.target.closest('[data-role="extra-remove-ex"]');
   if (extraRemoveEx) {
     const day = extraRemoveEx.dataset.day;
-    if (state.extraExercises[day]) {
-      state.extraExercises[day] = state.extraExercises[day].filter(ex => ex.id !== extraRemoveEx.dataset.exid);
+    const target = extraRemoveEx.dataset.kind === "session" ? state.sessionExtraExercises : state.extraExercises;
+    if (target[day]) {
+      target[day] = target[day].filter(ex => ex.id !== extraRemoveEx.dataset.exid);
     }
     persist();
     render();
@@ -5357,7 +5506,9 @@ document.addEventListener("click", (e) => {
     sets[idx].done = nowDone;
     persist();
     render();
-    if (nowDone) startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
+    // Seit v1.68.0: Mobility bewusst ohne Pausen-Timer (Nutzer-Wunsch: Physio mit Pause,
+    // Mobility ohne) - Dehnhaltungen brauchen keine strukturierte Satzpause wie Krafttraining.
+    if (nowDone && day !== MOBILITY_DAY_ID) startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
     return;
   }
 
@@ -5486,7 +5637,8 @@ document.addEventListener("input", (e) => {
 
   const extraExName = e.target.closest('[data-role="extra-ex-name"]');
   if (extraExName) {
-    const list = state.extraExercises[extraExName.dataset.day] || [];
+    const source = extraExName.dataset.kind === "session" ? state.sessionExtraExercises : state.extraExercises;
+    const list = source[extraExName.dataset.day] || [];
     const ex = list.find(x => x.id === extraExName.dataset.exid);
     if (ex) {
       ex.name = extraExName.value;
@@ -5502,7 +5654,8 @@ document.addEventListener("input", (e) => {
 
   const extraExSets = e.target.closest('[data-role="extra-ex-sets"]');
   if (extraExSets) {
-    const list = state.extraExercises[extraExSets.dataset.day] || [];
+    const source = extraExSets.dataset.kind === "session" ? state.sessionExtraExercises : state.extraExercises;
+    const list = source[extraExSets.dataset.day] || [];
     const ex = list.find(x => x.id === extraExSets.dataset.exid);
     if (ex) ex.sets = Number(extraExSets.value) || 1;
     persist();
@@ -5511,7 +5664,8 @@ document.addEventListener("input", (e) => {
 
   const extraExReps = e.target.closest('[data-role="extra-ex-reps"]');
   if (extraExReps) {
-    const list = state.extraExercises[extraExReps.dataset.day] || [];
+    const source = extraExReps.dataset.kind === "session" ? state.sessionExtraExercises : state.extraExercises;
+    const list = source[extraExReps.dataset.day] || [];
     const ex = list.find(x => x.id === extraExReps.dataset.exid);
     if (ex) ex.reps = extraExReps.value;
     persist();
@@ -5626,7 +5780,8 @@ document.addEventListener("change", (e) => {
       s.done = true;
       persist();
       render();
-      startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
+      // Seit v1.68.0: gleiche Mobility-Ausnahme wie beim set-done-Handler oben.
+      if (day !== MOBILITY_DAY_ID) startRestTimer(ex.compound ? REST_DURATION_COMPOUND : REST_DURATION_DEFAULT);
     }
   }
 });
