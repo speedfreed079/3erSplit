@@ -1041,7 +1041,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.61.0";
+const APP_VERSION = "1.62.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1279,6 +1279,12 @@ function findExerciseDefById(exId) {
     const found = state.extraExercises[dayId].find(ex => ex.id === exId);
     if (found) return found;
   }
+  // Seit v1.62.0: Physio-Uebungen sind ebenfalls kein Teil eines Plans (eigener Pseudo-Tag,
+  // siehe PHYSIO_DAY_ID) - jetzt, wo finishPhysioSession() Journal-Eintraege erzeugt, muessen sie
+  // hier ebenso auffindbar sein, sonst blieben sie trotz moeglicher libraryId dauerhaft
+  // "nicht zuordenbar" im Wochenvolumen.
+  const physioFound = state.physio.exercises.find(ex => ex.id === exId);
+  if (physioFound) return physioFound;
   return null;
 }
 
@@ -3744,15 +3750,41 @@ function finishPhysioSession(dateOverride) {
   let anyEntered = false;
   const refDate = dateOverrideToRefDate(dateOverride);
   const today = refDate.toLocaleDateString("de-DE");
+  const journalExercises = [];
   state.physio.exercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
     const entered = sets.filter(s => s.weight || s.reps);
     if (entered.length === 0) return;
     anyEntered = true;
+    journalExercises.push({
+      exId: ex.id,
+      name: ex.name,
+      sets: entered.map(s => ({ weight: s.weight, reps: s.reps, isWarmup: s.isWarmup, couldDoMore: s.couldDoMore })),
+    });
     const last = entered[entered.length - 1];
     setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
   });
+  // Seit v1.62.0: Physio-Einheiten flossen bisher nie ins Tagebuch (kein addJournalEntry-Aufruf),
+  // dadurch tauchten sie auch nie im Wochenvolumen/Rekorde/Streak auf, obwohl seit v1.25.0 aus der
+  // Datenbank gewaehlte Physio-Uebungen laengst eine libraryId (und damit eine Muskelgruppe) haben
+  // koennen - die Zuordnung lief bloss ins Leere, weil es nie einen Journal-Eintrag zum Zuordnen
+  // gab. dayId bleibt bewusst der reservierte Pseudo-Tag PHYSIO_DAY_ID, planId bleibt null (Physio
+  // gehoert zu keinem Trainingsplan) - CSV-Export/journalHistoryHTML zeigen dafuer bereits
+  // graceful leere Werte statt "null" (siehe csvEscapeField/planLabel-Fallback).
+  if (journalExercises.length > 0) {
+    addJournalEntry({
+      date: today,
+      timestamp: refDate.getTime(),
+      planId: null,
+      dayId: PHYSIO_DAY_ID,
+      dayLabel: "Physio",
+      gymId: state.currentGymId || null,
+      exercises: journalExercises,
+      wellbeing: null,
+      sessionNote: null,
+    });
+  }
   const isBackdated = dateOverride && dateOverride !== todayISODate();
   if (!anyEntered && !isBackdated) {
     showToast("Keine Übung eingetragen.");

@@ -2,6 +2,14 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.62.0 — 2026-07-18 (Teil 104): Physio-Einheiten fließen jetzt ins Tagebuch/Wochenvolumen ein
+
+- Nutzer-Rückfrage beim Anlegen eines neuen Physio-Rücken-Kräftigungsplans: tauchen die Muskelgruppen dieser Übungen im Tagebuch/Wochenvolumen auf? Antwort war bisher nein — `finishPhysioSession()` rief nie `addJournalEntry()` auf, sondern schrieb nur in `state.history`/`state.physio.lastDoneAt`. Da Tagebuch (Verlauf/Rekorde/Wochenvolumen/Streak) ausschließlich aus `state.journal` liest, waren Physio-Einheiten für alle vier komplett unsichtbar — unabhängig davon, ob eine über "📚 Aus Datenbank wählen" angelegte Physio-Übung längst eine `libraryId`/Muskelgruppe hatte.
+- `finishPhysioSession()` baut jetzt (wie `finishSession()`) eine `journalExercises`-Liste aus den eingetragenen Sätzen und pusht bei mindestens einer eingetragenen Übung einen `addJournalEntry()`-Eintrag mit `dayId: PHYSIO_DAY_ID`, `dayLabel: "Physio"`, `planId: null` (Physio gehört zu keinem Trainingsplan), `gymId` weiterhin gym-gescoped wie bisher. `wellbeing`/`sessionNote` bleiben `null` (Physio-Abschluss hat wie schon vorher keine Stimmungs-/Notiz-Abfrage).
+- `findExerciseDefById()` durchsucht jetzt zusätzlich `state.physio.exercises` (nach demselben Muster wie die v1.43.0-Erweiterung für `state.extraExercises`) — sonst hätte ein neuer Journal-Eintrag mit `exId` einer Physio-Übung trotzdem dauerhaft als "nicht zuordenbar" im Wochenvolumen gezählt, weil die ID in keinem Plan vorkommt.
+- Nebeneffekt (kein Bug, aber erwähnenswert): da Rekorde/Streak dieselben Journal-Einträge lesen, tauchen abgeschlossene Physio-Einheiten ab jetzt auch dort auf (PRs/e1RM-Sparklines für Physio-Übungen, Zählung als "trainierte Woche" im Streak) — bewusst nicht herausgefiltert, da keine zweite journal-artige Datenquelle eingeführt werden sollte.
+- Keine Migration nötig: bereits bestehende, vor v1.62.0 abgeschlossene Physio-Einheiten bleiben rückwirkend unsichtbar im Tagebuch (es gibt keine historischen Journal-Einträge dafür), betrifft nur Einheiten ab jetzt.
+
 ## v1.61.0 — 2026-07-13 (Teil 103): Startbildschirm komplett entfernt
 
 - Nutzer-Rückfrage: macht der Startbildschirm nach all den Änderungen noch Sinn, oder verwirrt er eher? Diagnose: seit v1.59.0 ("Eigenen Plan erstellen"/"KI-Trainingsplan erstellen" auch im `#plan-select`-Dropdown) machten die Startbildschirm-Buttons "Plan wählen" und "+ Neuen Plan erstellen"/"🤖 KI-Trainingsplan erstellen" exakt dasselbe wie das ohnehin immer sichtbare Dropdown — reine Dopplung. Gemeinsame Entscheidung: Startbildschirm ganz auflösen.
