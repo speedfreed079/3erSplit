@@ -2799,5 +2799,320 @@
     "safety": "Der Oberkörper sollte während der gesamten Bewegung fest gegen das Stützpolster gepresst bleiben, um ein Ausweichen über die Lendenwirbelsäule statt über die Hüfte zu verhindern.",
     "image": null,
     "muscleGroup": "Gesäß"
+  },
+  "rueckenstrecker-seitlich": {
+    "name": "Rückenstrecker seitlich",
+    "muscles": {
+      "primary": "Quadratus lumborum (seitliche Rumpfmuskulatur)",
+      "secondary": "Schräge Bauchmuskeln, Rückenstrecker (Erector spinae)"
+    },
+    "steps": [
+      "Seitlich auf eine Rückenstrecker-Bank oder in Seitlage auf den Boden legen, Becken und Beine fixiert bzw. übereinander liegend.",
+      "Den Oberkörper zunächst leicht nach unten absinken lassen, ohne den unteren Rücken zu überlasten.",
+      "Den Oberkörper seitlich nach oben anheben, bis Schulter, Hüfte und Bein wieder eine gerade Linie bilden.",
+      "Kontrolliert wieder absenken, ohne die Bewegung abrupt abzubremsen."
+    ],
+    "mistakes": [
+      "Zu weites Absinken über die neutrale Wirbelsäulenposition hinaus.",
+      "Schwungholen statt kontrollierter Muskelarbeit.",
+      "Rotation im Oberkörper statt reiner seitlicher Bewegung."
+    ],
+    "safety": "Bewegungsausmaß klein und schmerzfrei halten — es geht um Kontrolle der seitlichen Rumpfmuskulatur, nicht um maximale Auslenkung.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "seitneigung-huefthinge-kettlebell": {
+    "name": "Seitneigung im Hüfthinge mit Kettlebell",
+    "muscles": {
+      "primary": "Schräge Bauchmuskeln (Obliquus)",
+      "secondary": "Quadratus lumborum, Gesäßmuskulatur (haltend)"
+    },
+    "steps": [
+      "Hüftbreiter Stand, Knie leicht gebeugt, Gesäß leicht nach hinten geschoben (leichter Hüfthinge, kein aufrechter Stand).",
+      "Eine Kettlebell in einer Hand seitlich am Körper halten, die andere Hand locker an der Hüfte oder frei.",
+      "Den Oberkörper seitlich zur Gewichtsseite neigen, ohne dabei nach vorne oder hinten zu kippen.",
+      "Kontrolliert zurück in die aufrechte Ausgangsposition führen."
+    ],
+    "mistakes": [
+      "Der Oberkörper dreht sich während der Neigung statt sauber seitlich zu bleiben.",
+      "Die Hüftposition (Hinge) geht während der Bewegung verloren, der Rücken wird rund.",
+      "Zu viel Gewicht, wodurch Schwung statt Muskelkraft die Bewegung ausführt."
+    ],
+    "safety": "Die Grundspannung aus der Hüfthinge-Position während der gesamten Bewegung halten, nicht in den aufrechten Stand zurückfallen.",
+    "image": null,
+    "muscleGroup": "Bauch"
+  },
+  "y-v-w-bauchlage": {
+    "name": "Y-V-W in Bauchlage",
+    "muscles": {
+      "primary": "Mittlerer und unterer Trapezius",
+      "secondary": "Rhomboiden, hintere Schulter (Deltoideus pars posterior)"
+    },
+    "steps": [
+      "In Bauchlage mit leicht angehobenem Oberkörper positionieren, Blick zum Boden.",
+      "Die Arme nacheinander in Y-Stellung (schräg nach vorne oben), V-Stellung (breiter, seitlich schräg) und W-Stellung (Ellbogen angewinkelt, nah am Körper) anheben.",
+      "In jeder Position die Schulterblätter aktiv zusammenziehen und kurz halten.",
+      "Die Arme kontrolliert zurück in die Ausgangsposition senken."
+    ],
+    "mistakes": [
+      "Die Arme werden nur angehoben, ohne die Schulterblätter aktiv zusammenzuziehen.",
+      "Der Nacken wird überstreckt, um höher zu schauen.",
+      "Zu schnelles, unkontrolliertes Durchführen aller drei Positionen."
+    ],
+    "safety": "Die Bewegung kommt aus den Schulterblättern, nicht aus einem Hohlkreuz — den unteren Rücken dabei entspannt lassen.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "schwimmer-arme-beine-lang": {
+    "name": "Schwimmer (Arme + Beine lang)",
+    "muscles": {
+      "primary": "Rückenstrecker (Erector spinae)",
+      "secondary": "Gesäßmuskulatur, hintere Schulter"
+    },
+    "steps": [
+      "In Bauchlage Arme und Beine lang ausstrecken.",
+      "Bauchnabel leicht einziehen, um den unteren Rücken zu stabilisieren.",
+      "Arme und Beine einige Zentimeter vom Boden abheben.",
+      "Kontrolliert wieder absenken."
+    ],
+    "mistakes": [
+      "Zu starkes Überstrecken im unteren Rücken statt kontrollierter Anspannung.",
+      "Hektisches statt langsam-kontrolliertes Bewegungstempo.",
+      "Der Nacken wird in die Überstreckung mitgezogen statt in Verlängerung der Wirbelsäule zu bleiben."
+    ],
+    "safety": "Nur so weit anheben, wie es ohne Schmerz und ohne starkes Hohlkreuz möglich ist.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "hueftfreie-mobilisation-lws-rueckenlage": {
+    "name": "Hüftfreie Mobilisation LWS (Rückenlage)",
+    "muscles": {
+      "primary": "Lendenwirbelsäule (segmentale Mobilität)",
+      "secondary": "Tiefe Rumpfmuskulatur"
+    },
+    "steps": [
+      "Rückenlage auf fester Unterlage, Beine lang ausgestreckt.",
+      "Ein Bein durch leichtes Schieben aus dem Becken heraus 'länger' machen als das andere, ohne die Knie zu beugen.",
+      "Dabei senkt und hebt sich das Becken minimal, der Brustkorb bleibt fest auf der Unterlage liegen.",
+      "Ab Bauchnabelhöhe findet keine Bewegung mehr statt — die Bewegung bleibt auf Becken/LWS begrenzt."
+    ],
+    "mistakes": [
+      "Die Bewegung wird zu groß/schwungvoll statt sanft und kontrolliert ausgeführt.",
+      "Der Brustkorb hebt mit ab statt fixiert zu bleiben.",
+      "Die Kniegelenke werden aktiv mitgebeugt statt die Beine gestreckt zu lassen."
+    ],
+    "safety": "Die Bewegung soll sich zu keinem Zeitpunkt anstrengend oder schmerzhaft anfühlen — bei Beschwerden Bewegungsausmaß reduzieren.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "heuschrecke": {
+    "name": "Heuschrecke",
+    "muscles": {
+      "primary": "Rückenstrecker (Erector spinae)",
+      "secondary": "Gesäßmuskulatur"
+    },
+    "steps": [
+      "In Bauchlage mit der Stirn/dem Kinn auf der Matte positionieren, Arme entweder locker neben dem Körper oder unter den Oberschenkeln.",
+      "Bauchnabel leicht einziehen, um Spannung im unteren Rücken/Bauch aufzubauen.",
+      "Oberkörper und beide Beine gleichzeitig ein Stück vom Boden abheben, Blick zum Boden, Nacken lang lassen.",
+      "Die Position für die vorgegebene Anzahl an Atemzügen halten, dann kontrolliert absenken."
+    ],
+    "mistakes": [
+      "Der Nacken wird überstreckt, um nach vorne zu schauen.",
+      "Zu hohes Anheben, wodurch die Lendenwirbelsäule überstreckt wird.",
+      "Luft anhalten statt ruhig weiterzuatmen."
+    ],
+    "safety": "Die Halteposition sollte spürbar, aber nicht schmerzhaft sein — Bewegungsausmaß bei Bedarf reduzieren.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "kabelzug-geradarmzug-nach-hinten": {
+    "name": "Kabelzug Geradarmzug nach hinten",
+    "muscles": {
+      "primary": "Latissimus dorsi",
+      "secondary": "Unterer Trapezius, hintere Schulter"
+    },
+    "steps": [
+      "Am Kabelzug mit hoch eingestellter Umlenkrolle positionieren, Griff mit beiden Händen fassen.",
+      "Leicht in der Hüfte nach vorne beugen, Knie leicht gebeugt, Arme fast gestreckt vor dem Körper.",
+      "Die Arme mit nur minimal gebeugten Ellbogen nach unten/hinten Richtung Oberschenkel ziehen.",
+      "Kontrolliert zurück in die Ausgangsposition über Kopf führen, ohne die Ellbogen stark zu beugen."
+    ],
+    "mistakes": [
+      "Die Ellbogen werden zu stark gebeugt, wodurch die Bewegung zum Trizeps-Drücken statt zum Latissimus-Zug wird.",
+      "Schwung aus dem Oberkörper statt kontrollierter Zugbewegung.",
+      "Die Schultern werden zu den Ohren hochgezogen statt aktiv nach unten gedrückt."
+    ],
+    "safety": "Den Ellbogenwinkel während der gesamten Bewegung stabil und nahezu gestreckt halten, um die Isolation auf den Latissimus zu gewährleisten.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "good-morning-kettlebell": {
+    "name": "Good Morning mit Kettlebell",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur (Hamstrings)",
+      "secondary": "Gesäßmuskulatur, Rückenstrecker (Erector spinae)"
+    },
+    "steps": [
+      "Hüftbreiter Stand, Knie leicht gebeugt (nicht durchgedrückt), Kettlebell beidhändig vor der Brust halten.",
+      "Das Gesäß nach hinten schieben, sodass sich der Oberkörper wie an einem Scharnier nach vorne neigt.",
+      "Den Rücken dabei gerade halten, der Kopf bleibt in Verlängerung der Wirbelsäule (nicht überstrecken, nicht einrollen).",
+      "Bis zu einer spürbaren Dehnung der Oberschenkelrückseite absenken, dann über die Fersen kraftvoll zurück in den Stand kommen."
+    ],
+    "mistakes": [
+      "Der Rücken rundet sich während der Vorbeuge, statt gerade zu bleiben.",
+      "Die Bewegung wird zur Kniebeuge statt zum Hüfthinge (Knie beugen sich zu stark).",
+      "Der Nacken wird überstreckt oder eingerollt statt neutral zu bleiben."
+    ],
+    "safety": "Mit wenig Gewicht und kleinem Bewegungsausmaß beginnen — die Übung lebt von sauberer Technik, nicht von hohem Gewicht.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "aufsteiger-kettlebell": {
+    "name": "Aufsteiger mit Kettlebell",
+    "muscles": {
+      "primary": "Quadrizeps",
+      "secondary": "Gesäßmuskulatur, hintere Oberschenkelmuskulatur"
+    },
+    "steps": [
+      "Vor einer stabilen Erhöhung (Bank/Stufe) stehen, Kettlebell(s) in einer oder beiden Händen halten.",
+      "Einen Fuß vollständig auf die Erhöhung stellen, Ferse fest aufgesetzt.",
+      "Über das vordere Bein nach oben drücken, bis der Körper vollständig aufgerichtet auf der Erhöhung steht.",
+      "Kontrolliert wieder absteigen und die Seite wechseln."
+    ],
+    "mistakes": [
+      "Abstoßen mit dem hinteren Bein statt die Arbeit über das vordere Bein zu leisten.",
+      "Das Knie des vorderen Beins knickt beim Hochdrücken nach innen ein.",
+      "Zu hohe Erhöhung, wodurch die Kontrolle über die Bewegung verloren geht."
+    ],
+    "safety": "Eine Erhöhung wählen, bei der das Knie beim Aufsteigen nicht über 90 Grad hinaus belastet wird.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
+  },
+  "sitzende-vorbeuge-rotation-langes-bein": {
+    "name": "Sitzende Vorbeuge mit Rotation (langes Bein)",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur (Hamstrings)",
+      "secondary": "Wadenmuskulatur, unterer Rücken"
+    },
+    "steps": [
+      "Im Sitz ein Bein lang ausstrecken, das andere Bein anwinkeln und den Fuß an die Oberschenkel-Innenseite des langen Beins legen.",
+      "Den Oberkörper leicht zum langen Bein drehen.",
+      "Mit geradem Rücken über das lange Bein nach vorne neigen, bis eine Dehnung spürbar wird.",
+      "Die Fußspitze des langen Beins Richtung Schienbein ziehen, für zusätzliche Wadendehnung; Position mit ruhiger Atmung halten."
+    ],
+    "mistakes": [
+      "Der Rücken rundet sich stark, statt aus der Hüfte heraus zu neigen.",
+      "Die Dehnung wird ruckartig statt langsam aufgebaut.",
+      "Das angewinkelte Knie wird während der Vorbeuge nach unten gedrückt statt entspannt liegen zu lassen."
+    ],
+    "safety": "Nur bis zur spürbaren, ziehenden Dehnung gehen — nicht bis in den Schmerz.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "sitzende-seitneigung-flankendehnung": {
+    "name": "Sitzende Seitneigung (Flankendehnung)",
+    "muscles": {
+      "primary": "Schräge Bauchmuskeln (Obliquus)",
+      "secondary": "Quadratus lumborum, Latissimus"
+    },
+    "steps": [
+      "Gleiche Sitzposition wie bei der Vorbeuge: ein Bein lang, das andere angewinkelt mit Fuß an der Oberschenkel-Innenseite.",
+      "Blick nach vorne richten, Oberkörper nicht rotieren.",
+      "Den Oberkörper seitlich über das lange Bein neigen, einen Arm dabei locker über den Kopf führen.",
+      "Die Dehnung in der Flanke/Seite ruhig halten, dann langsam zurückkommen und Seite wechseln."
+    ],
+    "mistakes": [
+      "Der Oberkörper dreht sich während der Neigung statt sauber seitlich zu bleiben.",
+      "Die Schultern werden hochgezogen statt entspannt zu bleiben.",
+      "Zu schnelles Wippen statt ruhiger, gehaltener Dehnung."
+    ],
+    "safety": "Die Neigung langsam aufbauen und nur so weit gehen, wie es sich angenehm ziehend anfühlt.",
+    "image": null,
+    "muscleGroup": "Bauch"
+  },
+  "schmetterling-huefte": {
+    "name": "Schmetterling",
+    "muscles": {
+      "primary": "Adduktoren (Innenseite der Oberschenkel)",
+      "secondary": "Hüftbeuger"
+    },
+    "steps": [
+      "Im Sitz die Fußsohlen zusammenführen, die Knie fallen seitlich nach außen.",
+      "Die Füße mit den Händen fassen und nah zum Körper ziehen.",
+      "Die Oberschenkel/Knie aktiv und locker Richtung Boden 'flattern' lassen (leichte, dynamische Auf-ab-Bewegung).",
+      "Optional: mit geradem Rücken leicht nach vorne neigen für eine tiefere Dehnung."
+    ],
+    "mistakes": [
+      "Die Knie werden aktiv nach unten gedrückt statt die Bewegung locker zuzulassen.",
+      "Der Rücken rundet sich stark beim Vorneigen.",
+      "Zu schnelles, forciertes Flattern statt einer entspannten Bewegung."
+    ],
+    "safety": "Die Bewegung soll leicht und locker bleiben — keinen Druck von außen auf die Knie ausüben.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "kindhaltung-seitstretch": {
+    "name": "Kindhaltung mit Seitstretch",
+    "muscles": {
+      "primary": "Latissimus dorsi, unterer Rücken",
+      "secondary": "Schultern, seitliche Rumpfmuskulatur"
+    },
+    "steps": [
+      "In den Fersensitz kommen (Knie und Füße zusammen oder leicht geöffnet).",
+      "Den Oberkörper nach vorne über die Oberschenkel ablegen, Arme nach vorne ausgestreckt.",
+      "Beide Hände langsam zu einer Seite wandern lassen, sodass eine Dehnung entlang der gegenüberliegenden Flanke entsteht.",
+      "Kurz halten, zur Mitte zurückkommen und zur anderen Seite wiederholen."
+    ],
+    "mistakes": [
+      "Das Gesäß hebt von den Fersen ab, statt in der Haltung sitzen zu bleiben.",
+      "Die Schultern werden zu den Ohren hochgezogen statt entspannt zu bleiben.",
+      "Zu ruckartiges statt langsames Wandern zur Seite."
+    ],
+    "safety": "Bei Knieproblemen ein Kissen zwischen Gesäß und Fersen legen, um Druck aus dem Kniegelenk zu nehmen.",
+    "image": null,
+    "muscleGroup": "Rücken"
+  },
+  "stehende-vorbeuge-ragdoll": {
+    "name": "Stehende Vorbeuge (Ragdoll)",
+    "muscles": {
+      "primary": "Hintere Oberschenkelmuskulatur (Hamstrings)",
+      "secondary": "Unterer Rücken, Waden"
+    },
+    "steps": [
+      "Im Stand die Knie deutlich beugen, bis der Bauch auf den Oberschenkeln aufliegt.",
+      "Oberkörper und Kopf locker hängen lassen, Arme baumeln entspannt.",
+      "Die Knie langsam und in kleinen Schritten Richtung Streckung bewegen, so weit es angenehm ist.",
+      "Die Knie dürfen dabei gebeugt bleiben — es geht nicht um die vollständige Streckung."
+    ],
+    "mistakes": [
+      "Die Knie werden forciert durchgedrückt, obwohl die Dehnung dabei unangenehm wird.",
+      "Der Kopf/Nacken wird angespannt statt locker hängen zu lassen.",
+      "Zu schnelles Aufrichten am Ende statt langsames Abrollen der Wirbelsäule."
+    ],
+    "safety": "Es geht nicht um Perfektion — je nach Tagesform reicht auch eine kleine Kniestreckung völlig aus.",
+    "image": null,
+    "muscleGroup": "Beinbeuger"
+  },
+  "hueftbeuger-dehnung-ausfallschritt": {
+    "name": "Hüftbeuger-Dehnung im Ausfallschritt",
+    "muscles": {
+      "primary": "Hüftbeuger (Iliopsoas, Rectus femoris)",
+      "secondary": "Quadrizeps"
+    },
+    "steps": [
+      "Einen großen Ausfallschritt nach vorne machen, das hintere Bein bleibt gestreckt (kein Kniestand).",
+      "Das hintere Bein leicht nach innen rotieren.",
+      "Das Becken leicht nach vorne/unten kippen, bis eine Dehnung an der Vorderseite der hinteren Hüfte spürbar wird.",
+      "Position halten, dabei den Oberkörper aufrecht lassen."
+    ],
+    "mistakes": [
+      "Das vordere Knie wandert weit über die Fußspitze hinaus.",
+      "Der Oberkörper lehnt sich nach vorne, statt aufrecht zu bleiben.",
+      "Das Hohlkreuz wird übermäßig verstärkt, statt das Becken kontrolliert zu kippen."
+    ],
+    "safety": "Die Dehnung soll an der Hüftvorderseite spürbar sein, nicht im Knie — bei Knieschmerzen den Ausfallschritt verkleinern.",
+    "image": null,
+    "muscleGroup": "Quadrizeps"
   }
 }

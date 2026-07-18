@@ -1041,7 +1041,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.62.0";
+const APP_VERSION = "1.64.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1285,6 +1285,10 @@ function findExerciseDefById(exId) {
   // "nicht zuordenbar" im Wochenvolumen.
   const physioFound = state.physio.exercises.find(ex => ex.id === exId);
   if (physioFound) return physioFound;
+  // Seit v1.64.0: gleiche Begruendung wie oben bei state.physio.exercises, fuer den neuen
+  // Mobility-Pseudo-Tag.
+  const mobilityFound = state.mobility.exercises.find(ex => ex.id === exId);
+  if (mobilityFound) return mobilityFound;
   return null;
 }
 
@@ -1691,11 +1695,15 @@ function loadState() {
         gymWeightSuggestions: parsed.gymWeightSuggestions || {},
         updatedAt: parsed.updatedAt || null,
         physio: parsed.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
+        // Seit v1.64.0: eigenes Pendant zu physio, fuer taeglich wiederkehrende Mobility-/
+        // Dehnroutinen, die (anders als ein echter Trainingsplan) state.currentPlan nie anfassen
+        // sollen - siehe MOBILITY_DAY_ID weiter unten fuer die Begruendung.
+        mobility: parsed.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
         extraExercises: parsed.extraExercises || {},
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, extraExercises: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, mobility: { exercises: [], intervalDays: 1, lastDoneAt: null }, extraExercises: {} };
 }
 
 let state = loadState();
@@ -1755,6 +1763,12 @@ let libraryInfoOpenKey = null;
 // (gleiche Konvention wie gymManageOpen).
 let physioViewActive = false;
 let physioManageOpen = false;
+// Mobility-Ansicht (seit v1.64.0): 1:1 dasselbe Muster wie physioViewActive/physioManageOpen
+// direkt darueber - eigene taegliche Dehn-/Mobility-Routine, die wie Physio komplett entkoppelt
+// von der Plan-/Tag-Rotation laeuft (siehe MOBILITY_DAY_ID weiter unten fuer die Begruendung,
+// warum das nicht einfach ein normaler Plan im #plan-select-Dropdown sein sollte).
+let mobilityViewActive = false;
+let mobilityManageOpen = false;
 // Seit v1.43.0: Auf/Zu-Flag fuer das "+ Eigene Uebung"-Verwalten-Panel in der Kartenansicht
 // (gleiche Konvention wie physioManageOpen/gymManageOpen). Wird beim Tag-Wechsel zurueckgesetzt
 // (day-tab-Handler), gleiche Konvention wie swapOpenKey/warmupOpen.
@@ -2179,6 +2193,14 @@ async function reconcileCloudState(uid) {
         weightSuggestions: cloud.weightSuggestions || {},
         gymWeightSuggestions: cloud.gymWeightSuggestions || {},
         updatedAt: cloudTs,
+        // Bugfix v1.64.0: dieser Zweig hatte physio/extraExercises schlicht vergessen - beim
+        // naechsten Cloud-Merge mit cloudTs > localTs wurden beide stillschweigend zu undefined,
+        // bis zum naechsten vollen Reload (loadState() defaultet sie dort wieder korrekt, da
+        // JSON.stringify die fehlenden Keys beim naechsten persist() ohnehin weglaesst). Faellt
+        // z.B. auf, wenn direkt danach im Physio-Bereich etwas gelesen/geschrieben wird.
+        physio: cloud.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
+        mobility: cloud.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
+        extraExercises: cloud.extraExercises || {},
       };
       applyPlan(state.currentPlan);
       if (!DAYS.find((d) => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
@@ -2818,6 +2840,7 @@ function renderProfileView() {
       ${planManageRowsHTML()}
       <button class="home-create-btn" data-role="library-enter">📚 Übungen durchsuchen</button>
       <button class="home-create-btn" data-role="physio-enter">🩺 Physio-Übungen</button>
+      <button class="home-create-btn" data-role="mobility-enter">🧘 Mobility</button>
       <div class="home-section-label" style="margin-top:18px;">Daten</div>
       <div class="profile-row">
         <span>Backup exportieren</span>
@@ -3044,8 +3067,11 @@ function renderAdminView() {
 
 // Physio-Ansicht (seit v1.42.0): folgt dem gleichen focusmode-topbar/-content-Muster wie
 // renderJournalView()/renderLibraryView(). Uebungs-Karten sind eine abgespeckte Variante der
-// Trainings-Karten in render() (kein ℹ/⟲ - freie PT-Uebungen haben keine Bibliothekserklaerung
-// oder Alternativen), nutzen aber setsRowsHTML/tallyHTML/historyLineHTML unveraendert.
+// Trainings-Karten in render() (kein ⟲ - freie PT-Uebungen haben keine Alternativen), nutzen
+// aber setsRowsHTML/tallyHTML/historyLineHTML unveraendert. Seit v1.63.0 gibt es das ℹ-Panel
+// doch, sofern die Uebung ueber "📚 Aus Datenbank waehlen" mit einer libraryId angelegt wurde -
+// wiederverwendet infoOpenKey/exerciseInfoPanelHTML 1:1 wie die Kartenansicht, nur mit dem
+// reservierten PHYSIO_DAY_ID als "day"-Teil des Keys statt einer echten Tag-ID.
 function physioExerciseCardHTML(ex) {
   const sets = getSetsFor(PHYSIO_DAY_ID, ex);
   const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
@@ -3053,6 +3079,8 @@ function physioExerciseCardHTML(ex) {
   const noteKey = `${PHYSIO_DAY_ID}:${ex.id}`;
   const note = state.notes[noteKey] || "";
   const editMode = editModeKeys.has(noteKey);
+  const info = exerciseLibrary[ex.libraryId];
+  const infoPanelHTML = info && infoOpenKey === noteKey ? exerciseInfoPanelHTML(ex) : "";
   return `
     <div class="card">
       <div class="card-top">
@@ -3064,9 +3092,11 @@ function physioExerciseCardHTML(ex) {
           ${historyLineHTML(ex.id, hist)}
         </div>
         <div style="display:flex; gap:6px; flex-shrink:0;">
+          ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${PHYSIO_DAY_ID}" data-exid="${ex.id}">ℹ</button>` : ""}
           <button class="swap-btn ${editMode ? "active" : ""}" title="${editMode ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="edit-toggle" data-day="${PHYSIO_DAY_ID}" data-exid="${ex.id}">✎</button>
         </div>
       </div>
+      ${infoPanelHTML}
       ${setsRowsHTML(PHYSIO_DAY_ID, ex, sets, editMode)}
       <div class="set-footer">
         ${tallyHTML(doneCount)}
@@ -3174,6 +3204,118 @@ function physioBannerHTML() {
     <div class="today-banner">
       <div class="today-banner-text">🩺 Physio-Übungen fällig${daysSince !== null ? ` (zuletzt vor ${daysSince} Tagen)` : ""}</div>
       <button class="today-banner-btn" data-role="physio-enter">Los geht's</button>
+    </div>
+  `;
+}
+
+// Mobility-Ansicht (seit v1.64.0): 1:1 dasselbe Muster wie physioExerciseCardHTML/
+// physioManagePanelHTML/renderPhysioView/physioBannerHTML direkt darueber, nur mit
+// MOBILITY_DAY_ID statt PHYSIO_DAY_ID als reserviertem Pseudo-Tag. Bewusst eine separate,
+// duplizierte Funktionsfamilie statt eines parametrisierten "Physio ODER Mobility"-Renderers -
+// beide sind klein genug, dass eine Parametrisierung (Label-Strings, Emoji, data-role-Praefixe)
+// mehr Komplexitaet gekostet haette als sie eingespart haette.
+function mobilityExerciseCardHTML(ex) {
+  const sets = getSetsFor(MOBILITY_DAY_ID, ex);
+  const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
+  const hist = getHistoryEntry(ex.id);
+  const noteKey = `${MOBILITY_DAY_ID}:${ex.id}`;
+  const note = state.notes[noteKey] || "";
+  const editMode = editModeKeys.has(noteKey);
+  const info = exerciseLibrary[ex.libraryId];
+  const infoPanelHTML = info && infoOpenKey === noteKey ? exerciseInfoPanelHTML(ex) : "";
+  return `
+    <div class="card">
+      <div class="card-top">
+        <div style="flex:1; min-width:0;">
+          <div class="card-title-row">
+            <h3>${escapeAttr(ex.name)}</h3>
+          </div>
+          <div class="target-line">${ex.sets} Sätze × ${escapeAttr(ex.reps)} Wdh.</div>
+          ${historyLineHTML(ex.id, hist)}
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${MOBILITY_DAY_ID}" data-exid="${ex.id}">ℹ</button>` : ""}
+          <button class="swap-btn ${editMode ? "active" : ""}" title="${editMode ? "Bearbeiten beenden" : "Erledigte Sätze bearbeiten"}" data-role="edit-toggle" data-day="${MOBILITY_DAY_ID}" data-exid="${ex.id}">✎</button>
+        </div>
+      </div>
+      ${infoPanelHTML}
+      ${setsRowsHTML(MOBILITY_DAY_ID, ex, sets, editMode)}
+      <div class="set-footer">
+        ${tallyHTML(doneCount)}
+        <span class="set-count">${doneCount}/${ex.sets} Arbeitssätze</span>
+      </div>
+      <textarea class="note-input" rows="1" placeholder="Notiz"
+        data-role="note" data-day="${MOBILITY_DAY_ID}" data-exid="${ex.id}">${note}</textarea>
+    </div>
+  `;
+}
+
+function mobilityManagePanelHTML() {
+  const rowsHTML = state.mobility.exercises.map(ex => `
+    <div class="draft-ex-row">
+      <input class="draft-ex-name" type="text" placeholder="Übungsname"
+        value="${escapeAttr(ex.name)}" data-role="mobility-ex-name" data-exid="${escapeAttr(ex.id)}" />
+      <div class="draft-ex-bottom-row">
+        <input class="draft-ex-sets" type="number" min="1" placeholder="Sätze"
+          value="${ex.sets}" data-role="mobility-ex-sets" data-exid="${escapeAttr(ex.id)}" />
+        <input class="draft-ex-reps" type="text" placeholder="Wdh. (z.B. 30-60 Sek.)"
+          value="${escapeAttr(ex.reps)}" data-role="mobility-ex-reps" data-exid="${escapeAttr(ex.id)}" />
+        <button class="draft-remove-btn" data-role="mobility-remove-ex" data-exid="${escapeAttr(ex.id)}">✕</button>
+      </div>
+    </div>
+  `).join("");
+  return `
+    <div class="card">
+      <div class="plan-row">
+        <label class="plan-label" for="mobility-interval-input">Intervall (Tage)</label>
+        <input id="mobility-interval-input" class="draft-ex-sets" type="number" min="1"
+          value="${state.mobility.intervalDays}" data-role="mobility-interval" />
+      </div>
+      ${rowsHTML}
+      <button class="draft-add-btn" data-role="mobility-add-ex">+ Übung hinzufügen</button>
+      <button class="draft-add-btn" data-role="ex-picker-enter" data-kind="mobility">📚 Aus Datenbank wählen</button>
+    </div>
+  `;
+}
+
+function renderMobilityView() {
+  const { due, daysSince } = mobilityDueInfo();
+  const statusText = daysSince === null
+    ? "Noch keine Mobility-Einheit erfasst."
+    : due
+      ? `🧘 Fällig seit ${daysSince - state.mobility.intervalDays} Tag(en) (zuletzt vor ${daysSince} Tagen)`
+      : `Zuletzt vor ${daysSince} Tag(en) — noch ${state.mobility.intervalDays - daysSince} Tag(e) bis zur nächsten Einheit`;
+
+  const hasExercises = state.mobility.exercises.length > 0;
+  const cardsHTML = hasExercises ? state.mobility.exercises.map(mobilityExerciseCardHTML).join("") : "";
+  const emptyHint = hasExercises ? "" : `<p class="dim">Noch keine Mobility-Übungen angelegt. Über "⚙ Übungen verwalten" hinzufügen.</p>`;
+
+  return `
+    <div class="focusmode-topbar">
+      <button class="focusmode-exit-btn" data-role="mobility-exit">✕ Schließen</button>
+      <span class="focusmode-progress">🧘 Mobility</span>
+    </div>
+    <div class="focusmode-content">
+      <p class="dim">${statusText}</p>
+      <button class="home-create-btn" data-role="mobility-manage-toggle">⚙ Übungen verwalten</button>
+      ${mobilityManageOpen ? mobilityManagePanelHTML() : ""}
+      ${emptyHint}
+      ${cardsHTML}
+      ${hasExercises ? `<button class="finish-btn" data-role="finish-mobility">✓ Mobility abschließen</button>` : ""}
+    </div>
+  `;
+}
+
+// Banner in der Kartenansicht, direkt neben renderTodayBanner()/physioBannerHTML() gerendert
+// (siehe render()): nur sichtbar wenn tatsaechlich faellig.
+function mobilityBannerHTML() {
+  if (state.mobility.exercises.length === 0) return "";
+  const { due, daysSince } = mobilityDueInfo();
+  if (!due) return "";
+  return `
+    <div class="today-banner">
+      <div class="today-banner-text">🧘 Mobility fällig${daysSince !== null ? ` (zuletzt vor ${daysSince} Tagen)` : ""}</div>
+      <button class="today-banner-btn" data-role="mobility-enter">Los geht's</button>
     </div>
   `;
 }
@@ -3536,6 +3678,11 @@ function render() {
     return;
   }
 
+  if (mobilityViewActive) {
+    setAppHTML(renderMobilityView());
+    return;
+  }
+
   if (journalViewActive) {
     setAppHTML(renderJournalView());
     return;
@@ -3556,6 +3703,8 @@ function render() {
     setAppHTML(`
       ${headerHTML()}
       ${gymRowHTML()}
+      ${physioBannerHTML()}
+      ${mobilityBannerHTML()}
       <div class="content">
         <p class="dim">Wähle oben einen Trainingsplan aus, um loszulegen.</p>
       </div>
@@ -3628,6 +3777,7 @@ function render() {
     ${gymRowHTML()}
     ${renderTodayBanner()}
     ${physioBannerHTML()}
+    ${mobilityBannerHTML()}
     <div class="tabs">${tabsHTML}</div>
     <div class="content">
       ${planBuilderExerciseNamesDatalist()}
@@ -3733,11 +3883,80 @@ function physioDueInfo() {
   return { due: daysSince >= state.physio.intervalDays, daysSince };
 }
 
+// ---------- MOBILITY ----------
+// Mobility-Uebungen (seit v1.64.0) folgen exakt demselben "entkoppelter Pseudo-Tag"-Muster wie
+// Physio direkt darueber - eigener konstanter Tag statt eines echten Plans im #plan-select-
+// Dropdown. Grund: eine taegliche Dehn-/Mobility-Routine ist kein "Plan", durch den man rotiert
+// (nur 1 Tag, keine Push/Pull/Legs-Abwechslung) - waere sie ein normaler Eintrag im Dropdown
+// gewesen (so urspruenglich gebaut, vor diesem Refactor), haette ein abendlicher Mobility-
+// Durchgang state.currentPlan auf "Mobility" umgestellt und waere bis zum naechsten manuellen
+// Zurueckwechseln so stehen geblieben - das "Heute dran"-Banner (getRecommendedDay(), siehe
+// oben) haette dadurch die eigentliche PPL-Rotation (z.B. "PullA dran") unsichtbar gemacht, weil
+// es ausschliesslich state.currentPlan auswertet. Physio hatte dieses Problem nie, weil es von
+// Anfang an als Pseudo-Tag gebaut wurde - Mobility zieht hier nachtraeglich nach.
+const MOBILITY_DAY_ID = "mobility";
+
+function mobilityDueInfo() {
+  if (!state.mobility.lastDoneAt) return { due: true, daysSince: null };
+  const daysSince = Math.floor((Date.now() - state.mobility.lastDoneAt) / 86400000);
+  return { due: daysSince >= state.mobility.intervalDays, daysSince };
+}
+
+// 1:1 dasselbe Muster wie finishPhysioSession() direkt darunter (inklusive Journal-Eintrag seit
+// der ersten Version - anders als Physio, das den Journal-Eintrag erst in v1.62.0 nachtraeglich
+// bekam, wird hier von Anfang an richtig gemacht).
+function finishMobilitySession(dateOverride) {
+  const daySets = state.sessions[MOBILITY_DAY_ID] || {};
+  let anyEntered = false;
+  const refDate = dateOverrideToRefDate(dateOverride);
+  const today = refDate.toLocaleDateString("de-DE");
+  const journalExercises = [];
+  state.mobility.exercises.forEach(ex => {
+    const sets = daySets[ex.id];
+    if (!sets) return;
+    const entered = sets.filter(s => s.weight || s.reps);
+    if (entered.length === 0) return;
+    anyEntered = true;
+    journalExercises.push({
+      exId: ex.id,
+      name: ex.name,
+      sets: entered.map(s => ({ weight: s.weight, reps: s.reps, isWarmup: s.isWarmup, couldDoMore: s.couldDoMore })),
+    });
+    const last = entered[entered.length - 1];
+    setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
+  });
+  if (journalExercises.length > 0) {
+    addJournalEntry({
+      date: today,
+      timestamp: refDate.getTime(),
+      planId: null,
+      dayId: MOBILITY_DAY_ID,
+      dayLabel: "Mobility",
+      gymId: state.currentGymId || null,
+      exercises: journalExercises,
+      wellbeing: null,
+      sessionNote: null,
+    });
+  }
+  const isBackdated = dateOverride && dateOverride !== todayISODate();
+  if (!anyEntered && !isBackdated) {
+    showToast("Keine Übung eingetragen.");
+    return;
+  }
+  state.mobility.lastDoneAt = refDate.getTime();
+  const resetDay = {};
+  state.mobility.exercises.forEach(ex => { resetDay[ex.id] = buildInitialSets(MOBILITY_DAY_ID, ex, ex.sets); });
+  state.sessions[MOBILITY_DAY_ID] = resetDay;
+  persist();
+  render();
+  showToast("Mobility gespeichert.");
+}
+
 // Schlanke Variante von finishSession() ohne die trainingsspezifischen Teile (kein
-// Wellbeing-Modal, kein Journal-Eintrag, keine Gewichts-Progressions-Vorschlaege) - Reha-Uebungen
-// mit fester PT-Vorgabe brauchen keinen "mehr Gewicht"-Vorschlag, und Physio-Sessions sollen
-// bewusst nicht das Wochenvolumen-Dashboard/den Streak-Zaehler beeinflussen (beide lesen nur
-// state.journal, das hier unangetastet bleibt).
+// Wellbeing-Modal, keine Gewichts-Progressions-Vorschlaege) - Reha-Uebungen mit fester
+// PT-Vorgabe brauchen keinen "mehr Gewicht"-Vorschlag. Erzeugt seit v1.62.0 aber sehr wohl einen
+// Journal-Eintrag (siehe Kommentar weiter unten) - Physio-Sessions fliessen damit bewusst ins
+// Wochenvolumen-Dashboard/den Streak-Zaehler mit ein, genau wie normale Trainingseinheiten.
 // dateOverride (seit v1.50.0): siehe finishSession() fuer die gleiche Begruendung. Zusaetzliche
 // Nuance hier: wurde das Datum bewusst von "heute" weg veraendert (echtes Nachtragen, z.B. Physio
 // von vor der Funktions-Einfuehrung), darf lastDoneAt auch ohne eingetragene Saetze aktualisiert
@@ -3924,6 +4143,7 @@ function importData(file) {
             gymWeightSuggestions: incoming.gymWeightSuggestions || {},
             updatedAt: incoming.updatedAt || null,
             physio: incoming.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
+            mobility: incoming.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
             extraExercises: incoming.extraExercises || {},
           };
           applyPlan(state.currentPlan);
@@ -4168,6 +4388,7 @@ document.addEventListener("click", (e) => {
     profileActive = false;
     libraryActive = false;
     physioViewActive = false;
+    mobilityViewActive = false;
     journalViewActive = true;
     render();
     return;
@@ -4213,6 +4434,7 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     libraryActive = false;
     physioViewActive = false;
+    mobilityViewActive = false;
     profileActive = true;
     render();
     return;
@@ -4381,6 +4603,7 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     profileActive = false;
     physioViewActive = false;
+    mobilityViewActive = false;
     libraryInfoOpenKey = null;
     libraryActive = true;
     render();
@@ -4393,6 +4616,7 @@ document.addEventListener("click", (e) => {
     journalViewActive = false;
     profileActive = false;
     libraryActive = false;
+    mobilityViewActive = false;
     physioViewActive = true;
     render();
     return;
@@ -4401,6 +4625,27 @@ document.addEventListener("click", (e) => {
   const physioExit = e.target.closest('[data-role="physio-exit"]');
   if (physioExit) {
     physioViewActive = false;
+    render();
+    return;
+  }
+
+  // Mobility-Ansicht (seit v1.64.0): 1:1 dasselbe Enter/Exit-Muster wie physio-enter/physio-exit
+  // direkt darueber.
+  const mobilityEnter = e.target.closest('[data-role="mobility-enter"]');
+  if (mobilityEnter) {
+    focusModeActive = false;
+    journalViewActive = false;
+    profileActive = false;
+    libraryActive = false;
+    physioViewActive = false;
+    mobilityViewActive = true;
+    render();
+    return;
+  }
+
+  const mobilityExit = e.target.closest('[data-role="mobility-exit"]');
+  if (mobilityExit) {
+    mobilityViewActive = false;
     render();
     return;
   }
@@ -4441,6 +4686,45 @@ document.addEventListener("click", (e) => {
       defaultDate: todayISODate(),
       skipLabel: "Speichern",
       onConfirm: (_value, _note, dateStr) => finishPhysioSession(dateStr),
+    });
+    return;
+  }
+
+  // Mobility-Verwalten/-Abschluss (seit v1.64.0): 1:1 dasselbe Muster wie die physio-* Handler
+  // direkt darueber.
+  const mobilityManageToggle = e.target.closest('[data-role="mobility-manage-toggle"]');
+  if (mobilityManageToggle) {
+    mobilityManageOpen = !mobilityManageOpen;
+    render();
+    return;
+  }
+
+  const mobilityAddEx = e.target.closest('[data-role="mobility-add-ex"]');
+  if (mobilityAddEx) {
+    state.mobility.exercises.push({ id: `mobility_${Date.now()}`, name: "", sets: 2, reps: "" });
+    persist();
+    render();
+    return;
+  }
+
+  const mobilityRemoveEx = e.target.closest('[data-role="mobility-remove-ex"]');
+  if (mobilityRemoveEx) {
+    state.mobility.exercises = state.mobility.exercises.filter(ex => ex.id !== mobilityRemoveEx.dataset.exid);
+    persist();
+    render();
+    return;
+  }
+
+  const finishMobility = e.target.closest('[data-role="finish-mobility"]');
+  if (finishMobility) {
+    openChoiceModal({
+      title: "Mobility abschließen",
+      message: "Datum bestätigen — anpassen, falls du die Einheit schon vor ein paar Tagen gemacht hast.",
+      options: [],
+      includeDate: true,
+      defaultDate: todayISODate(),
+      skipLabel: "Speichern",
+      onConfirm: (_value, _note, dateStr) => finishMobilitySession(dateStr),
     });
     return;
   }
@@ -4550,7 +4834,7 @@ document.addEventListener("click", (e) => {
   const exPickerEnter = e.target.closest('[data-role="ex-picker-enter"]');
   if (exPickerEnter) {
     const kind = exPickerEnter.dataset.kind || "planDraft";
-    exPickerTarget = kind === "physio" ? { kind: "physio" } : { kind: "planDraft", dayIdx: Number(exPickerEnter.dataset.day) };
+    exPickerTarget = kind === "physio" || kind === "mobility" ? { kind } : { kind: "planDraft", dayIdx: Number(exPickerEnter.dataset.day) };
     exPickerSelected = new Set();
     exPickerInfoOpenKey = null;
     exPickerActive = true;
@@ -4593,19 +4877,19 @@ document.addEventListener("click", (e) => {
   const exPickerConfirm = e.target.closest('[data-role="ex-picker-confirm"]');
   if (exPickerConfirm) {
     if (exPickerSelected.size === 0 || !exPickerTarget) return;
-    // Seit v1.46.0: Ziel-Liste haengt vom Aufrufer ab (Plan-Builder-Tag oder Physio) - fuer
-    // Physio wird sofort eine id gemintet (live genutzt, kein Speichern-Schritt dazwischen wie
-    // beim Plan-Entwurf) und reps bleibt leer (gleicher Default wie physio-add-ex, PT-Uebungen
-    // haben keinen "Standard"-Wiederholungsbereich).
-    const targetList = exPickerTarget.kind === "physio"
-      ? state.physio.exercises
+    // Seit v1.46.0: Ziel-Liste haengt vom Aufrufer ab (Plan-Builder-Tag, Physio oder seit v1.64.0
+    // Mobility) - fuer Physio/Mobility wird sofort eine id gemintet (live genutzt, kein Speichern-
+    // Schritt dazwischen wie beim Plan-Entwurf) und reps bleibt leer (gleicher Default wie
+    // physio-add-ex/mobility-add-ex, freie Uebungslisten haben keinen "Standard"-Wiederholungsbereich).
+    const targetList = exPickerTarget.kind === "physio" ? state.physio.exercises
+      : exPickerTarget.kind === "mobility" ? state.mobility.exercises
       : state.planDraft.days[exPickerTarget.dayIdx].exercises;
     MUSCLE_GROUPS.forEach(group => {
       Object.entries(exerciseLibrary)
         .filter(([key, entry]) => entry.muscleGroup === group && exPickerSelected.has(key))
         .forEach(([key, entry]) => {
-          if (exPickerTarget.kind === "physio") {
-            targetList.push({ id: `physio_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: entry.name, sets: 3, reps: "", libraryId: key });
+          if (exPickerTarget.kind === "physio" || exPickerTarget.kind === "mobility") {
+            targetList.push({ id: `${exPickerTarget.kind}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: entry.name, sets: 3, reps: "", libraryId: key });
           } else {
             targetList.push({ name: entry.name, sets: 3, reps: "8-10", libraryId: key });
           }
@@ -5001,6 +5285,39 @@ document.addEventListener("input", (e) => {
   const physioInterval = e.target.closest('[data-role="physio-interval"]');
   if (physioInterval) {
     state.physio.intervalDays = Math.max(1, Number(physioInterval.value) || 1);
+    persist();
+    return;
+  }
+
+  // Mobility-Verwalten-Eingabefelder (seit v1.64.0): 1:1 dasselbe Muster wie die physio-ex-*/
+  // physio-interval-Handler direkt darueber.
+  const mobilityExName = e.target.closest('[data-role="mobility-ex-name"]');
+  if (mobilityExName) {
+    const ex = state.mobility.exercises.find(x => x.id === mobilityExName.dataset.exid);
+    if (ex) ex.name = mobilityExName.value;
+    persist();
+    return;
+  }
+
+  const mobilityExSets = e.target.closest('[data-role="mobility-ex-sets"]');
+  if (mobilityExSets) {
+    const ex = state.mobility.exercises.find(x => x.id === mobilityExSets.dataset.exid);
+    if (ex) ex.sets = Number(mobilityExSets.value) || 1;
+    persist();
+    return;
+  }
+
+  const mobilityExReps = e.target.closest('[data-role="mobility-ex-reps"]');
+  if (mobilityExReps) {
+    const ex = state.mobility.exercises.find(x => x.id === mobilityExReps.dataset.exid);
+    if (ex) ex.reps = mobilityExReps.value;
+    persist();
+    return;
+  }
+
+  const mobilityInterval = e.target.closest('[data-role="mobility-interval"]');
+  if (mobilityInterval) {
+    state.mobility.intervalDays = Math.max(1, Number(mobilityInterval.value) || 1);
     persist();
     return;
   }
