@@ -2,6 +2,11 @@
 
 Chronologischer Log der Entwicklungs- und Setup-Schritte an "Fretze" (bis 2026-07-08 "Eisernes Log", zwischenzeitlich "Fretze pumpt" bis 2026-07-09). Neue Einträge oben anfügen. Seit v1.1.0 wird jede Änderung mit Versionsnummer eingetragen (Nutzeranforderung); der Stand direkt davor (Teil 1-4 unten) gilt rückwirkend als v1.0.0-Baseline.
 
+## v1.65.0 — 2026-07-18 (Teil 107): Mobility-Banner immer sichtbar statt nur bei Fälligkeit
+
+- Nutzer-Feedback direkt nach v1.64.0: bei täglicher Nutzung (`intervalDays: 1`) hängt "fällig" stark von der Uhrzeit ab (`mobilityDueInfo()` rundet die vergangenen Tage per `Math.floor` ab) — der Schnellzugriff soll aber unabhängig davon jederzeit ein Tap entfernt sein, nicht erst über Profil → 🧘 Mobility erreichbar.
+- `mobilityBannerHTML()` zeigt sich jetzt immer, sobald mindestens eine Mobility-Übung angelegt ist (vorher: nur wenn tatsächlich fällig) — im "nicht fällig"-Zustand mit `done-today`-Styling (gleiche CSS-Klasse wie `renderTodayBanner()`s Äquivalent) und Text "✅ Mobility zuletzt vor X Tag(en) erledigt", weiterhin mit Button direkt zu "🧘 Mobility". `physioBannerHTML()` bleibt bewusst unverändert (nur bei Fälligkeit sichtbar) — dort wurde kein entsprechendes Feedback geäußert, und ein alle-2-Tage-Intervall hat das Uhrzeit-Problem ohnehin weniger stark.
+
 ## v1.64.0 — 2026-07-18 (Teil 106): Mobility wird ein eigener Pseudo-Tag statt eines Plans (behebt "Heute dran"-Banner-Bug)
 
 - Nutzer-Beobachtung: nach einer abends erledigten Mobility-Einheit zeigte die App am nächsten Morgen nicht mehr "PullA dran" o.ä. an. Ursache: `getRecommendedDay()`/`renderTodayBanner()` (`index.html`) filtern `state.journal` ausschließlich nach `planId === state.currentPlan` — sobald zu "Mobility" gewechselt wird, ist das der aktive Plan, und die App kennt nur noch dessen (Ein-Tage-)Rotation. Die PPL-Empfehlung existiert weiter in den Journal-Daten, wird aber unsichtbar, bis manuell zurückgewechselt wird.

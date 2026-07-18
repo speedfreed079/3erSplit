@@ -1041,7 +1041,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.64.0";
+const APP_VERSION = "1.65.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -3307,11 +3307,24 @@ function renderMobilityView() {
 }
 
 // Banner in der Kartenansicht, direkt neben renderTodayBanner()/physioBannerHTML() gerendert
-// (siehe render()): nur sichtbar wenn tatsaechlich faellig.
+// (siehe render()). Anders als physioBannerHTML() (nur sichtbar wenn faellig) ist dieser Banner
+// seit v1.65.0 IMMER sichtbar, sobald mindestens eine Mobility-Uebung angelegt ist - Nutzer-
+// Feedback: bei taeglicher Nutzung (intervalDays meist 1) haengt "faellig" stark von der Uhrzeit
+// ab (Math.floor der Tage seit lastDoneAt), der Schnellzugriff soll aber unabhaengig davon immer
+// ein Tap entfernt sein, nicht erst ueber Profil erreichbar. Der "done-today"-Zustand
+// (nicht faellig) nutzt bewusst dieselbe CSS-Klasse wie renderTodayBanner()'s Aequivalent, damit
+// beide optisch konsistent als "erledigt" erkennbar sind.
 function mobilityBannerHTML() {
   if (state.mobility.exercises.length === 0) return "";
   const { due, daysSince } = mobilityDueInfo();
-  if (!due) return "";
+  if (!due) {
+    return `
+      <div class="today-banner done-today">
+        <div class="today-banner-text">✅ Mobility zuletzt vor ${daysSince} Tag(en) erledigt</div>
+        <button class="today-banner-btn" data-role="mobility-enter">🧘 Mobility</button>
+      </div>
+    `;
+  }
   return `
     <div class="today-banner">
       <div class="today-banner-text">🧘 Mobility fällig${daysSince !== null ? ` (zuletzt vor ${daysSince} Tagen)` : ""}</div>
