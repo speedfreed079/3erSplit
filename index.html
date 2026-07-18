@@ -150,6 +150,8 @@
   .history-line b { color: var(--chalk); font-weight: 500; font-family: 'JetBrains Mono', monospace; }
   .weight-suggestion { color: var(--olive); display: inline-flex; align-items: center; gap: 6px; }
   .weight-suggestion b { color: var(--olive); }
+  .weight-auto-increase { color: var(--olive); flex-basis: 100%; }
+  .weight-auto-increase b { color: var(--olive); }
   .band-combo-hint { color: var(--chalk-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
   .sync-status { font-size: 12px; color: var(--chalk-dim); }
   .sync-status.sync-ok { color: var(--olive); }
@@ -179,6 +181,9 @@
     font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
     background: var(--bg); color: var(--chalk); cursor: pointer;
   }
+  .swap-opt-btn.active { border-color: var(--olive); background: var(--olive); color: #fff; }
+  .swap-duration-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+  .swap-duration-toggle .swap-opt-btn { flex: 1; text-align: center; }
   .swap-clear-btn {
     font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--rust-dim);
     background: transparent; color: var(--rust); cursor: pointer; display: flex; align-items: center; gap: 4px;
@@ -1041,7 +1046,7 @@ const STRETCHING = {
   ],
 };
 
-const APP_VERSION = "1.65.0";
+const APP_VERSION = "1.67.0";
 const STORAGE_KEY = "eisernes-log-v1"; // bewusst unverändert seit den Umbenennungen zu "Fretze pumpt" und "Fretze" - Änderung würde bestehende localStorage-Daten der Nutzer verwerfen
 
 const PROXY_URL = "https://eisernes-log-proxy.speedfreed.workers.dev";
@@ -1125,12 +1130,33 @@ function setHistoryEntry(exId, entry) {
 // Löst den getauschten Anzeigenamen zuerst über libraryIdForName() auf; kein Treffer (freier Text,
 // oder Name nicht in exerciseLibrary) fällt auf ex.libraryId zurück, exakt wie zuvor.
 function effectiveLibraryId(day, ex) {
-  const displayName = state.swaps[`${day}:${ex.id}`];
+  const displayName = getEffectiveSwapName(day, ex.id);
   if (displayName) {
     const swappedLibraryId = libraryIdForName(displayName);
     if (swappedLibraryId) return swappedLibraryId;
   }
   return ex.libraryId;
+}
+
+// Seit v1.67.0: liefert den gerade wirksamen getauschten Anzeigenamen, unabhaengig davon ob
+// dauerhaft (state.swaps) oder nur fuer die laufende Einheit (state.sessionSwaps) getauscht -
+// Session-Tausch hat Vorrang, falls beide (theoretisch) gesetzt waeren. null, wenn kein Tausch
+// aktiv ist (urspruengliche Uebung gilt).
+function getEffectiveSwapName(day, exId) {
+  const key = `${day}:${exId}`;
+  return state.sessionSwaps[key] || state.swaps[key] || null;
+}
+
+// Seit v1.67.0: die ID, unter der Gewicht/Historie/Progressions-Vorschlaege fuer DIESEN Slot
+// gerade gefuehrt werden. Ohne aktiven Tausch identisch zu ex.id (unveraendertes Verhalten,
+// keine Migration fuer bestehende Daten noetig). Mit aktivem Tausch (dauerhaft oder session) ein
+// eigener, vom Original getrennter Schluessel - Nutzer-Wunsch: zwischen Original und Alternative
+// hin- und herzutauschen darf die jeweils andere Gewichts-Erinnerung nicht ueberschreiben. Bewusst
+// NICHT ex.id + Anzeigename cross-plan-gescoped (anders als otherExIdsSharingLibraryId) - das
+// waere unnoetig komplex fuer das eigentliche Beduerfnis (kurzzeitig ausweichen, dann zurueck).
+function effectiveWeightId(day, ex) {
+  const swapName = getEffectiveSwapName(day, ex.id);
+  return swapName ? `${ex.id}::swap::${swapName}` : ex.id;
 }
 
 function otherExIdsSharingLibraryId(day, ex) {
@@ -1173,7 +1199,7 @@ function findCrossPlanHistoryEntry(day, ex) {
 // seit v1.59.1 dazugekommen (siehe effectiveLibraryId() oben) - alle Aufrufstellen hatten die
 // Day-ID ebenfalls schon im Scope.
 function buildInitialSets(day, ex, n) {
-  let weights = getLastWeights(ex.id);
+  let weights = getLastWeights(effectiveWeightId(day, ex));
   if (weights.length === 0) {
     const crossPlanWeights = findCrossPlanLastWeights(day, ex);
     if (crossPlanWeights) weights = crossPlanWeights;
@@ -1630,6 +1656,40 @@ function clearWeightSuggestion(exId) {
   }
 }
 
+// Automatische Gewichtserhoehung (seit v1.66.0): anders als der obige Vorschlag-Chip (der immer
+// eine aktive "Uebernehmen"-Bestaetigung braucht) wird hier direkt in lastWeights geschrieben -
+// Nutzer-Entscheidung nach Feedback, dass ein bis zum echten Muskelversagen durchgefuehrter Satz
+// mit deutlich mehr Wiederholungen als das obere Ziel (z.B. 11 statt Ziel 6-8) schon fuer sich
+// genommen ein eindeutiges "zu leicht"-Signal ist, unabhaengig vom ↑-Haken ("waere mehr moeglich
+// gewesen") - der waere hier korrekterweise NICHT gesetzt, da im letzten Satz tatsaechlich keine
+// weitere Wiederholung mehr moeglich war. getAutoWeightIncrease() haelt nur die zuletzt
+// gespeicherte Erhoehung fest (fuer die Hinweis-Notiz in historyLineHTML), gleiches
+// gym-gescopetes Muster wie getWeightSuggestion() direkt darueber.
+function getAutoWeightIncrease(exId) {
+  if (state.currentGymId) {
+    const gymData = state.gymAutoWeightIncreases[state.currentGymId];
+    return gymData ? gymData[exId] : undefined;
+  }
+  return state.autoWeightIncreases[exId];
+}
+
+function setAutoWeightIncrease(exId, entry) {
+  if (state.currentGymId) {
+    if (!state.gymAutoWeightIncreases[state.currentGymId]) state.gymAutoWeightIncreases[state.currentGymId] = {};
+    state.gymAutoWeightIncreases[state.currentGymId][exId] = entry;
+  } else {
+    state.autoWeightIncreases[exId] = entry;
+  }
+}
+
+function clearAutoWeightIncrease(exId) {
+  if (state.currentGymId) {
+    if (state.gymAutoWeightIncreases[state.currentGymId]) delete state.gymAutoWeightIncreases[state.currentGymId][exId];
+  } else {
+    delete state.autoWeightIncreases[exId];
+  }
+}
+
 // Gewichtsfeld ist type="text" statt type="number" (siehe setsRowsHTML), damit die deutsche
 // Dezimalschreibweise mit Komma ("12,5") ueberhaupt eintippbar ist - manche mobilen Browser
 // blockieren bei type="number" jede weitere Eingabe, sobald ein Komma einen ungueltigen
@@ -1676,6 +1736,10 @@ function loadState() {
         sessions: parsed.sessions || {},
         history: parsed.history || {},
         swaps: parsed.swaps || {},
+        // Seit v1.67.0: Tausch "nur fuer diese Trainingseinheit" (Gegenstueck zu swaps, siehe
+        // getEffectiveSwapName()) - wird beim Abschliessen des jeweiligen Tages automatisch
+        // wieder geleert, siehe finishSession().
+        sessionSwaps: parsed.sessionSwaps || {},
         notes: parsed.notes || {},
         lastWeights: parsed.lastWeights || {},
         theme: parsed.theme || "sepia",
@@ -1693,6 +1757,8 @@ function loadState() {
         planDraft: parsed.planDraft || null,
         weightSuggestions: parsed.weightSuggestions || {},
         gymWeightSuggestions: parsed.gymWeightSuggestions || {},
+        autoWeightIncreases: parsed.autoWeightIncreases || {},
+        gymAutoWeightIncreases: parsed.gymAutoWeightIncreases || {},
         updatedAt: parsed.updatedAt || null,
         physio: parsed.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
         // Seit v1.64.0: eigenes Pendant zu physio, fuer taeglich wiederkehrende Mobility-/
@@ -1703,13 +1769,18 @@ function loadState() {
       };
     }
   } catch (e) { /* ignore */ }
-  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, mobility: { exercises: [], intervalDays: 1, lastDoneAt: null }, extraExercises: {} };
+  return { currentDay: "pushA", sessions: {}, history: {}, swaps: {}, sessionSwaps: {}, notes: {}, lastWeights: {}, theme: "sepia", currentPlan: null, textSize: "normal", gyms: [], currentGymId: null, gymLastWeights: {}, gymHistory: {}, journal: [], customPlans: [], planDraft: null, weightSuggestions: {}, gymWeightSuggestions: {}, autoWeightIncreases: {}, gymAutoWeightIncreases: {}, updatedAt: null, physio: { exercises: [], intervalDays: 2, lastDoneAt: null }, mobility: { exercises: [], intervalDays: 1, lastDoneAt: null }, extraExercises: {} };
 }
 
 let state = loadState();
 applyPlan(state.currentPlan);
 if (!DAYS.find(d => d.id === state.currentDay)) state.currentDay = DAYS[0].id;
 let swapOpenKey = null;
+// Seit v1.67.0: waehlt, ob ein per Swap-Panel gewaehlter Tausch dauerhaft (state.swaps) oder nur
+// fuer die laufende Trainingseinheit (state.sessionSwaps, siehe getEffectiveSwapName()) gilt -
+// bewusst ephemer/sticky ueber die ganze Session (nicht pro Uebung zurueckgesetzt), damit man bei
+// mehreren "Geraet ist gerade belegt"-Taeuschen hintereinander nicht jedes Mal neu umschalten muss.
+let swapDurationChoice = "permanent";
 let infoOpenKey = null;
 let warmupOpen = false;
 let stretchOpen = false;
@@ -2101,7 +2172,7 @@ async function runSwapChatTurn(day, exId) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({
         messages: entry.messages,
-        exercise: state.swaps[swapKey] || ex.name,
+        exercise: getEffectiveSwapName(day, exId) || ex.name,
         muscleFocus: dayMeta.sub,
         existingAlts: ex.alts,
       }),
@@ -2176,6 +2247,7 @@ async function reconcileCloudState(uid) {
         sessions: cloud.sessions || {},
         history: cloud.history || {},
         swaps: cloud.swaps || {},
+        sessionSwaps: cloud.sessionSwaps || {},
         notes: cloud.notes || {},
         lastWeights: cloud.lastWeights || {},
         theme: cloud.theme || "sepia",
@@ -2192,6 +2264,8 @@ async function reconcileCloudState(uid) {
         planDraft: cloud.planDraft || null,
         weightSuggestions: cloud.weightSuggestions || {},
         gymWeightSuggestions: cloud.gymWeightSuggestions || {},
+        autoWeightIncreases: cloud.autoWeightIncreases || {},
+        gymAutoWeightIncreases: cloud.gymAutoWeightIncreases || {},
         updatedAt: cloudTs,
         // Bugfix v1.64.0: dieser Zweig hatte physio/extraExercises schlicht vergessen - beim
         // naechsten Cloud-Merge mit cloudTs > localTs wurden beide stillschweigend zu undefined,
@@ -2488,11 +2562,16 @@ function exerciseInfoPanelHTML(ex) {
 function swapPanelHTML(day, ex, swapKey) {
   return `
     <div class="swap-panel">
+      <div class="swap-panel-label">Wie tauschen?</div>
+      <div class="swap-duration-toggle">
+        <button class="swap-opt-btn ${swapDurationChoice === "permanent" ? "active" : ""}" data-role="swap-duration" data-value="permanent">Dauerhaft</button>
+        <button class="swap-opt-btn ${swapDurationChoice === "session" ? "active" : ""}" data-role="swap-duration" data-value="session">Nur diese Einheit</button>
+      </div>
       <div class="swap-panel-label">Alternative wählen</div>
       <div class="swap-options">
         ${ex.alts.length === 0 ? '<span style="font-size:12px;color:var(--chalk-dim);">Keine Standard-Alternativen hinterlegt.</span>' : ""}
         ${ex.alts.map(alt => `<button class="swap-opt-btn" data-role="swap-select" data-day="${day}" data-exid="${ex.id}" data-alt="${escapeAttr(alt)}">${alt}</button>`).join("")}
-        ${state.swaps[swapKey] ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
+        ${getEffectiveSwapName(day, ex.id) ? `<button class="swap-clear-btn" data-role="swap-clear" data-day="${day}" data-exid="${ex.id}">✕ Original wiederherstellen</button>` : ""}
       </div>
       <div class="swap-freetext-row" style="display:flex; gap:6px; margin-top:8px;">
         <input class="draft-ex-name" type="text" list="exercise-name-list" placeholder="Eigene Übung eintragen…"
@@ -2529,11 +2608,19 @@ function findBandCombination(targetKg) {
 
 // Geteilt zwischen Kartenansicht und Fokusmodus (wie setsRowsHTML/exerciseInfoPanelHTML),
 // damit "Letztes Mal" und der Gewichtsvorschlag-Chip in beiden Ansichten identisch sind.
-function historyLineHTML(exId, hist) {
+// Signatur seit v1.67.0 von (exId, hist) zu (day, ex, hist) erweitert: Vorschlag/Auto-Erhoehung
+// werden ueber effectiveWeightId() geloest (getauschter Slot bekommt einen eigenen, vom Original
+// getrennten Eintrag), der "Uebernehmen"-Button braucht aber weiterhin die ECHTE ex.id im
+// data-exid (der suggestion-accept-Handler muss die Uebung ueber EXERCISES[day] finden koennen -
+// das ginge mit der zusammengesetzten weightId nicht). PHYSIO_DAY_ID/MOBILITY_DAY_ID als day
+// funktionieren unveraendert, da dort nie ein Tausch existiert (effectiveWeightId faellt dort
+// immer auf ex.id zurueck).
+function historyLineHTML(day, ex, hist) {
+  const weightId = effectiveWeightId(day, ex);
   const historyPart = hist
     ? `Letztes Mal: <b>${escapeAttr(hist.weight || "–")}kg × ${escapeAttr(hist.reps || "–")}</b> <span>(${escapeAttr(hist.date)})</span>`
     : "";
-  const suggestion = getWeightSuggestion(exId);
+  const suggestion = getWeightSuggestion(weightId);
   let suggestionPart = "";
   if (suggestion) {
     let bandHint = "";
@@ -2541,10 +2628,16 @@ function historyLineHTML(exId, hist) {
       const best = findBandCombination(Number(suggestion.weight));
       if (best) bandHint = ` <span class="band-combo-hint">(${best.combo.join("+")}kg)</span>`;
     }
-    suggestionPart = `<span class="weight-suggestion">💡 Vorschlag: <b>${escapeAttr(String(suggestion.weight))}kg</b>${bandHint} <button class="suggestion-accept-btn" data-role="suggestion-accept" data-exid="${escapeAttr(exId)}">Übernehmen</button></span>`;
+    suggestionPart = `<span class="weight-suggestion">💡 Vorschlag: <b>${escapeAttr(String(suggestion.weight))}kg</b>${bandHint} <button class="suggestion-accept-btn" data-role="suggestion-accept" data-day="${escapeAttr(day)}" data-exid="${escapeAttr(ex.id)}">Übernehmen</button></span>`;
   }
-  if (!historyPart && !suggestionPart) return "";
-  return `<div class="history-line">${historyPart}${suggestionPart}</div>`;
+  // Seit v1.66.0: rein informativ, kein Button - die Erhoehung ist bereits in lastWeights
+  // eingetragen (siehe finishSession()), hier steht nur noch die Begruendung dafuer.
+  const autoIncrease = getAutoWeightIncrease(weightId);
+  const autoIncreasePart = autoIncrease
+    ? `<span class="weight-auto-increase">📈 Arbeitsgewicht erhöht: ${escapeAttr(String(autoIncrease.from))}kg → <b>${escapeAttr(String(autoIncrease.to))}kg</b> (${escapeAttr(String(autoIncrease.reps))} Wdh. statt Ziel bis ${escapeAttr(String(autoIncrease.repMax))})</span>`
+    : "";
+  if (!historyPart && !suggestionPart && !autoIncreasePart) return "";
+  return `<div class="history-line">${historyPart}${suggestionPart}${autoIncreasePart}</div>`;
 }
 
 // "Wird zur uebernaechsten Uebung": Queue [A,B,C,D], Fokus auf A (focusPos=0), Skip von A
@@ -2563,22 +2656,23 @@ function renderFocusMode() {
   const exId = focusQueue[focusPos];
   const ex = findExerciseById(day, exId);
   const swapKey = `${day}:${ex.id}`;
-  const displayName = state.swaps[swapKey] || ex.name;
+  const displayName = getEffectiveSwapName(day, ex.id) || ex.name;
+  const isSessionSwap = !!state.sessionSwaps[swapKey];
   const sets = getSetsFor(day, ex);
   const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
   // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
   // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
-  const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(day, ex);
+  const hist = getHistoryEntry(effectiveWeightId(day, ex)) || findCrossPlanHistoryEntry(day, ex);
   const note = state.notes[swapKey] || "";
   const info = exerciseLibrary[ex.libraryId];
   const infoPanelHTML = info && focusInfoOpen ? exerciseInfoPanelHTML(ex) : "";
   const swapPanelContent = focusSwapOpen ? swapPanelHTML(day, ex, swapKey) : "";
 
-  const historyHTML = historyLineHTML(ex.id, hist);
+  const historyHTML = historyLineHTML(day, ex, hist);
 
   const isLast = focusPos >= focusQueue.length - 1;
   const nextEx = !isLast ? findExerciseById(day, focusQueue[focusPos + 1]) : null;
-  const nextDisplayName = nextEx ? (state.swaps[`${day}:${nextEx.id}`] || nextEx.name) : null;
+  const nextDisplayName = nextEx ? (getEffectiveSwapName(day, nextEx.id) || nextEx.name) : null;
 
   const nextHTML = nextEx
     ? `<div class="focusmode-next">Als Nächstes: <b>${escapeAttr(nextDisplayName)}</b></div>`
@@ -2601,7 +2695,7 @@ function renderFocusMode() {
             <div class="focusmode-title-row">
               <h2 class="focusmode-title">${displayName}</h2>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
-              ${state.swaps[swapKey] ? `<span class="badge-swapped">statt ${ex.name}</span>` : ""}
+              ${getEffectiveSwapName(day, ex.id) ? `<span class="badge-swapped">${isSessionSwap ? "🕐 nur heute · " : ""}statt ${ex.name}</span>` : ""}
             </div>
             <div class="focusmode-target">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
@@ -3089,7 +3183,7 @@ function physioExerciseCardHTML(ex) {
             <h3>${escapeAttr(ex.name)}</h3>
           </div>
           <div class="target-line">${ex.sets} Sätze × ${escapeAttr(ex.reps)} Wdh.</div>
-          ${historyLineHTML(ex.id, hist)}
+          ${historyLineHTML(PHYSIO_DAY_ID, ex, hist)}
         </div>
         <div style="display:flex; gap:6px; flex-shrink:0;">
           ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${PHYSIO_DAY_ID}" data-exid="${ex.id}">ℹ</button>` : ""}
@@ -3231,7 +3325,7 @@ function mobilityExerciseCardHTML(ex) {
             <h3>${escapeAttr(ex.name)}</h3>
           </div>
           <div class="target-line">${ex.sets} Sätze × ${escapeAttr(ex.reps)} Wdh.</div>
-          ${historyLineHTML(ex.id, hist)}
+          ${historyLineHTML(MOBILITY_DAY_ID, ex, hist)}
         </div>
         <div style="display:flex; gap:6px; flex-shrink:0;">
           ${info ? `<button class="swap-btn" title="Übung erklären" data-role="info-toggle" data-day="${MOBILITY_DAY_ID}" data-exid="${ex.id}">ℹ</button>` : ""}
@@ -3738,15 +3832,16 @@ function render() {
 
   const cardsHTML = exercises.map(ex => {
     const swapKey = `${day}:${ex.id}`;
-    const displayName = state.swaps[swapKey] || ex.name;
+    const displayName = getEffectiveSwapName(day, ex.id) || ex.name;
+    const isSessionSwap = !!state.sessionSwaps[swapKey];
     const sets = getSetsFor(day, ex);
     const doneCount = sets.filter(s => s.done && !s.isWarmup).length;
     // Seit v1.53.0: faellt auf einen anderen Plan-Slot derselben realen Uebung zurueck, wenn hier
     // noch keine eigene Historie existiert - siehe findCrossPlanHistoryEntry().
-    const hist = getHistoryEntry(ex.id) || findCrossPlanHistoryEntry(day, ex);
+    const hist = getHistoryEntry(effectiveWeightId(day, ex)) || findCrossPlanHistoryEntry(day, ex);
     const note = state.notes[swapKey] || "";
 
-    const historyHTML = historyLineHTML(ex.id, hist);
+    const historyHTML = historyLineHTML(day, ex, hist);
 
     const swapPanelContent = swapOpenKey === swapKey ? swapPanelHTML(day, ex, swapKey) : "";
 
@@ -3761,7 +3856,7 @@ function render() {
             <div class="card-title-row">
               <h3>${displayName}</h3>
               ${ex.core ? '<span class="badge-core">CORE</span>' : ""}
-              ${state.swaps[swapKey] ? `<span class="badge-swapped">statt ${ex.name}</span>` : ""}
+              ${getEffectiveSwapName(day, ex.id) ? `<span class="badge-swapped">${isSessionSwap ? "🕐 nur heute · " : ""}statt ${ex.name}</span>` : ""}
             </div>
             <div class="target-line">${ex.sets} Sätze × ${ex.reps} Wdh.</div>
             ${historyHTML}
@@ -3825,35 +3920,66 @@ function finishSession(dayId, wellbeing, sessionNote, dateOverride) {
   dayExercises.forEach(ex => {
     const sets = daySets[ex.id];
     if (!sets) return;
+    // Seit v1.67.0: Gewicht/Historie/Progression eines getauschten Slots (dauerhaft oder nur
+    // diese Einheit) laufen unter einer eigenen ID statt unter ex.id - siehe effectiveWeightId().
+    const weightId = effectiveWeightId(dayId, ex);
     const enteredSets = sets.filter(s => s.weight || s.reps);
     if (enteredSets.length > 0) {
       journalExercises.push({
         exId: ex.id,
-        name: state.swaps[`${dayId}:${ex.id}`] || ex.name,
+        name: getEffectiveSwapName(dayId, ex.id) || ex.name,
         sets: enteredSets.map(s => ({ weight: s.weight, reps: s.reps, isWarmup: s.isWarmup, couldDoMore: s.couldDoMore })),
       });
     }
     const doneSets = enteredSets.filter(s => !s.isWarmup);
+    // Seit v1.66.0: haelt fest, ob dieser Durchlauf eine automatische Erhoehung ausgeloest hat -
+    // wenn ja, ueberschreibt das unten die "Gewichte merken"-Zeile mit dem neuen, hoeheren Wert
+    // statt der tatsaechlich eingetragenen Gewichte.
+    let autoIncreasedWeight = null;
     if (doneSets.length > 0) {
       const last = doneSets[doneSets.length - 1];
-      setHistoryEntry(ex.id, { weight: last.weight, reps: last.reps, date: today });
+      setHistoryEntry(weightId, { weight: last.weight, reps: last.reps, date: today });
 
       // Gewichtsprogression: nur der letzte Arbeitssatz zaehlt (gleiches Prinzip wie oben
       // bei der History), Aufwaermsaetze sind bereits durch doneSets ausgeschlossen.
       const range = parseRepRange(ex.reps);
       const lastWeightNum = parseWeightNum(last.weight);
       const lastRepsNum = parseFloat(last.reps);
-      if (range && last.couldDoMore && Number.isFinite(lastWeightNum) && Number.isFinite(lastRepsNum) && lastRepsNum >= range.max) {
-        setWeightSuggestion(ex.id, { weight: computeSuggestedWeight(lastWeightNum, !!ex.compound), basedOnDate: today });
+      // Seit v1.66.0: liegen die Wiederholungen ECHT ueber dem oberen Ziel (nicht nur erreicht),
+      // ist das schon fuer sich ein eindeutiges "zu leicht"-Signal, selbst wenn couldDoMore nicht
+      // gesetzt ist (im letzten Satz bis zum Muskelversagen war tatsaechlich keine weitere Wdh.
+      // mehr moeglich - das couldDoMore-Haekchen bezieht sich nur auf diesen einen Satz, nicht
+      // darauf, ob die Wiederholungszahl insgesamt zu hoch fuers Zielschema war). Wird deshalb
+      // bewusst automatisch uebernommen statt nur als Chip vorgeschlagen, siehe
+      // getAutoWeightIncrease()-Kommentar.
+      if (range && Number.isFinite(lastWeightNum) && Number.isFinite(lastRepsNum) && lastRepsNum > range.max) {
+        autoIncreasedWeight = computeSuggestedWeight(lastWeightNum, !!ex.compound);
+        setAutoWeightIncrease(weightId, { from: lastWeightNum, to: autoIncreasedWeight, reps: lastRepsNum, repMax: range.max, date: today });
+        clearWeightSuggestion(weightId);
+      } else if (range && last.couldDoMore && Number.isFinite(lastWeightNum) && Number.isFinite(lastRepsNum) && lastRepsNum >= range.max) {
+        setWeightSuggestion(weightId, { weight: computeSuggestedWeight(lastWeightNum, !!ex.compound), basedOnDate: today });
+        clearAutoWeightIncrease(weightId);
       } else {
-        clearWeightSuggestion(ex.id);
+        clearWeightSuggestion(weightId);
+        clearAutoWeightIncrease(weightId);
       }
     }
-    // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind
-    const hasAnyWeight = sets.some(s => s.weight);
-    if (hasAnyWeight) {
-      setLastWeights(ex.id, sets.map(s => s.weight || ""));
+    // Gewichte merken, damit sie beim nächsten Mal vorbefüllt sind - bei einer automatischen
+    // Erhoehung gilt fuer JEDEN Satz direkt das neue, hoehere Gewicht statt der tatsaechlich
+    // eingetragenen Werte (gleiche "alle Saetze" Konvention wie der manuelle suggestion-accept-
+    // Handler beim Vorschlag-Chip).
+    if (autoIncreasedWeight !== null) {
+      setLastWeights(weightId, sets.map(() => String(autoIncreasedWeight)));
+    } else {
+      const hasAnyWeight = sets.some(s => s.weight);
+      if (hasAnyWeight) {
+        setLastWeights(weightId, sets.map(s => s.weight || ""));
+      }
     }
+    // Seit v1.67.0: ein "nur fuer diese Einheit" getauschter Slot revertiert nach dem Abschluss
+    // automatisch zurueck zum Original - das ist der ganze Witz an "nur diese Einheit" gegenueber
+    // "dauerhaft". Ein evtl. dauerhafter Tausch (state.swaps) bleibt davon unberuehrt.
+    delete state.sessionSwaps[`${dayId}:${ex.id}`];
   });
   if (journalExercises.length > 0) {
     const dayMeta = DAYS.find(d => d.id === dayId);
@@ -4140,6 +4266,7 @@ function importData(file) {
             sessions: incoming.sessions || {},
             history: incoming.history || {},
             swaps: incoming.swaps || {},
+            sessionSwaps: incoming.sessionSwaps || {},
             notes: incoming.notes || {},
             lastWeights: incoming.lastWeights || {},
             theme: incoming.theme || "sepia",
@@ -4154,6 +4281,8 @@ function importData(file) {
             planDraft: incoming.planDraft || null,
             weightSuggestions: incoming.weightSuggestions || {},
             gymWeightSuggestions: incoming.gymWeightSuggestions || {},
+            autoWeightIncreases: incoming.autoWeightIncreases || {},
+            gymAutoWeightIncreases: incoming.gymAutoWeightIncreases || {},
             updatedAt: incoming.updatedAt || null,
             physio: incoming.physio || { exercises: [], intervalDays: 2, lastDoneAt: null },
             mobility: incoming.mobility || { exercises: [], intervalDays: 1, lastDoneAt: null },
@@ -5112,10 +5241,22 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  // Seit v1.67.0: waehlt, in welche der beiden Karten (state.swaps = dauerhaft,
+  // state.sessionSwaps = nur diese Einheit) der naechste swap-select/-freetext-submit schreibt -
+  // rein UI-seitig, nichts an state selbst, deshalb kein persist()/render() noetig ausser fuer
+  // die Toggle-Optik.
+  const swapDuration = e.target.closest('[data-role="swap-duration"]');
+  if (swapDuration) {
+    swapDurationChoice = swapDuration.dataset.value;
+    render();
+    return;
+  }
+
   const swapSelect = e.target.closest('[data-role="swap-select"]');
   if (swapSelect) {
     const key = `${swapSelect.dataset.day}:${swapSelect.dataset.exid}`;
-    state.swaps[key] = swapSelect.dataset.alt;
+    if (swapDurationChoice === "session") state.sessionSwaps[key] = swapSelect.dataset.alt;
+    else state.swaps[key] = swapSelect.dataset.alt;
     swapOpenKey = null;
     focusSwapOpen = false;
     persist();
@@ -5132,7 +5273,8 @@ document.addEventListener("click", (e) => {
       return;
     }
     const key = `${swapFreetextSubmit.dataset.day}:${swapFreetextSubmit.dataset.exid}`;
-    state.swaps[key] = value;
+    if (swapDurationChoice === "session") state.sessionSwaps[key] = value;
+    else state.swaps[key] = value;
     swapOpenKey = null;
     focusSwapOpen = false;
     persist();
@@ -5144,6 +5286,7 @@ document.addEventListener("click", (e) => {
   if (swapClear) {
     const key = `${swapClear.dataset.day}:${swapClear.dataset.exid}`;
     delete state.swaps[key];
+    delete state.sessionSwaps[key];
     swapOpenKey = null;
     focusSwapOpen = false;
     persist();
@@ -5186,13 +5329,19 @@ document.addEventListener("click", (e) => {
   const suggestionAccept = e.target.closest('[data-role="suggestion-accept"]');
   if (suggestionAccept) {
     const exid = suggestionAccept.dataset.exid;
-    const day = state.currentDay;
-    const ex = EXERCISES[day].find(x => x.id === exid);
-    const suggestion = getWeightSuggestion(exid);
+    // Seit v1.67.0: data-day kommt jetzt explizit vom Button statt aus state.currentDay
+    // angenommen zu werden (historyLineHTML() rendert diesen Button auch im Fokusmodus, der
+    // ohnehin denselben Tag nutzt, aber explizit ist robuster). exid ist hier bewusst die ECHTE
+    // ex.id (nicht die evtl. getauschte weightId, siehe historyLineHTML()-Kommentar) - erst
+    // effectiveWeightId() unten loest die richtige, evtl. getauschte Ablage fuer den Vorschlag auf.
+    const day = suggestionAccept.dataset.day || state.currentDay;
+    const ex = findExerciseById(day, exid);
+    const weightId = ex ? effectiveWeightId(day, ex) : exid;
+    const suggestion = getWeightSuggestion(weightId);
     if (ex && suggestion) {
       const sets = ensureDaySets(day, ex);
       sets.forEach(s => { s.weight = String(suggestion.weight); });
-      clearWeightSuggestion(exid);
+      clearWeightSuggestion(weightId);
     }
     persist();
     render();
